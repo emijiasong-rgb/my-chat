@@ -16,15 +16,12 @@
     </div>
 
     <div id="viewport">
-       <section id="page-home" class="page active">
+      <section id="page-home" class="page active">
     <div class="profile-card">
-        <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()">
-            <input type="file" id="banner-upload" hidden accept="image/*" onchange="uploadImage(this, 'profile-banner')">
-        </div>
+        <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()"></div>
         <div class="profile-info">
             <div class="profile-avatar-wrapper">
-                <img src="default-avatar.png" id="user-avatar" onclick="document.getElementById('avatar-upload').click()">
-                <input type="file" id="avatar-upload" hidden accept="image/*" onchange="uploadImage(this, 'user-avatar')">
+                <img src="默认头像.jpg" id="user-avatar" onclick="document.getElementById('avatar-upload').click()">
             </div>
             <h2 contenteditable="true" id="user-name">Alone</h2>
             <p contenteditable="true" id="user-signature">你眼睛的面积一定小于湖</p>
@@ -33,38 +30,21 @@
     </div>
 
     <div class="widget-row">
-        <div class="widget music-widget">
-            <div class="widget-title">Music</div>
+        <div class="widget">
+            <span class="widget-title">Music 🎵</span>
             <div class="music-info">
-                <div class="music-icon">🎵</div>
-                <div>
-                    <div class="song-name">正在播放的歌曲</div>
-                    <div class="artist">歌手名字</div>
-                </div>
+                <span class="song-name">正在播放的歌曲</span>
+                <span class="artist">歌手名字</span>
             </div>
         </div>
-        <div class="widget anniversary-widget">
-            <div class="widget-title">纪念日</div>
-            <div class="anniversary-content">
-                <span>倒计时加载中...</span>
-            </div>
+        <div class="widget">
+            <span class="widget-title">纪念日 📅</span>
+            <div style="font-size: 13px; color: #666; margin-top: 10px;">暂无数据</div>
         </div>
     </div>
 
     <div class="app-grid">
-        <div class="app-icon" onclick="switchTab('message')">
-            <div class="icon-box" style="background: #07c160;">💬</div>
-            <span>微信</span>
         </div>
-        <div class="app-icon" onclick="openPage('settings')">
-            <div class="icon-box" style="background: #8e8e93;">⚙️</div>
-            <span>设置</span>
-        </div>
-        <div class="app-icon gray-scale">
-            <div class="icon-box" style="background: #ff9500;">📅</div>
-            <span>纪念日</span>
-        </div>
-    </div>
 </section>
 
         <section id="page-message" class="page">
