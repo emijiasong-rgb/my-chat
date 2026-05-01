@@ -40,31 +40,29 @@
             </div>
         </section>
 
-        <section id="page-settings" class="page">
-            <div class="header-title">
-                <span style="position:absolute; left:15px; cursor:pointer" onclick="goHome()">〈 返回</span>
-                <span>设置</span>
+       <section id="page-settings" class="page">
+    <div class="header-title">
+        <span style="position:absolute; left:15px; cursor:pointer" onclick="goHome()">〈 返回</span>
+        <span>API 配置</span>
+    </div>
+    <div class="settings-group">
+        <div class="settings-item">
+            <label>API 地址 (Base URL)</label>
+            <input type="text" id="api-url-input" placeholder="例如: https://api.supxh.xin">
+        </div>
+        <div class="settings-item">
+            <label>API 密钥 (API Key)</label>
+            <input type="password" id="api-key-input" placeholder="请输入密钥...">
+        </div>
+        <div class="settings-item">
+            <label>模型选择 (Model)</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="api-model-input" placeholder="如: gemini-2.5-pro" style="flex:1">
             </div>
-            <div class="settings-group">
-                <div class="settings-item">
-                    <label>API 密钥 (API Key)</label>
-                    <input type="password" id="api-key-input" placeholder="请输入您的 API Key...">
-                </div>
-            </div>
-            <button class="btn-save" onclick="saveSettings()">保存并返回</button>
-        </section>
-
-        <section id="chat-detail" class="page">
-            <div class="header-title">
-                <span style="position:absolute; left:15px; cursor:pointer" onclick="closeChat()">〈 返回</span>
-                <span id="chat-user-name">张三</span>
-            </div>
-            <div class="chat-messages" id="msg-container"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="输入消息...">
-                <div class="btn-send" onclick="sendMessage()">发送</div>
-            </div>
-        </section>
+        </div>
+    </div>
+    <button class="btn-save" onclick="saveSettings()">保存配置</button>
+</section>
     </div>
 
     <nav id="nav-bar" style="display: none;">
