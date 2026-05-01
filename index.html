@@ -55,11 +55,15 @@
             <input type="password" id="api-key-input" placeholder="请输入密钥...">
         </div>
         <div class="settings-item">
-            <label>模型选择 (Model)</label>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="api-model-input" placeholder="如: gemini-2.5-pro" style="flex:1">
-            </div>
-        </div>
+    <label>模型选择 (Model)</label>
+    <div style="display:flex; gap:10px; margin-bottom: 10px;">
+        <input type="text" id="api-model-input" placeholder="请选择或输入模型" style="flex:1">
+        <button onclick="fetchModels()" style="width: 80px; background: #000; color: #fff; border-radius: 6px; border: none; cursor: pointer;">拉取模型</button>
+    </div>
+    <div id="model-list-container" style="max-height: 150px; overflow-y: auto; background: #f0f0f0; border-radius: 6px; font-size: 13px; display: none;">
+        <div style="padding: 10px; color: #888;">请先填地址和Key后点击拉取</div>
+    </div>
+</div>
     </div>
     <button class="btn-save" onclick="saveSettings()">保存配置</button>
 </section>
