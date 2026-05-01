@@ -36,13 +36,20 @@ function goHome() {
     document.getElementById('chat-detail').classList.remove('open');
 }
 
-// 保存设置
+// 保存设置：现在会同时保存地址、密钥和模型名称
 function saveSettings() {
+    const url = document.getElementById('api-url-input').value;
     const key = document.getElementById('api-key-input').value;
-    localStorage.setItem('user_api_key', key);
-    alert('API 设置已保存！');
+    const model = document.getElementById('api-model-input').value;
+
+    localStorage.setItem('api_url', url);
+    localStorage.setItem('api_key', key);
+    localStorage.setItem('api_model', model);
+
+    alert('配置已成功保存！');
     goHome();
 }
+
 
 // 聊天逻辑
 function openChat(name) {
