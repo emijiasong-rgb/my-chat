@@ -32,17 +32,9 @@
             </div>
 
             <div class="profile-clock-box">
-                <div id="big-time"></div>
-                <div id="big-date"></div>
+                <div id="big-time">--:--</div>
+                <div id="big-date">加载中...</div>
             </div>
-            <script>
-                (function(){
-                    var weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-                    var now = new Date();
-                    document.getElementById('big-time').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-                    document.getElementById('big-date').textContent = String(now.getMonth()+1).padStart(2,'0') + '/' + String(now.getDate()).padStart(2,'0') + ' ' + weekDays[now.getDay()] + '.';
-                })();
-            </script>
 
         </div>
     </div>
