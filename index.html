@@ -12,55 +12,69 @@
 <div id="phone-shell">
     <div class="status-bar">
         <span id="clock">12:00</span>
-        <div>📶 🔋</div>
-    </div>
-
-    <div id="viewport">
-      <section id="page-home" class="page active">
-    <div class="profile-card">
-        <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()"></div>
-        
-        <div class="profile-content-row" style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 5px;">
-            
-            <div class="profile-info">
-                <div class="profile-avatar-wrapper">
-                    <img src="默认头像.jpg" id="user-avatar" onclick="document.getElementById('avatar-upload').click()">
-                </div>
-                <h2 contenteditable="true" id="user-name">Alone</h2>
-                <p contenteditable="true" id="user-signature">请输入个性签名</p>
-                <span contenteditable="true" id="user-location">📍 Tokyo</span>
-            </div>
-
-            <div class="profile-clock-box" style="text-align: right; padding-bottom: 5px;">
-                <div id="big-time" style="font-size: 32px; font-weight: bold; color: #333; line-height: 1;">00:00</div>
-                <div id="big-date" style="font-size: 11px; color: #999; margin-top: 5px; letter-spacing: 1px; font-weight: 500;">05/20 MON.</div>
-            </div>
-
+        <div class="status-icons">
+            <span id="network-icon">
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
+                    <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
+                    <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
+                    <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
+                    <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+                </svg>
+            </span>
+            <span id="battery-container">
+                <svg id="battery-icon" width="25" height="12" viewBox="0 0 25 12">
+                    <rect x="0" y="0" width="22" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1"/>
+                    <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
+                    <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
+                </svg>
+                <span id="battery-percent">--%</span>
+            </span>
         </div>
     </div>
 
-    
+    <div id="viewport">
+    <section id="page-home" class="page active">
+    <div class="profile-card">
+        <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()">
+            <div class="upload-hint-banner">更换背景图片</div>
+        </div>
+        
+        <div class="profile-content-wrapper">
+            <div class="profile-info">
+                <div class="profile-avatar-wrapper" onclick="document.getElementById('avatar-upload').click()">
+                    <img src="默认头像.jpg" id="user-avatar">
+                    <div class="upload-hint">更换图片</div>
+                </div>
+                <h2 contenteditable="true" id="user-name">请输入名字</h2>
+                <p contenteditable="true" id="user-signature">请输入个性签名</p>
+                <span contenteditable="true" id="user-location">📍 请输入地区</span>
+            </div>
+
+            <div class="profile-clock-box">
+                <div id="big-time">--:--</div>
+                <div id="big-date">加载中...</div>
+            </div>
+        </div>
+    </div>
+
     <div class="app-grid">
-    <div class="app-icon" onclick="switchTab('message')">
-        <div class="icon-box">💬</div>
-        <span>Chat</span>
+        <div class="app-icon" onclick="switchTab('message')">
+            <div class="icon-box">💬</div>
+            <span>Chat</span>
+        </div>
+        <div class="app-icon gray-scale" onclick="alert('纪念日功能开发中...')">
+            <div class="icon-box">🤍</div>
+            <span>Ourtale</span>
+        </div>
+        <div class="app-icon" onclick="openPage('settings')">
+            <div class="icon-box">⚙️</div>
+            <span>Settings</span>
+        </div>
+        <div class="app-icon gray-scale">
+            <div class="icon-box">📷</div>
+            <span>Photo</span>
+        </div>
     </div>
-
-    <div class="app-icon gray-scale" onclick="alert('纪念日功能开发中...')">
-        <div class="icon-box">🤍</div>
-        <span>Ourtale</span>
-    </div>
-
-    <div class="app-icon" onclick="openPage('settings')">
-        <div class="icon-box">⚙️</div>
-        <span>Settings</span>
-    </div>
-
-    <div class="app-icon gray-scale">
-        <div class="icon-box">📷</div>
-        <span>Photo</span>
-    </div>
-</div>
 </section>
 
         <section id="page-message" class="page">
@@ -100,16 +114,31 @@
 </div>
     </div>
     <button class="btn-save" onclick="saveSettings()">保存配置</button>
+         <label>整体字体风格</label>
+<div class="settings-item" style="margin-top: 8px;">
+    <select id="font-family-select" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 6px; padding: 0 10px; font-size: 14px; outline: none; background: white;">
+        <option value="default">系统默认</option>
+        <option value="cute">圆润可爱</option>
+        <option value="serif">优雅衬线</option>
+        <option value="modern">现代极简</option>
+    </select>
+    
+    <button onclick="saveFontOnly()" style="margin-top: 10px; width: 100%; height: 35px; background: #34c759; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;">
+        应用并保存字体
+    </button>
+</div>
 </section>
     </div>
 
     <nav id="nav-bar" style="display: none;">
         <div class="nav-item" onclick="switchTab('message')">💬<br>消息</div>
         <div class="nav-item" onclick="goHome()">🏠<br>桌面</div>
-    </nav>
-</div>
+   </nav>
 
-<script src="script.js"></script>
+    <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+    <input type="file" id="banner-upload" accept="image/*" style="display: none;">
+
+</div> <script src="script.js"></script>
 
 </body>
 </html>
