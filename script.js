@@ -4,6 +4,92 @@
 const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const weekDaysCN = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
+// 更新网络状态
+function updateNetworkStatus() {
+    const networkIcon = document.getElementById('network-icon');
+    if (!networkIcon) return;
+    
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    let bars = 4; // 默认满格
+    
+    if (connection) {
+        const type = connection.effectiveType || connection.type;
+        // 根据网络类型设置信号强度
+        if (type === '4g' || type === 'wifi') {
+            bars = 4;
+        } else if (type === '3g') {
+            bars = 3;
+        } else if (type === '2g') {
+            bars = 2;
+        } else if (type === 'slow-2g') {
+            bars = 1;
+        }
+    }
+    
+    // 检测是否在线
+    if (!navigator.onLine) {
+        bars = 0;
+    }
+    
+    // 更新信号图标
+    const rects = networkIcon.querySelectorAll('rect');
+    rects.forEach((rect, index) => {
+        rect.setAttribute('opacity', index < bars ? '1' : '0.3');
+    });
+}
+
+// 更新电量状态
+function updateBatteryStatus() {
+    if ('getBattery' in navigator) {
+        navigator.getBattery().then(function(battery) {
+            updateBatteryUI(battery);
+            
+            // 监听电量变化
+            battery.addEventListener('levelchange', function() {
+                updateBatteryUI(battery);
+            });
+            
+            battery.addEventListener('chargingchange', function() {
+                updateBatteryUI(battery);
+            });
+        });
+    } else {
+        // 不支持 Battery API 的浏览器，显示默认值
+        const batteryPercent = document.getElementById('battery-percent');
+        const batteryLevel = document.getElementById('battery-level');
+        if (batteryPercent) batteryPercent.textContent = '100%';
+        if (batteryLevel) batteryLevel.setAttribute('width', '18');
+    }
+}
+
+function updateBatteryUI(battery) {
+    const level = Math.round(battery.level * 100);
+    const isCharging = battery.charging;
+    
+    const batteryPercent = document.getElementById('battery-percent');
+    const batteryLevel = document.getElementById('battery-level');
+    const batteryIcon = document.getElementById('battery-icon');
+    
+    if (batteryPercent) {
+        batteryPercent.textContent = level + '%';
+    }
+    
+    if (batteryLevel) {
+        // 电量条宽度：最大18px
+        const width = Math.round((level / 100) * 18);
+        batteryLevel.setAttribute('width', width);
+        
+        // 电量颜色
+        if (level <= 20 && !isCharging) {
+            batteryLevel.setAttribute('fill', '#ff3b30'); // 红色低电量
+        } else if (isCharging) {
+            batteryLevel.setAttribute('fill', '#34c759'); // 绿色充电中
+        } else {
+            batteryLevel.setAttribute('fill', 'currentColor'); // 正常颜色
+        }
+    }
+}
+
 // 更新顶部状态栏时间
 function updateClock() {
     const now = new Date();
@@ -31,17 +117,29 @@ function updateBigClock() {
     if(bigDateEl) bigDateEl.innerText = month + "/" + day + " " + weekDay + ".";
 }
 
-// 页面加载完成后初始化时间
+// 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     // 立即更新一次
     updateClock();
     updateBigClock();
+    updateNetworkStatus();
+    updateBatteryStatus();
     
     // 每秒更新时间
     setInterval(function() {
         updateClock();
         updateBigClock();
     }, 1000);
+    
+    // 监听网络状态变化
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    
+    // 如果支持 Network Information API，监听变化
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection) {
+        connection.addEventListener('change', updateNetworkStatus);
+    }
 });
 
 // 基础页面切换逻辑

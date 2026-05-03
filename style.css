@@ -41,6 +41,32 @@ body {
     z-index: 100;
 }
 
+.status-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#network-icon {
+    display: flex;
+    align-items: center;
+}
+
+#battery-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#battery-percent {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#battery-level {
+    transition: width 0.3s ease;
+}
+
 #viewport {
     flex: 1;
     position: relative;
