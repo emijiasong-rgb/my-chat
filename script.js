@@ -310,13 +310,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileBanner = document.getElementById('profile-banner');
 
     // --- 1. 绑定点击触发相册 ---
+    // 我们直接在图片上添加点击监听，确保万无一失
     if (userAvatar && avatarUpload) {
         userAvatar.style.cursor = 'pointer';
-        userAvatar.onclick = () => avatarUpload.click();
+        userAvatar.onclick = (e) => {
+            e.stopPropagation();
+            avatarUpload.click();
+        };
     }
     if (profileBanner && bannerUpload) {
         profileBanner.style.cursor = 'pointer';
-        profileBanner.onclick = () => bannerUpload.click();
+        profileBanner.onclick = (e) => {
+            e.stopPropagation();
+            bannerUpload.click();
+        };
     }
 
     // --- 2. 处理头像文件选择 ---
@@ -327,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const imageData = event.target.result;
-                    userAvatar.src = imageData;
+                    if(userAvatar) userAvatar.src = imageData;
                     localStorage.setItem('savedAvatar', imageData);
                 };
                 reader.readAsDataURL(file);
@@ -343,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const imageData = event.target.result;
-                    profileBanner.style.backgroundImage = `url(${imageData})`;
+                    if(profileBanner) profileBanner.style.backgroundImage = `url(${imageData})`;
                     localStorage.setItem('savedBanner', imageData);
                 };
                 reader.readAsDataURL(file);
@@ -358,28 +365,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedAvatar && userAvatar) userAvatar.src = savedAvatar;
     if (savedBanner && profileBanner) profileBanner.style.backgroundImage = `url(${savedBanner})`;
 });
-});
 
-// 把这段代码贴在 script.js 的最最最下面
+// 最后这部分是强制保底逻辑
 (function() {
-    const avInput = document.getElementById('avatar-upload');
-    const avImg = document.getElementById('user-avatar');
-    const baInput = document.getElementById('banner-upload');
-    const baDiv = document.getElementById('profile-banner');
-
-    if (avImg && avInput) {
-        avImg.onclick = function(e) {
-            e.stopPropagation(); // 防止点击事件冒泡
-            avInput.click();
-            console.log("头像上传已触发");
-        };
-    }
-
-    if (baDiv && baInput) {
-        baDiv.onclick = function(e) {
-            e.stopPropagation();
-            baInput.click();
-            console.log("背景上传已触发");
-        };
-    }
+    window.onload = function() {
+        const avInput = document.getElementById('avatar-upload');
+        const avImg = document.getElementById('user-avatar');
+        
+        if (avImg && avInput) {
+            avImg.addEventListener('click', function() {
+                avInput.click();
+            });
+        }
+    };
 })();
