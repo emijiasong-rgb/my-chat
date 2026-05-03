@@ -234,3 +234,22 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(e.target.files[0]);
     });
 });
+
+// 专门用于点击“应用并保存字体”按钮的功能
+function saveFontOnly() {
+    const fontSelect = document.getElementById('font-family-select');
+    if (fontSelect) {
+        const selectedFont = fontSelect.value;
+        
+        // 1. 保存到手机本地记忆
+        localStorage.setItem('user-font', selectedFont);
+        
+        // 2. 调用应用字体的函数（确保你的 script.js 里有这个 applyFont 函数）
+        if (typeof applyFont === "function") {
+            applyFont(selectedFont);
+            alert('字体样式已保存并生效！');
+        } else {
+            console.error("未找到 applyFont 函数，请检查 script.js 是否完整");
+        }
+    }
+}
