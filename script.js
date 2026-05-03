@@ -350,6 +350,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedAvatar && userAvatar) {
         userAvatar.src = savedAvatar;
     }
+    // 强制给头像增加点击跳转相册的功能
+if (userAvatar) {
+    userAvatar.style.cursor = 'pointer'; // 让鼠标放上去显示小手
+    userAvatar.onclick = () => avatarUpload.click();
+}
+
+// 强制给背景图增加点击跳转相册的功能
+if (profileBanner) {
+    profileBanner.style.cursor = 'pointer';
+    profileBanner.onclick = () => bannerUpload.click();
+}
     if (savedBanner && profileBanner) {
         profileBanner.style.backgroundImage = `url(${savedBanner})`;
     }
