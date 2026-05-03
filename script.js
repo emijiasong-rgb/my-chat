@@ -1,6 +1,5 @@
 // === 1. 基础系统功能 ===
 
-// 星期映射
 const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 // 更新网络状态
@@ -46,7 +45,7 @@ function updateBatteryUI(battery) {
     }
 }
 
-// 更新时钟
+// 更新时间
 function updateClock() {
     const now = new Date();
     const h = String(now.getHours()).padStart(2, '0');
@@ -69,9 +68,11 @@ function openPage(pageId) {
         document.getElementById('api-url-input').value = localStorage.getItem('api_url') || '';
         document.getElementById('api-key-input').value = localStorage.getItem('api_key') || '';
         document.getElementById('api-model-input').value = localStorage.getItem('api_model') || '';
-        // 同步字体下拉框
+        
+        // --- 重点：打开设置页时恢复下拉框选项 ---
         const savedFont = localStorage.getItem('user-font') || 'default';
-        if(document.getElementById('font-family-select')) document.getElementById('font-family-select').value = savedFont;
+        const fontSelect = document.getElementById('font-family-select');
+        if(fontSelect) fontSelect.value = savedFont;
     }
 }
 
@@ -85,24 +86,25 @@ function goHome() {
     document.getElementById('nav-bar').style.display = 'none';
 }
 
-// === 2. 配置与字体核心逻辑 ===
+// === 2. 核心功能：保存配置 & 切换字体 ===
 
 // 字体应用函数
 function applyFont(fontKey) {
+    // 移除旧的字体类，添加新的
     document.body.classList.remove('font-cute', 'font-serif', 'font-modern');
     if (fontKey && fontKey !== 'default') {
         document.body.classList.add('font-' + fontKey);
     }
 }
 
-// 唯一的保存函数 (API + 字体)
+// 唯一的保存函数：同时处理 API 和 字体
 function saveSettings() {
-    // 1. 保存 API 基础配置
+    // 1. 保存 API 相关
     localStorage.setItem('api_url', document.getElementById('api-url-input').value);
     localStorage.setItem('api_key', document.getElementById('api-key-input').value);
     localStorage.setItem('api_model', document.getElementById('api-model-input').value);
     
-    // 2. 保存并应用字体配置
+    // 2. 保存并应用字体
     const fontSelect = document.getElementById('font-family-select');
     if (fontSelect) {
         const selectedFont = fontSelect.value;
@@ -110,19 +112,19 @@ function saveSettings() {
         applyFont(selectedFont); 
     }
 
-    alert('所有配置已成功保存！');
+    alert('所有配置已保存！');
     goHome();
 }
 
-// 拉取模型
+// 拉取模型列表
 async function fetchModels() {
     const url = document.getElementById('api-url-input').value;
     const key = document.getElementById('api-key-input').value;
     const listContainer = document.getElementById('model-list-container');
-    if (!url || !key) { alert('请先填写地址和密钥！'); return; }
+    if (!url || !key) { alert('请先填地址和Key！'); return; }
 
     listContainer.style.display = 'block';
-    listContainer.innerHTML = '<div style="padding: 10px;">正在连接...</div>';
+    listContainer.innerHTML = '<div style="padding: 10px;">连接中...</div>';
 
     try {
         const response = await fetch(`${url}/v1/models`, {
@@ -188,31 +190,31 @@ async function sendMessage() {
             body: JSON.stringify({ model: model, messages: [{role: "user", content: text}] })
         });
         const data = await response.json();
-        loadingMsg.innerText = data.choices[0].message.content;
+        loadingMsg.innerText = (data.choices && data.choices[0]) ? data.choices[0].message.content : "回复异常";
     } catch (e) { loadingMsg.innerText = '错误: ' + e.message; }
     container.scrollTop = container.scrollHeight;
 }
 
-// === 4. 统一初始化入口 ===
+// === 4. 初始化 (恢复缓存) ===
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 启动时钟和状态
+    // 1. 时间和系统状态
     updateClock();
     setInterval(updateClock, 1000);
     updateNetworkStatus();
     updateBatteryStatus();
 
-    // 恢复全局字体
+    // 2. 恢复字体 (最关键的一步)
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    // 恢复头像和背景
-    const savedAvatar = localStorage.getItem('savedAvatar');
-    const savedBanner = localStorage.getItem('savedBanner');
-    if (savedAvatar && document.getElementById('user-avatar')) document.getElementById('user-avatar').src = savedAvatar;
-    if (savedBanner && document.getElementById('profile-banner')) document.getElementById('profile-banner').style.backgroundImage = `url(${savedBanner})`;
+    // 3. 恢复头像和背景
+    const avImg = document.getElementById('user-avatar');
+    const baDiv = document.getElementById('profile-banner');
+    if (localStorage.getItem('savedAvatar') && avImg) avImg.src = localStorage.getItem('savedAvatar');
+    if (localStorage.getItem('savedBanner') && baDiv) baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
 
-    // 设置图片上传监听
+    // 4. 图片上传监听
     const avInput = document.getElementById('avatar-upload');
     const baInput = document.getElementById('banner-upload');
     if(avInput) avInput.addEventListener('change', (e) => {
