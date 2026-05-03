@@ -224,6 +224,32 @@ body {
 .profile-info p { font-size: 14px; color: #666; outline: none; margin-bottom: 8px;}
 .profile-info span { font-size: 12px; color: #888; outline: none; }
 
+/* 时间日期组件样式 */
+.profile-clock-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-bottom: 8px;
+}
+
+.profile-clock-box #big-time {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1;
+    letter-spacing: -1px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+}
+
+.profile-clock-box #big-date {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
 /* 3. 小组件区布局 */
 .widget-row {
     display: flex;
@@ -290,7 +316,7 @@ body {
     color: #444; 
     font-size: 10px; /* 文字缩小 */
     font-weight: 600;
-    letter-spacing: 1px; /* 字母间距拉开，高级感 */
+    letter-spacing: 1px; /* 字��间距拉开，高级感 */
     text-transform: uppercase; /* 改为英文大写更有图1的韵味 */
     opacity: 0.8;
 }

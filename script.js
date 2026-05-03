@@ -1,14 +1,45 @@
 // === 1. 基础系统功能 ===
 
+// 星期映射（中英文）
+const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const weekDaysCN = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
 // 更新顶部状态栏时间
 function updateClock() {
     const now = new Date();
-    const timeStr = now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const timeStr = hours + ":" + minutes;
+    
     const clockEl = document.getElementById('clock');
     if(clockEl) clockEl.innerText = timeStr;
 }
-setInterval(updateClock, 1000);
+
+// 更新名片区域的大时钟
+function updateBigClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const weekDay = weekDays[now.getDay()];
+    
+    const bigTimeEl = document.getElementById('big-time');
+    const bigDateEl = document.getElementById('big-date');
+    
+    if(bigTimeEl) bigTimeEl.innerText = hours + ":" + minutes;
+    if(bigDateEl) bigDateEl.innerText = month + "/" + day + " " + weekDay + ".";
+}
+
+// 每秒更新时间
+setInterval(() => {
+    updateClock();
+    updateBigClock();
+}, 1000);
+
+// 初始化
 updateClock();
+updateBigClock();
 
 // 基础页面切换逻辑
 function openPage(pageId) {
