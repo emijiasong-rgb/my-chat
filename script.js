@@ -359,3 +359,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedBanner && profileBanner) profileBanner.style.backgroundImage = `url(${savedBanner})`;
 });
 });
+
+// 把这段代码贴在 script.js 的最最最下面
+(function() {
+    const avInput = document.getElementById('avatar-upload');
+    const avImg = document.getElementById('user-avatar');
+    const baInput = document.getElementById('banner-upload');
+    const baDiv = document.getElementById('profile-banner');
+
+    if (avImg && avInput) {
+        avImg.onclick = function(e) {
+            e.stopPropagation(); // 防止点击事件冒泡
+            avInput.click();
+            console.log("头像上传已触发");
+        };
+    }
+
+    if (baDiv && baInput) {
+        baDiv.onclick = function(e) {
+            e.stopPropagation();
+            baInput.click();
+            console.log("背景上传已触发");
+        };
+    }
+})();
