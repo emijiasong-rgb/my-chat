@@ -114,13 +114,18 @@
 </div>
     </div>
     <button class="btn-save" onclick="saveSettings()">保存配置</button>
-           <label>整体字体风格</label>
+         <label>整体字体风格</label>
+<div class="settings-item" style="margin-top: 8px;">
     <select id="font-family-select" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 6px; padding: 0 10px; font-size: 14px; outline: none; background: white;">
         <option value="default">系统默认</option>
         <option value="cute">圆润可爱</option>
         <option value="serif">优雅衬线</option>
         <option value="modern">现代极简</option>
     </select>
+    
+    <button onclick="saveFontOnly()" style="margin-top: 10px; width: 100%; height: 35px; background: #34c759; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;">
+        应用并保存字体
+    </button>
 </div>
 </section>
     </div>
