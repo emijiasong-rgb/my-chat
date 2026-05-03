@@ -172,6 +172,21 @@ function goHome() {
     if(chatDetail) chatDetail.classList.remove('open');
 }
 
+// 进入设置更改字体
+function saveSettings() {
+    localStorage.setItem('api_url', document.getElementById('api-url-input').value);
+    localStorage.setItem('api_key', document.getElementById('api-key-input').value);
+    localStorage.setItem('api_model', document.getElementById('api-model-input').value);
+    
+    // 【新增代码】保存选中的字体并立即应用
+    const selectedFont = document.getElementById('font-family-select').value;
+    localStorage.setItem('user-font', selectedFont);
+    applyFont(selectedFont); 
+
+    alert('配置已成功保存！');
+    goHome();
+}
+
 // === 2. API 配置与模型拉取 ===
 
 // 联网拉取模型列表
