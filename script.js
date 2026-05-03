@@ -362,3 +362,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// 切换字体的函数
+function applyFont(fontKey) {
+    document.body.classList.remove('font-cute', 'font-serif', 'font-modern');
+    if (fontKey && fontKey !== 'default') {
+        document.body.classList.add('font-' + fontKey);
+    }
+}
+
+// 页面启动时，自动读档
+document.addEventListener('DOMContentLoaded', () => {
+    const savedFont = localStorage.getItem('user-font');
+    if (savedFont) {
+        const fontSelect = document.getElementById('font-family-select');
+        if (fontSelect) fontSelect.value = savedFont;
+        applyFont(savedFont);
+    }
+});
