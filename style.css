@@ -251,6 +251,47 @@ body {
 .profile-info p { font-size: 14px; color: #666; outline: none; margin-bottom: 8px;}
 .profile-info span { font-size: 12px; color: #888; outline: none; }
 
+/* 头像提示文字 */
+.profile-avatar-wrapper {
+    position: absolute;
+    left: 20px;
+    top: 85px;
+    cursor: pointer;
+}
+
+.upload-hint {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 10px;
+    text-align: center;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    padding: 2px 0;
+    pointer-events: none; /* 让点击穿透到下层或由父级处理 */
+}
+
+/* 背景提示文字 */
+.profile-banner {
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-hint-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.7);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
 /* 时间日期组件样式 */
 .profile-clock-box {
     display: flex;
