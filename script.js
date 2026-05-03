@@ -300,3 +300,57 @@ async function sendMessage() {
     }
     container.scrollTop = container.scrollHeight;
 }
+
+// === 4. 相册图片选择与持久化逻辑 ===
+
+document.addEventListener('DOMContentLoaded', () => {
+    const avatarUpload = document.getElementById('avatar-upload');
+    const bannerUpload = document.getElementById('banner-upload');
+    const userAvatar = document.getElementById('user-avatar');
+    const profileBanner = document.getElementById('profile-banner');
+
+    // 1. 处理头像上传
+    if (avatarUpload) {
+        avatarUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageData = event.target.result;
+                    userAvatar.src = imageData;
+                    // 保存到本地存储，下次打开还在
+                    localStorage.setItem('savedAvatar', imageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // 2. 处理背景图上传
+    if (bannerUpload) {
+        bannerUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageData = event.target.result;
+                    profileBanner.style.backgroundImage = `url(${imageData})`;
+                    // 保存到本地存储
+                    localStorage.setItem('savedBanner', imageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // 3. 页面加载时：自动从缓存恢复图片
+    const savedAvatar = localStorage.getItem('savedAvatar');
+    const savedBanner = localStorage.getItem('savedBanner');
+    
+    if (savedAvatar && userAvatar) {
+        userAvatar.src = savedAvatar;
+    }
+    if (savedBanner && profileBanner) {
+        profileBanner.style.backgroundImage = `url(${savedBanner})`;
+    }
+});
