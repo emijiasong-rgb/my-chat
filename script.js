@@ -24,22 +24,31 @@ function updateBigClock() {
     const day = String(now.getDate()).padStart(2, '0');
     const weekDay = weekDays[now.getDay()];
     
+    console.log("[v0] updateBigClock called, time:", hours + ":" + minutes, "date:", month + "/" + day, "weekDay:", weekDay);
+    
     const bigTimeEl = document.getElementById('big-time');
     const bigDateEl = document.getElementById('big-date');
+    
+    console.log("[v0] bigTimeEl:", bigTimeEl, "bigDateEl:", bigDateEl);
     
     if(bigTimeEl) bigTimeEl.innerText = hours + ":" + minutes;
     if(bigDateEl) bigDateEl.innerText = month + "/" + day + " " + weekDay + ".";
 }
 
-// 每秒更新时间
-setInterval(() => {
+// 页面加载完成后初始化时间
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("[v0] DOM loaded, initializing clocks");
+    
+    // 立即更新一次
     updateClock();
     updateBigClock();
-}, 1000);
-
-// 初始化
-updateClock();
-updateBigClock();
+    
+    // 每秒更新时间
+    setInterval(function() {
+        updateClock();
+        updateBigClock();
+    }, 1000);
+});
 
 // 基础页面切换逻辑
 function openPage(pageId) {
