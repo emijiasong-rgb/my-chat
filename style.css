@@ -276,3 +276,14 @@ body {
 .settings-item input { height: 40px; border: 1px solid #ddd; border-radius: 6px; padding: 0 10px; font-size: 14px; outline: none; }
 .btn-save { margin: 20px; background: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
 .header-title { height: 44px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-bottom: 1px solid #ddd; background: var(--bg-color); flex-shrink: 0; }
+
+/* 字体方案定义 */
+body.font-cute { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif !important; font-weight: 500; }
+body.font-serif { font-family: "Optima", "Georgia", "Times New Roman", serif !important; }
+body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-serif !important; letter-spacing: 0.5px; }
+
+/* 让设置页的下拉框好看一点 */
+#font-family-select {
+    cursor: pointer;
+    -webkit-appearance: none; /* 移除移动端默认样式 */
+}
