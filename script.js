@@ -304,78 +304,46 @@ async function sendMessage() {
 // === 4. 相册图片选择与持久化逻辑 ===
 
 document.addEventListener('DOMContentLoaded', () => {
-    const avatarUpload = document.getElementById('avatar-upload');
-    const bannerUpload = document.getElementById('banner-upload');
-    const userAvatar = document.getElementById('user-avatar');
-    const profileBanner = document.getElementById('profile-banner');
+    const avInput = document.getElementById('avatar-upload');
+    const baInput = document.getElementById('banner-upload');
+    const avImg = document.getElementById('user-avatar');
+    const baDiv = document.getElementById('profile-banner');
 
-    // --- 1. 绑定点击触发相册 ---
-    // 我们直接在图片上添加点击监听，确保万无一失
-    if (userAvatar && avatarUpload) {
-        userAvatar.style.cursor = 'pointer';
-        userAvatar.onclick = (e) => {
-            e.stopPropagation();
-            avatarUpload.click();
-        };
-    }
-    if (profileBanner && bannerUpload) {
-        profileBanner.style.cursor = 'pointer';
-        profileBanner.onclick = (e) => {
-            e.stopPropagation();
-            bannerUpload.click();
-        };
-    }
-
-    // --- 2. 处理头像文件选择 ---
-    if (avatarUpload) {
-        avatarUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const imageData = event.target.result;
-                    if(userAvatar) userAvatar.src = imageData;
-                    localStorage.setItem('savedAvatar', imageData);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    // --- 3. 处理背景图文件选择 ---
-    if (bannerUpload) {
-        bannerUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const imageData = event.target.result;
-                    if(profileBanner) profileBanner.style.backgroundImage = `url(${imageData})`;
-                    localStorage.setItem('savedBanner', imageData);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    // --- 4. 页面加载时恢复缓存 ---
+    // 1. 初始化恢复缓存
     const savedAvatar = localStorage.getItem('savedAvatar');
     const savedBanner = localStorage.getItem('savedBanner');
-    
-    if (savedAvatar && userAvatar) userAvatar.src = savedAvatar;
-    if (savedBanner && profileBanner) profileBanner.style.backgroundImage = `url(${savedBanner})`;
-});
+    if (savedAvatar && avImg) avImg.src = savedAvatar;
+    if (savedBanner && baDiv) baDiv.style.backgroundImage = `url(${savedBanner})`;
 
-// 最后这部分是强制保底逻辑
-(function() {
-    window.onload = function() {
-        const avInput = document.getElementById('avatar-upload');
-        const avImg = document.getElementById('user-avatar');
-        
-        if (avImg && avInput) {
-            avImg.addEventListener('click', function() {
-                avInput.click();
-            });
-        }
-    };
-})();
+    // 2. 处理头像上传
+    if (avInput && avImg) {
+        avInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const data = event.target.result;
+                    avImg.src = data;
+                    localStorage.setItem('savedAvatar', data);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // 3. 处理背景上传
+    if (baInput && baDiv) {
+        baInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const data = event.target.result;
+                    baDiv.style.backgroundImage = `url(${data})`;
+                    localStorage.setItem('savedBanner', data);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
