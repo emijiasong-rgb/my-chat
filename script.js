@@ -309,7 +309,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const userAvatar = document.getElementById('user-avatar');
     const profileBanner = document.getElementById('profile-banner');
 
-    // 1. 处理头像上传
+    // --- 1. 绑定点击触发相册 ---
+    if (userAvatar && avatarUpload) {
+        userAvatar.style.cursor = 'pointer';
+        userAvatar.onclick = () => avatarUpload.click();
+    }
+    if (profileBanner && bannerUpload) {
+        profileBanner.style.cursor = 'pointer';
+        profileBanner.onclick = () => bannerUpload.click();
+    }
+
+    // --- 2. 处理头像文件选择 ---
     if (avatarUpload) {
         avatarUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -318,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.onload = function(event) {
                     const imageData = event.target.result;
                     userAvatar.src = imageData;
-                    // 保存到本地存储，下次打开还在
                     localStorage.setItem('savedAvatar', imageData);
                 };
                 reader.readAsDataURL(file);
@@ -326,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. 处理背景图上传
+    // --- 3. 处理背景图文件选择 ---
     if (bannerUpload) {
         bannerUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -335,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.onload = function(event) {
                     const imageData = event.target.result;
                     profileBanner.style.backgroundImage = `url(${imageData})`;
-                    // 保存到本地存储
                     localStorage.setItem('savedBanner', imageData);
                 };
                 reader.readAsDataURL(file);
@@ -343,25 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. 页面加载时：自动从缓存恢复图片
+    // --- 4. 页面加载时恢复缓存 ---
     const savedAvatar = localStorage.getItem('savedAvatar');
     const savedBanner = localStorage.getItem('savedBanner');
     
-    if (savedAvatar && userAvatar) {
-        userAvatar.src = savedAvatar;
-    }
-    // 强制给头像增加点击跳转相册的功能
-if (userAvatar) {
-    userAvatar.style.cursor = 'pointer'; // 让鼠标放上去显示小手
-    userAvatar.onclick = () => avatarUpload.click();
-}
-
-// 强制给背景图增加点击跳转相册的功能
-if (profileBanner) {
-    profileBanner.style.cursor = 'pointer';
-    profileBanner.onclick = () => bannerUpload.click();
-}
-    if (savedBanner && profileBanner) {
-        profileBanner.style.backgroundImage = `url(${savedBanner})`;
-    }
+    if (savedAvatar && userAvatar) userAvatar.src = savedAvatar;
+    if (savedBanner && profileBanner) profileBanner.style.backgroundImage = `url(${savedBanner})`;
+});
 });
