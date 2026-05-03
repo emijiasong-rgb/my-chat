@@ -32,9 +32,17 @@
             </div>
 
             <div class="profile-clock-box">
-                <div id="big-time">00:00</div>
-                <div id="big-date">00/00 ---</div>
+                <div id="big-time"></div>
+                <div id="big-date"></div>
             </div>
+            <script>
+                (function(){
+                    var weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                    var now = new Date();
+                    document.getElementById('big-time').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+                    document.getElementById('big-date').textContent = String(now.getMonth()+1).padStart(2,'0') + '/' + String(now.getDate()).padStart(2,'0') + ' ' + weekDays[now.getDay()] + '.';
+                })();
+            </script>
 
         </div>
     </div>
@@ -110,26 +118,6 @@
 </div>
 
 <script src="script.js"></script>
-<script>
-// 立即执行时间更新，确保不显示默认值
-(function() {
-    var weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    var now = new Date();
-    var hours = String(now.getHours()).padStart(2, '0');
-    var minutes = String(now.getMinutes()).padStart(2, '0');
-    var month = String(now.getMonth() + 1).padStart(2, '0');
-    var day = String(now.getDate()).padStart(2, '0');
-    var weekDay = weekDays[now.getDay()];
-    
-    var bigTimeEl = document.getElementById('big-time');
-    var bigDateEl = document.getElementById('big-date');
-    var clockEl = document.getElementById('clock');
-    
-    if(bigTimeEl) bigTimeEl.innerText = hours + ':' + minutes;
-    if(bigDateEl) bigDateEl.innerText = month + '/' + day + ' ' + weekDay + '.';
-    if(clockEl) clockEl.innerText = hours + ':' + minutes;
-})();
-</script>
 
 </body>
 </html>
