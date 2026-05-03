@@ -19,13 +19,23 @@
       <section id="page-home" class="page active">
     <div class="profile-card">
         <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()"></div>
-        <div class="profile-info">
-            <div class="profile-avatar-wrapper">
-                <img src="默认头像.jpg" id="user-avatar" onclick="document.getElementById('avatar-upload').click()">
+        
+        <div class="profile-content-row" style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 5px;">
+            
+            <div class="profile-info">
+                <div class="profile-avatar-wrapper">
+                    <img src="默认头像.jpg" id="user-avatar" onclick="document.getElementById('avatar-upload').click()">
+                </div>
+                <h2 contenteditable="true" id="user-name">Alone</h2>
+                <p contenteditable="true" id="user-signature">请输入个性签名</p>
+                <span contenteditable="true" id="user-location">📍 Tokyo</span>
             </div>
-            <h2 contenteditable="true" id="user-name">Alone</h2>
-            <p contenteditable="true" id="user-signature">请输入个性签名</p>
-            <span contenteditable="true" id="user-location">📍 Tokyo</span>
+
+            <div class="profile-clock-box" style="text-align: right; padding-bottom: 5px;">
+                <div id="big-time" style="font-size: 32px; font-weight: bold; color: #333; line-height: 1;">00:00</div>
+                <div id="big-date" style="font-size: 11px; color: #999; margin-top: 5px; letter-spacing: 1px; font-weight: 500;">05/20 MON.</div>
+            </div>
+
         </div>
     </div>
 
