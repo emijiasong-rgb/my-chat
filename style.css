@@ -377,7 +377,7 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
 
 .progress-percentage {
     font-weight: 600;
-    color: #667eea;
+    color: #888888; /* 修改这里：将原本的蓝色改为深灰色 */
 }
 
 @media (max-width: 768px) {
