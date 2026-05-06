@@ -70,6 +70,9 @@ body {
     flex: 1;
     position: relative;
     overflow: hidden;
+    background: #ededed; /* 核心：即使背景图没加载，也是灰色的而不是透明 */
+    display: flex;
+    flex-direction: column;
 }
 
 .page {
