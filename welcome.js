@@ -24,10 +24,10 @@ class WelcomeScreen {
     }
 
     startLoading() {
-        // 初期快速增长，然后逐渐减速
+        // 初期快速增长，然后逐渐减速 - 加长时间间隔
         const increment = () => {
             if (this.currentProgress < 90) {
-                this.targetProgress += Math.random() * (10 - this.currentProgress * 0.1);
+                this.targetProgress += Math.random() * (5 - this.currentProgress * 0.05);
                 
                 if (this.targetProgress > 90) {
                     this.targetProgress = 90;
@@ -37,7 +37,8 @@ class WelcomeScreen {
             this.updateProgress();
 
             if (!this.isComplete) {
-                setTimeout(increment, 300 + Math.random() * 700);
+                // 增加时间间隔：800ms - 1500ms（原来是300ms - 1000ms）
+                setTimeout(increment, 800 + Math.random() * 700);
             }
         };
 
@@ -59,10 +60,10 @@ class WelcomeScreen {
         this.targetProgress = 100;
         this.updateProgress();
 
-        // 页面加载完成后，延迟隐藏欢迎屏幕
+        // 页面加载完成后，延迟隐藏欢迎屏幕 - 延长停留时间
         setTimeout(() => {
             this.hideWelcomeScreen();
-        }, 500);
+        }, 2000);
     }
 
     hideWelcomeScreen() {
