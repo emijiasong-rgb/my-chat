@@ -206,7 +206,7 @@ function saveFontOnly() {
             console.error("未找到 applyFont 函数，请检查 script.js 是否完整");
         }
     }
-} // ← 这里补上缺失的闭合花括号
+} // 
 
 // === 4. 欢迎屏幕类 ===
 class WelcomeScreen {
@@ -224,11 +224,18 @@ class WelcomeScreen {
     init() {
         this.startLoading();
         
+        // 保底：无论加载情况如何，3秒后强制完成进度条
+        const safeTimeout = setTimeout(() => {
+            if (!this.isComplete) this.completeLoading();
+        }, 3000);
+
         window.addEventListener('load', () => {
+            clearTimeout(safeTimeout); // 如果正常加载完了，就取消保底计时
             this.completeLoading();
         });
 
         if (document.readyState === 'complete') {
+            clearTimeout(safeTimeout);
             this.completeLoading();
         }
     }
