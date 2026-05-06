@@ -24,21 +24,21 @@ class WelcomeScreen {
     }
 
     startLoading() {
-        // 初期快速增长，然后逐渐减速 - 加长时间间隔
+        // 非常缓慢的进度增长
         const increment = () => {
-            if (this.currentProgress < 90) {
-                this.targetProgress += Math.random() * (5 - this.currentProgress * 0.05);
+            if (this.currentProgress < 85) {
+                this.targetProgress += Math.random() * (2 - this.currentProgress * 0.02);
                 
-                if (this.targetProgress > 90) {
-                    this.targetProgress = 90;
+                if (this.targetProgress > 85) {
+                    this.targetProgress = 85;
                 }
             }
 
             this.updateProgress();
 
             if (!this.isComplete) {
-                // 增加时间间隔：800ms - 1500ms（原来是300ms - 1000ms）
-                setTimeout(increment, 800 + Math.random() * 700);
+                // 非常长的时间间隔：1500ms - 3000ms
+                setTimeout(increment, 1500 + Math.random() * 1500);
             }
         };
 
@@ -47,7 +47,7 @@ class WelcomeScreen {
 
     updateProgress() {
         // 平滑过渡进度
-        this.currentProgress += (this.targetProgress - this.currentProgress) * 0.15;
+        this.currentProgress += (this.targetProgress - this.currentProgress) * 0.1;
         
         const percentage = Math.floor(this.currentProgress);
         this.progressFill.style.width = percentage + '%';
@@ -60,22 +60,22 @@ class WelcomeScreen {
         this.targetProgress = 100;
         this.updateProgress();
 
-        // 页面加载完成后，延迟隐藏欢迎屏幕 - 延长停留时间
+        // 页面加载完成后，延迟很久再隐藏欢迎屏幕
         setTimeout(() => {
             this.hideWelcomeScreen();
-        }, 2000);
+        }, 3000);
     }
 
     hideWelcomeScreen() {
         const welcomeContainer = document.querySelector('.welcome-container');
-        welcomeContainer.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+        welcomeContainer.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
         welcomeContainer.style.opacity = '0';
         welcomeContainer.style.transform = 'translateY(-30px)';
 
-        // 隐藏完成后跳转到主应用
+        // 隐藏完成后跳���到主应用
         setTimeout(() => {
             window.location.href = 'index.html';
-        }, 800);
+        }, 1000);
     }
 }
 
