@@ -4,9 +4,12 @@
     box-sizing: border-box;
 }
 
-body {
+html, body {
     width: 100%;
-    height: 100vh;
+    height: 100%;
+}
+
+body {
     background-color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
@@ -19,6 +22,10 @@ body {
     justify-content: center;
     align-items: center;
     background-color: #ffffff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
 }
 
 .welcome-content {
@@ -36,6 +43,16 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* 主应用淡入动画 */
+@keyframes fadeInApp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }
 
