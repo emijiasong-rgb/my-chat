@@ -24,21 +24,21 @@ class WelcomeScreen {
     }
 
     startLoading() {
-        // 非常缓慢的进度增长
+        // 极其缓慢的进度增长
         const increment = () => {
-            if (this.currentProgress < 85) {
-                this.targetProgress += Math.random() * (2 - this.currentProgress * 0.02);
+            if (this.currentProgress < 80) {
+                this.targetProgress += Math.random() * (0.5 - this.currentProgress * 0.005);
                 
-                if (this.targetProgress > 85) {
-                    this.targetProgress = 85;
+                if (this.targetProgress > 80) {
+                    this.targetProgress = 80;
                 }
             }
 
             this.updateProgress();
 
             if (!this.isComplete) {
-                // 非常长的时间间隔：1500ms - 3000ms
-                setTimeout(increment, 1500 + Math.random() * 1500);
+                // 极长的时间间隔：3000ms - 6000ms
+                setTimeout(increment, 3000 + Math.random() * 3000);
             }
         };
 
@@ -47,7 +47,7 @@ class WelcomeScreen {
 
     updateProgress() {
         // 平滑过渡进度
-        this.currentProgress += (this.targetProgress - this.currentProgress) * 0.1;
+        this.currentProgress += (this.targetProgress - this.currentProgress) * 0.05;
         
         const percentage = Math.floor(this.currentProgress);
         this.progressFill.style.width = percentage + '%';
@@ -63,19 +63,19 @@ class WelcomeScreen {
         // 页面加载完成后，延迟很久再隐藏欢迎屏幕
         setTimeout(() => {
             this.hideWelcomeScreen();
-        }, 3000);
+        }, 5000);
     }
 
     hideWelcomeScreen() {
         const welcomeContainer = document.querySelector('.welcome-container');
-        welcomeContainer.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+        welcomeContainer.style.transition = 'opacity 1.5s ease-out, transform 1.5s ease-out';
         welcomeContainer.style.opacity = '0';
         welcomeContainer.style.transform = 'translateY(-30px)';
 
-        // 隐藏完成后跳���到主应用
+        // 隐藏完成后跳转到主应用
         setTimeout(() => {
             window.location.href = 'index.html';
-        }, 1000);
+        }, 1500);
     }
 }
 
