@@ -2,6 +2,8 @@ class WelcomeScreen {
     constructor() {
         this.progressFill = document.querySelector('.progress-fill');
         this.progressPercentage = document.querySelector('.progress-percentage');
+        this.welcomeContainer = document.getElementById('welcome-container');
+        this.mainApp = document.getElementById('main-app');
         this.currentProgress = 0;
         this.targetProgress = 0;
         this.isComplete = false;
@@ -67,14 +69,15 @@ class WelcomeScreen {
     }
 
     hideWelcomeScreen() {
-        const welcomeContainer = document.querySelector('.welcome-container');
-        welcomeContainer.style.transition = 'opacity 1.5s ease-out, transform 1.5s ease-out';
-        welcomeContainer.style.opacity = '0';
-        welcomeContainer.style.transform = 'translateY(-30px)';
+        // 欢迎页面淡出
+        this.welcomeContainer.style.transition = 'opacity 1.5s ease-out, transform 1.5s ease-out';
+        this.welcomeContainer.style.opacity = '0';
+        this.welcomeContainer.style.transform = 'translateY(-30px)';
 
-        // 隐藏完成后跳转到主应用
+        // 同时显示主应用
         setTimeout(() => {
-            window.location.href = 'index.html';
+            this.mainApp.style.display = 'block';
+            this.mainApp.style.animation = 'fadeInApp 1s ease-in';
         }, 1500);
     }
 }
