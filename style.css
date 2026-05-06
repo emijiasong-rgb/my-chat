@@ -87,11 +87,17 @@ body {
 
 /* 桌面背景：清爽背景 */
 #page-home {
-    background: url('...') center/cover no-repeat;
+    flex: 1; /* 核心：撑开首页 */
+    width: 100%;
+    background: #ededed url('https://w.wallhaven.cc/full/85/wallhaven-85m89y.jpg') center/cover no-repeat;
     padding: 20px;
-    display: flex;
+    display: none; /* 默认隐藏，靠 page.active 显示 */
     flex-direction: column;
     gap: 15px;
+}
+
+#page-home.active {
+    display: flex; /* 确保激活时才显示 */
 }
 
 /* 个人名片卡片：半透明磨砂效果 */
