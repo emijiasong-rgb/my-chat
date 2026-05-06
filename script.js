@@ -69,7 +69,6 @@ function openPage(pageId) {
         document.getElementById('api-key-input').value = localStorage.getItem('api_key') || '';
         document.getElementById('api-model-input').value = localStorage.getItem('api_model') || '';
         
-        // --- 重点：打开设置页时恢复下拉框选项 ---
         const savedFont = localStorage.getItem('user-font') || 'default';
         const fontSelect = document.getElementById('font-family-select');
         if(fontSelect) fontSelect.value = savedFont;
@@ -90,7 +89,6 @@ function goHome() {
 
 // 字体应用函数
 function applyFont(fontKey) {
-    // 移除旧的字体类，添加新的
     document.body.classList.remove('font-cute', 'font-serif', 'font-modern');
     if (fontKey && fontKey !== 'default') {
         document.body.classList.add('font-' + fontKey);
@@ -99,12 +97,10 @@ function applyFont(fontKey) {
 
 // 唯一的保存函数：同时处理 API 和 字体
 function saveSettings() {
-    // 1. 保存 API 相关
     localStorage.setItem('api_url', document.getElementById('api-url-input').value);
     localStorage.setItem('api_key', document.getElementById('api-key-input').value);
     localStorage.setItem('api_model', document.getElementById('api-model-input').value);
     
-    // 2. 保存并应用字体
     const fontSelect = document.getElementById('font-family-select');
     if (fontSelect) {
         const selectedFont = fontSelect.value;
@@ -195,8 +191,108 @@ async function sendMessage() {
     container.scrollTop = container.scrollHeight;
 }
 
-// === 4. 初始化 (恢复缓存) ===
+// 专门用于点击"应用并保存字体"按钮的功能
+function saveFontOnly() {
+    const fontSelect = document.getElementById('font-family-select');
+    if (fontSelect) {
+        const selectedFont = fontSelect.value;
+        
+        localStorage.setItem('user-font', selectedFont);
+        
+        if (typeof applyFont === "function") {
+            applyFont(selectedFont);
+            alert('字体样式已保存并生效！');
+        } else {
+            console.error("未找到 applyFont 函数，请检查 script.js 是否完整");
+        }
+    }
+} // ← 这里补上缺失的闭合花括号
 
+// === 4. 欢迎屏幕类 ===
+class WelcomeScreen {
+    constructor() {
+        this.progressFill = document.querySelector('.progress-fill');
+        this.progressPercentage = document.querySelector('.progress-percentage');
+        this.welcomeContainer = document.getElementById('welcome-container');
+        this.mainApp = document.getElementById('main-app');
+        this.currentProgress = 0;
+        this.targetProgress = 0;
+        this.isComplete = false;
+        this.init();
+    }
+
+    init() {
+        this.startLoading();
+        
+        window.addEventListener('load', () => {
+            this.completeLoading();
+        });
+
+        if (document.readyState === 'complete') {
+            this.completeLoading();
+        }
+    }
+
+    startLoading() {
+        const increment = () => {
+            if (this.currentProgress < 80 && !this.isComplete) {
+                this.targetProgress += Math.random() * 3;
+                if (this.targetProgress > 80) {
+                    this.targetProgress = 80;
+                }
+            }
+            this.updateProgress();
+            if (!this.isComplete) {
+                setTimeout(increment, 200 + Math.random() * 300);
+            }
+        };
+        increment();
+    }
+
+    updateProgress() {
+        this.currentProgress += (this.targetProgress - this.currentProgress) * 0.1;
+        const percentage = Math.min(Math.floor(this.currentProgress), 100);
+        if (this.progressFill) {
+            this.progressFill.style.width = percentage + '%';
+        }
+        if (this.progressPercentage) {
+            this.progressPercentage.textContent = percentage;
+        }
+    }
+
+    completeLoading() {
+        this.isComplete = true;
+        this.currentProgress = 100;
+        this.targetProgress = 100;
+        this.updateProgress();
+
+        setTimeout(() => {
+            this.hideWelcomeScreen();
+        }, 2000);
+    }
+
+    hideWelcomeScreen() {
+        if (this.welcomeContainer) {
+            this.welcomeContainer.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+            this.welcomeContainer.style.opacity = '0';
+            this.welcomeContainer.style.transform = 'translateY(-20px)';
+        }
+
+        setTimeout(() => {
+            if (this.mainApp) {
+                this.mainApp.style.display = 'block';
+                this.mainApp.style.animation = 'fadeInApp 1s ease-in';
+            }
+            if (this.welcomeContainer) {
+                setTimeout(() => {
+                    this.welcomeContainer.style.display = 'none';
+                }, 800);
+            }
+        }, 800);
+    }
+}
+
+// === 5. 初始化 (恢复缓存) ===
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 时间和系统状态
     updateClock();
@@ -204,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateNetworkStatus();
     updateBatteryStatus();
 
-    // 2. 恢复字体 (最关键的一步)
+    // 2. 恢复字体
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
@@ -233,23 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsDataURL(e.target.files[0]);
     });
-});
 
-// 专门用于点击“应用并保存字体”按钮的功能
-function saveFontOnly() {
-    const fontSelect = document.getElementById('font-family-select');
-    if (fontSelect) {
-        const selectedFont = fontSelect.value;
-        
-        // 1. 保存到手机本地记忆
-        localStorage.setItem('user-font', selectedFont);
-        
-        // 2. 调用应用字体的函数（确保你的 script.js 里有这个 applyFont 函数）
-        if (typeof applyFont === "function") {
-            applyFont(selectedFont);
-            alert('字体样式已保存并生效！');
-        } else {
-            console.error("未找到 applyFont 函数，请检查 script.js 是否完整");
-        }
-    }
-}
+    // 5. 初始化欢迎屏幕
+    new WelcomeScreen();
+});
