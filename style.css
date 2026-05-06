@@ -95,7 +95,7 @@ body {
 /* 个人名片卡片：半透明磨砂效果 */
 .profile-card {
     background: rgba(255, 255, 255, 0.6); 
-    backdrop-filter: blur(15px); /* 关键：毛玻璃模糊 */
+    backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 28px;
     padding: 20px;
@@ -134,9 +134,9 @@ body {
 /* 核心：为名片内容创建布局容器 */
 .profile-content-wrapper {
     display: flex;
-    justify-content: space-between; /* 左右分开 */
-    align-items: center;           /* 垂直正中间 */
-    padding-top: 45px;             /* 给上方悬浮头像留出空间 */
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 45px;
     position: relative;
     width: 100%;
 }
@@ -145,7 +145,7 @@ body {
 .profile-avatar-wrapper {
     position: absolute;
     left: 0;
-    top: -40px; /* 相对于 wrapper 向上悬浮 */
+    top: -40px;
     z-index: 10;
 }
 
@@ -189,10 +189,10 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* 垂直居中 */
-    align-items: center;     /* 水平居中 */
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    border-left: 1px solid rgba(0,0,0,0.08); /* 淡淡的分隔线 */
+    border-left: 1px solid rgba(0,0,0,0.08);
     margin-left: 10px;
     padding: 5px 0;
 }
@@ -230,7 +230,6 @@ body {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* 模拟点击时的Q弹感 */
 .app-icon:active {
     transform: scale(0.85);
 }
@@ -260,7 +259,6 @@ body {
     opacity: 0.8;
 }
 
-/* 针对闲置/未开发App的样式 */
 .app-icon.gray-scale {
     opacity: 0.6;
 }
@@ -282,8 +280,120 @@ body.font-cute { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHe
 body.font-serif { font-family: "Optima", "Georgia", "Times New Roman", serif !important; }
 body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-serif !important; letter-spacing: 0.5px; }
 
-/* 让设置页的下拉框好看一点 */
 #font-family-select {
     cursor: pointer;
-    -webkit-appearance: none; /* 移除移动端默认样式 */
+    -webkit-appearance: none;
+}
+
+/* ========== 以下是欢迎页面样式 ========== */
+
+.welcome-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+.welcome-content {
+    text-align: center;
+    opacity: 0;
+    animation: fadeInUp 1.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInApp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.welcome-title {
+    font-size: 3.5rem;
+    color: #333333;
+    margin-bottom: 60px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.progress-bar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.progress-bar {
+    width: 300px;
+    height: 6px;
+    background-color: #e8e8e8;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.6);
+}
+
+.progress-text {
+    font-size: 1rem;
+    color: #666666;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+.progress-percentage {
+    font-weight: 600;
+    color: #667eea;
+}
+
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: 2.5rem;
+        margin-bottom: 50px;
+    }
+    .progress-bar {
+        width: 250px;
+    }
+    .progress-text {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-title {
+        font-size: 2rem;
+        margin-bottom: 40px;
+    }
+    .progress-bar {
+        width: 200px;
+    }
+    .progress-text {
+        font-size: 0.9rem;
+    }
 }
