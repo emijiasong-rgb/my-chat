@@ -17,10 +17,8 @@ body {
 }
 
 #phone-shell {
-    width: 100%;
-    max-width: 393px;
-    height: 100%;
-    max-height: 852px;
+    width: 393px; 
+    height: 852px;
     background: #fff;
     position: relative;
     display: flex;
@@ -28,6 +26,7 @@ body {
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
     border-radius: 47px;
+    flex-shrink: 0; /* 核心：防止手机壳被压缩 */
 }
 
 .status-bar {
