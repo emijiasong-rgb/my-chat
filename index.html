@@ -5,10 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>lulu chat</title>
     
+    <!-- 只需要引用 style.css，因为欢迎页面样式已经整合进去了 -->
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="welcome.css">
 </head>
 <body>
+
+<!-- 欢迎页面 -->
+<div id="welcome-container" class="welcome-container">
+    <div class="welcome-content">
+        <h1 class="welcome-title">欢迎来到 lulu chat</h1>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p class="progress-text">页面加载中... <span class="progress-percentage">0</span>%</p>
+        </div>
+    </div>
+</div>
+
+<!-- 主应用内容 -->
+<div id="main-app" style="display: none;">
+<div id="phone-shell">
+    <!-- ... 其余内容保持不变 ... -->
+</div>
+</div>
+
+<!-- 欢迎页面逻辑和主逻辑都在同一个 script.js 中，不需要 welcome.js -->
+<script src="script.js"></script>
+
+</body>
+</html>
 
 <!-- 欢迎页面 -->
 <div id="welcome-container" class="welcome-container">
