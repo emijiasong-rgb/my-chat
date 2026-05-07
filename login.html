@@ -29,29 +29,24 @@
 </head>
 <body>
     <div id="phone-shell">
-        <div class="header-title">
-            <span style="position:absolute; left:15px; cursor:pointer" onclick="window.location.href='settings.html'">〈 取消</span>
-            <span>Apple 账户</span>
+    <a href="settings.html" class="back-link">〈 返回</a>
+    <div class="page-flex-container">
+        <div style="border: 1px solid #000; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 40px;">
+            <div style="width: 80px; height: 80px; background: #c7c7cc; border-radius: 50%; margin: 0 auto 10px;"></div>
+            <b style="font-size: 18px;">请注册</b>
         </div>
-        
-        <div class="login-page">
-            <div class="profile-box">
-                <div class="login-avatar"></div>
-                <span>请注册</span>
-            </div>
 
-            <div class="input-group">
-                <label>QQ邮箱/用户名</label>
-                <input type="text" class="ios-input" placeholder="输入qq邮箱/用户名">
-            </div>
-
-            <div class="input-group">
-                <input type="password" class="ios-input" placeholder="输入密码">
-                <span class="forgot-link" onclick="window.location.href='forgot.html'">忘记密码</span>
-            </div>
-            
-            <button class="btn-save" style="background:#000; margin-top:30px;">登录</button>
+        <div style="width: 100%; max-width: 300px; text-align: left;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">QQ邮箱/用户名</label>
+            <input type="text" class="ios-input-large" placeholder="输入qq邮箱/用户名">
+            <input type="password" class="ios-input-large" placeholder="输入密码">
         </div>
+
+        <div style="width: 100%; max-width: 300px; display: flex; justify-content: space-between; margin-bottom: 30px;">
+            <span style="color: #007aff; cursor: pointer; font-size: 13px;" onclick="window.location.href='forgot.html'">忘记密码</span>
+            <span style="color: #007aff; cursor: pointer; font-size: 13px;" onclick="window.location.href='register.html'">还没有账号</span>
+        </div>
+
+        <button class="black-square-btn">登录</button>
     </div>
-</body>
-</html>
+</div>
