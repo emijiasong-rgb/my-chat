@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设置</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 针对设置页的特殊 iOS 样式 */
+        .settings-container { background: #f2f2f7; height: 100%; overflow-y: auto; }
+        .ios-list { background: #fff; margin: 20px 15px; border-radius: 10px; overflow: hidden; }
+        .ios-item { 
+            display: flex; align-items: center; padding: 12px 15px; 
+            border-bottom: 0.5px solid #e5e5ea; cursor: pointer;
+        }
+        .ios-item:last-child { border-bottom: none; }
+        
+        /* 账户头像部分 */
+        .account-section { display: flex; align-items: center; padding: 15px; background: #fff; margin: 20px 15px; border-radius: 10px; cursor: pointer; }
+        .grey-avatar { width: 60px; height: 60px; background: #c7c7cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; margin-right: 15px; }
+        .account-info b { font-size: 20px; color: #000; }
+        .account-info p { font-size: 13px; color: #8e8e93; margin-top: 4px; }
+        
+        .arrow-r { margin-left: auto; color: #c7c7cc; }
+    </style>
+</head>
+<body class="settings-container">
+    <div id="phone-shell">
+        <div class="header-title">
+            <span style="position:absolute; left:15px; cursor:pointer" onclick="window.location.href='index.html'">〈 返回</span>
+            <span>设置</span>
+        </div>
+
+        <div class="account-section" onclick="window.location.href='login.html'">
+            <div class="grey-avatar">👤</div>
+            <div class="account-info">
+                <b>请注册</b>
+                <p>Apple 账户、iCloud 等</p>
+            </div>
+            <span class="arrow-r">〉</span>
+        </div>
+
+        <div class="ios-list">
+            <div class="ios-item"><span>✈️ 飞行模式</span><span class="arrow-r">〉</span></div>
+            <div class="ios-item"><span>📶 无线局域网</span><span class="arrow-r">〉</span></div>
+            <div class="ios-item"><span>⚙️ 通用</span><span class="arrow-r">〉</span></div>
+        </div>
+    </div>
+</body>
+</html>
