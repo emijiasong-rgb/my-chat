@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>找回密码</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .forgot-page { padding: 30px 20px; }
+        .code-row { display: flex; gap: 10px; margin-top: 15px; }
+        .ios-input { width: 100%; height: 45px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 16px; }
+        .ios-input::placeholder { color: #8e8e93; }
+        
+        .send-btn { 
+            width: 33.3%; background: #fff; border: 1px solid #000; 
+            border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+        
+        .pink-btn { 
+            width: 100%; height: 50px; background: #ffc0cb; 
+            border: none; border-radius: 10px; font-weight: bold; 
+            color: #000; margin-top: 40px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="phone-shell">
+        <div class="header-title">找回密码</div>
+        
+        <div class="forgot-page">
+            <input type="text" class="ios-input" placeholder="输入qq邮箱">
+            
+            <div class="code-row">
+                <input type="text" class="ios-input" style="width: 66.6%;" placeholder="输入验证码">
+                <button class="send-btn">发送验证码</button>
+            </div>
+
+            <button class="pink-btn" onclick="window.location.href='login.html'">返回登录</button>
+        </div>
+    </div>
+</body>
+</html>
