@@ -76,7 +76,7 @@
                         <div class="icon-box">🤍</div>
                         <span>Ourtale</span>
                     </div>
-                    <div class="app-icon" onclick="openPage('settings')">
+                    <div class="app-icon" onclick="window.location.href='settings.html'">
                         <div class="icon-box">⚙️</div>
                         <span>Settings</span>
                     </div>
@@ -94,42 +94,7 @@
                 </div>
             </section>
 
-            <section id="page-settings" class="page">
-                <div class="header-title">
-                    <span style="position:absolute; left:15px; cursor:pointer" onclick="goHome()">〈 返回</span>
-                    <span>API 配置</span>
-                </div>
-                <div class="settings-group">
-                    <div class="settings-item">
-                        <label>API 地址</label>
-                        <input type="text" id="api-url-input" placeholder="例如: https://api.supxh.xin">
-                    </div>
-                    <div class="settings-item">
-                        <label>API 密钥</label>
-                        <input type="password" id="api-key-input">
-                    </div>
-                    <div class="settings-item">
-                        <label>模型选择</label>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="api-model-input" style="flex:1">
-                            <button onclick="fetchModels()" style="background:#000; color:#fff; border-radius:6px; border:none; padding:0 10px;">拉取</button>
-                        </div>
-                        <div id="model-list-container" style="display:none; max-height:100px; overflow-y:auto; background:#f0f0f0; margin-top:5px; font-size:12px;"></div>
-                    </div>
-                    <div class="settings-item">
-                        <label>字体风格</label>
-                        <select id="font-family-select" style="height:35px;">
-                            <option value="default">系统默认</option>
-                            <option value="cute">圆润可爱</option>
-                            <option value="serif">优雅衬线</option>
-                            <option value="modern">现代极简</option>
-                        </select>
-                        <button onclick="saveFontOnly()" style="margin-top:10px; height:35px; background:#34c759; color:#fff; border:none; border-radius:6px;">应用并保存字体</button>
-                    </div>
-                </div>
-                <button class="btn-save" onclick="saveSettings()">保存全部配置</button>
-            </section>
-        </div>
+            </div>
 
         <nav id="nav-bar" style="display: none;">
             <div class="nav-item" onclick="switchTab('message')">💬<br>消息</div>
