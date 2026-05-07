@@ -413,3 +413,51 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     align-items: center;
     background: #333;
 }
+
+/* 统一容器样式，解决截图中的偏移问题 */
+.page-flex-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* 核心：垂直居中 */
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: #fff; /* 确保背景是白色 */
+}
+
+/* 统一输入框样式 */
+.ios-input-large {
+    width: 100%;
+    max-width: 300px;
+    height: 50px; /* 稍微加大一点 */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 0 15px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+/* 统一黑色方块按钮样式（模仿截图二） */
+.black-square-btn {
+    background: #000;
+    color: #fff;
+    border: 1px solid #000;
+    border-radius: 12px;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+/* 返回按钮样式 */
+.back-link {
+    position: absolute;
+    top: 60px; /* 避开灵动岛 */
+    left: 20px;
+    color: #007aff;
+    text-decoration: none;
+    font-size: 16px;
+    z-index: 100;
+}
