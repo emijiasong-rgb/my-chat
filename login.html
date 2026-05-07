@@ -27,6 +27,36 @@
         .forgot-link { color: #007aff; font-size: 13px; cursor: pointer; display: block; text-align: left; margin-top: 10px; }
     </style>
 </head>
+
+    <script>
+function handleLogin() {
+    // 1. 获取输入框的元素
+    // 注意：请确保你的输入框分别有 id="login-username" 和 id="login-password"
+    const usernameInput = document.querySelector('input[placeholder="输入qq邮箱/用户名"]');
+    const passwordInput = document.querySelector('input[placeholder="输入密码"]');
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    // 2. 简单的验证逻辑
+    if (!username || !password) {
+        alert("请输入用户名和密码");
+        return;
+    }
+
+    // 3. 模拟登录过程
+    console.log("正在尝试登录:", username);
+    
+    // 这里可以保存登录状态到本地（可选）
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('currentUser', username);
+
+    // 4. 登录成功后跳转回主页
+    alert("登录成功！正在返回桌面...");
+    window.location.href = 'index.html'; 
+}
+</script>
+    
 <body>
     <div id="phone-shell">
     <a href="settings.html" class="back-link">〈 返回</a>
