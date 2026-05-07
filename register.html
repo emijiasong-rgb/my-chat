@@ -12,12 +12,35 @@
     <div class="page-flex-container">
         <h1 style="margin-bottom: 40px; font-size: 24px;">注册账号</h1>
 
-        <input type="text" class="ios-input-large" placeholder="输入qq邮箱">
-        <input type="password" class="ios-input-large" placeholder="输入密码">
-        <input type="password" class="ios-input-large" placeholder="再次输入密码">
+        <input type="text" id="reg-email" class="ios-input-large" placeholder="输入qq邮箱">
+        <input type="password" id="reg-password" class="ios-input-large" placeholder="输入密码">
+        <input type="password" id="reg-confirm" class="ios-input-large" placeholder="再次输入密码">
 
-        <button class="black-square-btn" style="margin-top: 20px;" onclick="window.location.href='login.html'">请注册</button>
+        <button class="black-square-btn" style="margin-top: 20px;" onclick="handleRegister()">请注册</button>
     </div>
 </div>
+
+<script>
+function handleRegister() {
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+    const confirm = document.getElementById('reg-confirm').value.trim();
+
+    if (!email || !password || !confirm) {
+        alert("请填写完整信息");
+        return;
+    }
+    if (password !== confirm) {
+        alert("两次输入的密码不一致");
+        return;
+    }
+
+    // 将密码保存到本地，Key 是 'user_' 加上邮箱地址
+    localStorage.setItem('user_' + email, password);
+    
+    alert("注册成功！即将前往登录页面");
+    window.location.href = 'login.html'; // 注册完跳到登录页
+}
+</script>
 </body>
 </html>
