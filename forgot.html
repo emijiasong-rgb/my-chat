@@ -24,19 +24,18 @@
     </style>
 </head>
 <body>
-    <div id="phone-shell">
-        <div class="header-title">找回密码</div>
+   <div id="phone-shell">
+    <a href="login.html" class="back-link">〈 返回</a>
+    <div class="page-flex-container">
+        <h2 style="margin-bottom: 30px;">找回密码</h2>
         
-        <div class="forgot-page">
-            <input type="text" class="ios-input" placeholder="输入qq邮箱">
-            
-            <div class="code-row">
-                <input type="text" class="ios-input" style="width: 66.6%;" placeholder="输入验证码">
-                <button class="send-btn">发送验证码</button>
-            </div>
-
-            <button class="pink-btn" onclick="window.location.href='login.html'">返回登录</button>
+        <input type="text" class="ios-input-large" placeholder="输入qq邮箱">
+        
+        <div style="display: flex; gap: 10px; width: 100%; max-width: 300px; margin-bottom: 20px;">
+            <input type="text" class="ios-input-large" style="margin-bottom:0; flex: 2;" placeholder="输入验证码">
+            <button style="flex: 1; border: 1px solid #000; background: #fff; border-radius: 10px;">发送验证码</button>
         </div>
+
+        <button class="black-square-btn" onclick="window.location.href='login.html'">返回登录</button>
     </div>
-</body>
-</html>
+</div>
