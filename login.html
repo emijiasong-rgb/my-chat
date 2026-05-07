@@ -43,33 +43,74 @@
     </div>
 
     <script>
-    function handleLogin() {
-        // 使用 ID 获取输入框，这样最准确
-        const emailInput = document.getElementById('login-username').value.trim();
-        const passwordInput = document.getElementById('login-password').value.trim();
+function handleLogin() {
+    const emailInput = document.getElementById('login-username').value.trim();
+    const passwordInput = document.getElementById('login-password').value.trim();
 
-        if (!emailInput || !passwordInput) {
-            alert("请输入账号和密码");
-            return;
-        }
-
-        // 从本地存储读取注册信息
-        const savedPassword = localStorage.getItem('user_' + emailInput);
-
-        if (savedPassword === null) {
-            // 没搜到这个账号
-            alert("该账号尚未注册，请先点击‘还没有账号’进行注册");
-        } else if (savedPassword === passwordInput) {
-            // 账号存在且密码匹配
-            alert("登录成功！正在返回桌面...");
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('currentUser', emailInput);
-            window.location.href = 'index.html'; 
-        } else {
-            // 账号存在但密码不对
-            alert("密码错误，请重新输入");
-        }
+    if (!emailInput || !passwordInput) {
+        alert("请输入账号和密码");
+        return;
     }
-    </script>
-</body>
-</html>
+
+    const savedPassword = localStorage.getItem('user_' + emailInput);
+
+    if (savedPassword === null) {
+        alert("该账号尚未注册，请先点击‘还没有账号’进行注册");
+    } else if (savedPassword === passwordInput) {
+        // 登录成功：保存状态
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('currentUser', emailInput);
+        alert("登录成功！");
+        
+        // 留在登录页，并显示已登录的UI
+        showLoggedInUI(emailInput);
+    } else {
+        alert("密码错误，请重新输入");
+    }
+}
+
+// 新增函数：登录成功后显示用户信息
+function showLoggedInUI(username) {
+    // 获取页面容器
+    const container = document.querySelector('.page-flex-container');
+    
+    // 隐藏登录表单相关的元素
+    const loginBox = container.querySelector('div[style*="border: 1px solid #000; padding: 20px;"]');
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    const loginBtn = document.getElementById('login-submit-btn');
+    const linksDiv = container.querySelector('div[style*="display: flex; justify-content: space-between;"]');
+    
+    if (loginBox) loginBox.style.display = 'none';
+    if (usernameInput) usernameInput.style.display = 'none';
+    if (passwordInput) passwordInput.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (linksDiv) linksDiv.style.display = 'none';
+    
+    // 显示已登录状态
+    const loggedInDiv = document.createElement('div');
+    loggedInDiv.id = 'loggedin-panel';
+    loggedInDiv.style.cssText = 'text-align: center; padding: 20px; width: 100%; max-width: 300px;';
+    loggedInDiv.innerHTML = `
+        <div style="border: 1px solid #000; padding: 30px 20px; border-radius: 15px; margin-bottom: 30px;">
+            <div class="login-avatar" style="background: #07c160; margin-bottom: 15px;"></div>
+            <b style="font-size: 20px;">${username}</b>
+            <p style="color: #666; margin-top: 10px;">已登录</p>
+        </div>
+        <button class="black-square-btn" id="logout-btn" style="background: #ff3b30; border: none;">退出登录</button>
+        <button class="black-square-btn" id="go-home-btn" style="margin-top: 15px; background: #000;" onclick="goToHome()">进入主页面</button>
+    `;
+    container.appendChild(loggedInDiv);
+    
+    // 退出登录按钮事件
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        window.location.reload();
+    });
+}
+
+// 进入主页面
+function goToHome() {
+    window.location.href = 'index.html';
+}
