@@ -138,5 +138,45 @@
     })();
 </script>
 
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 页面加载完成后立即检查登录状态
+    checkLogin();
+});
+
+function checkLogin() {
+    // 1. 从浏览器本地存储读取数据
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const currentUser = localStorage.getItem('currentUser');
+
+    const guestTools = document.getElementById('guest-tools');
+    const userTools = document.getElementById('user-tools');
+    const usernameDisplay = document.getElementById('username-display');
+
+    // 2. 判断是否已经登录
+    if (isLoggedIn === 'true' && currentUser) {
+        // 如果已登录：显示用户信息面板，隐藏登录按钮
+        if (guestTools) guestTools.style.display = 'none';
+        if (userTools) {
+            userTools.style.display = 'block';
+            usernameDisplay.innerText = currentUser; // 显示存下来的用户名
+        }
+    } else {
+        // 如果未登录：显示登录按钮，隐藏用户信息
+        if (guestTools) guestTools.style.display = 'block';
+        if (userTools) userTools.style.display = 'none';
+    }
+}
+
+// 退出登录的函数
+function logout() {
+    // 清除登录状态
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    // 刷新页面，UI 会自动变回未登录状态
+    window.location.reload();
+}
+</script>
+    
 </body>
 </html>
