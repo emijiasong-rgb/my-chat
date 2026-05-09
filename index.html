@@ -8,6 +8,16 @@
 </head>
 <body>
 
+    <div id="user-header">
+    <div id="guest-tools">
+        <button onclick="window.location.href='login.html'">登录 / 注册</button>
+    </div>
+    <div id="user-tools" style="display: none;">
+        <span>欢迎回来，<b id="username-display"></b></span>
+        <button onclick="logout()">退出登录</button>
+    </div>
+</div>
+    
 <div id="welcome-container" class="welcome-container">
     <div class="welcome-content">
         <h1 class="welcome-title">欢迎来到 lulu chat</h1>
