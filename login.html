@@ -42,36 +42,79 @@
         </div>
     </div>
 
-    <script>
+<script>
+// 等页面加载完成后再绑定事件，更稳定
+document.addEventListener('DOMContentLoaded', function() {
+    const loginBtn = document.getElementById('login-submit-btn');
+    
+    // 移除 onclick 属性，改用 addEventListener（移动端更兼容）
+    if (loginBtn) {
+        loginBtn.removeAttribute('onclick');
+        loginBtn.addEventListener('click', handleLogin);
+    }
+});
+
 function handleLogin() {
     const emailInput = document.getElementById('login-username').value.trim();
     const passwordInput = document.getElementById('login-password').value.trim();
 
     if (!emailInput || !passwordInput) {
-        alert("请输入账号和密码");
+        showMessage("请输入账号和密码");
         return;
     }
 
     const savedPassword = localStorage.getItem('user_' + emailInput);
 
     if (savedPassword === null) {
-        alert("该账号尚未注册，请先点击‘还没有账号’进行注册");
+        showMessage("该账号尚未注册，请先点击'还没有账号'进行注册");
     } else if (savedPassword === passwordInput) {
         // 登录成功：保存状态
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('currentUser', emailInput);
-        alert("登录成功！");
+        showMessage("登录成功！");
         
         // 留在登录页，并显示已登录的UI
         showLoggedInUI(emailInput);
     } else {
-        alert("密码错误，请重新输入");
+        showMessage("密码错误，请重新输入");
     }
 }
 
-// 新增函数：登录成功后显示用户信息
+// 自定义提示（不用 alert，移动端更稳）
+function showMessage(msg) {
+    // 检查页面上是否已有提示框
+    let msgDiv = document.getElementById('custom-message');
+    if (!msgDiv) {
+        msgDiv = document.createElement('div');
+        msgDiv.id = 'custom-message';
+        msgDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 9999;
+            text-align: center;
+            max-width: 80%;
+            word-wrap: break-word;
+        `;
+        document.body.appendChild(msgDiv);
+    }
+    
+    msgDiv.innerText = msg;
+    msgDiv.style.display = 'block';
+    
+    setTimeout(() => {
+        msgDiv.style.display = 'none';
+    }, 2000);
+}
+
+// 登录成功后显示用户信息
 function showLoggedInUI(username) {
-    // 获取页面容器
     const container = document.querySelector('.page-flex-container');
     
     // 隐藏登录表单相关的元素
@@ -94,11 +137,11 @@ function showLoggedInUI(username) {
     loggedInDiv.innerHTML = `
         <div style="border: 1px solid #000; padding: 30px 20px; border-radius: 15px; margin-bottom: 30px;">
             <div class="login-avatar" style="background: #07c160; margin-bottom: 15px;"></div>
-            <b style="font-size: 20px;">${username}</b>
+            <b style="font-size: 20px;">${escapeHtml(username)}</b>
             <p style="color: #666; margin-top: 10px;">已登录</p>
         </div>
         <button class="black-square-btn" id="logout-btn" style="background: #ff3b30; border: none;">退出登录</button>
-        <button class="black-square-btn" id="go-home-btn" style="margin-top: 15px; background: #000;" onclick="goToHome()">进入主页面</button>
+        <button class="black-square-btn" id="go-home-btn" style="margin-top: 15px; background: #000;">进入主页面</button>
     `;
     container.appendChild(loggedInDiv);
     
@@ -108,12 +151,25 @@ function showLoggedInUI(username) {
         localStorage.removeItem('currentUser');
         window.location.reload();
     });
+    
+    // 进入主页面按钮事件
+    document.getElementById('go-home-btn').addEventListener('click', function() {
+        window.location.href = 'index.html';
+    });
 }
 
-// 进入主页面
+// 防止 XSS 攻击
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// 进入主页面（保留兼容）
 function goToHome() {
     window.location.href = 'index.html';
 }
 </script>
-</body>
-</html>
