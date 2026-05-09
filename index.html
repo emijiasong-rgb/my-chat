@@ -109,13 +109,23 @@
 <script src="script.js"></script>
 
 <script>
-    // 登录状态检查
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const currentUser = localStorage.getItem('currentUser');
-    
-    if (!isLoggedIn || !currentUser) {
-        window.location.href = 'login.html';
-    }
+    // 登录状态检查 - 页面加载时执行
+    (function() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const currentUser = localStorage.getItem('currentUser');
+        
+        if (!isLoggedIn || !currentUser) {
+            // 未登录，跳转到登录页
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // 已登录，显示用户名
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement && currentUser) {
+            userNameElement.innerText = currentUser;
+        }
+    })();
 </script>
 
 </body>
