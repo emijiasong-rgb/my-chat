@@ -27,20 +27,46 @@ function handleRegister() {
     const confirm = document.getElementById('reg-confirm').value.trim();
 
     if (!email || !password || !confirm) {
-        alert("请填写完整信息");
+        showMessage("请填写完整信息");
         return;
     }
     if (password !== confirm) {
-        alert("两次输入的密码不一致");
+        showMessage("两次输入的密码不一致");
         return;
     }
 
-    // 将密码保存到本地，Key 是 'user_' 加上邮箱地址
     localStorage.setItem('user_' + email, password);
+    showMessage("注册成功！即将前往登录页面");
     
-    alert("注册成功！即将前往登录页面");
-    window.location.href = 'login.html'; // 注册完跳到登录页
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 1500);
+}
+
+function showMessage(msg) {
+    let msgDiv = document.getElementById('custom-message');
+    if (!msgDiv) {
+        msgDiv = document.createElement('div');
+        msgDiv.id = 'custom-message';
+        msgDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 9999;
+            text-align: center;
+        `;
+        document.body.appendChild(msgDiv);
+    }
+    msgDiv.innerText = msg;
+    msgDiv.style.display = 'block';
+    setTimeout(() => {
+        msgDiv.style.display = 'none';
+    }, 2000);
 }
 </script>
-</body>
-</html>
