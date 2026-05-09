@@ -138,45 +138,44 @@
     })();
 </script>
 
-    <script>
+  <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 页面加载完成后立即检查登录状态
-    checkLogin();
-});
-
-function checkLogin() {
-    // 1. 从浏览器本地存储读取数据
+    // 1. 从本地存储获取状态
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const currentUser = localStorage.getItem('currentUser');
 
+    // 2. 获取页面上所有的相关元素
     const guestTools = document.getElementById('guest-tools');
     const userTools = document.getElementById('user-tools');
-    const usernameDisplay = document.getElementById('username-display');
+    const usernameDisplay = document.getElementById('username-display'); // 顶部欢迎语
+    const userNameCard = document.getElementById('user-name'); // 个人卡片中心的名字
 
-    // 2. 判断是否已经登录
+    // 3. 执行显示逻辑
     if (isLoggedIn === 'true' && currentUser) {
-        // 如果已登录：显示用户信息面板，隐藏登录按钮
+        // 已登录状态
         if (guestTools) guestTools.style.display = 'none';
-        if (userTools) {
-            userTools.style.display = 'block';
-            usernameDisplay.innerText = currentUser; // 显示存下来的用户名
-        }
+        if (userTools) userTools.style.display = 'block';
+        
+        // 将用户名同步到页面所有显示位置
+        if (usernameDisplay) usernameDisplay.innerText = currentUser;
+        if (userNameCard) userNameCard.innerText = currentUser;
     } else {
-        // 如果未登录：显示登录按钮，隐藏用户信息
+        // 未登录状态
         if (guestTools) guestTools.style.display = 'block';
         if (userTools) userTools.style.display = 'none';
+        if (userNameCard) userNameCard.innerText = "未登录";
+        
+        // 如果你希望未登录强制跳回登录页，请取消下面这行的注释：
+        // window.location.href = 'login.html';
+    }
+});
+
+// 退出登录函数
+function logout() {
+    if(confirm("确定要退出登录吗？")) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        window.location.reload(); // 刷新页面以恢复初始状态
     }
 }
-
-// 退出登录的函数
-function logout() {
-    // 清除登录状态
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
-    // 刷新页面，UI 会自动变回未登录状态
-    window.location.reload();
-}
 </script>
-    
-</body>
-</html>
