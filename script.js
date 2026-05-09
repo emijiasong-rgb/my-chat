@@ -299,7 +299,7 @@ class WelcomeScreen {
     }
 }
 
-// === 5. 初始化 (恢复缓存) ===
+// === 5. 初始化 (恢复缓存 & 登录状态) ===
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 时间和系统状态
     updateClock();
@@ -311,13 +311,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    // 3. 恢复头像和背景
+    // 3. 【新增：恢复登录用户名】
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const currentUser = localStorage.getItem('currentUser');
+    const userNameCard = document.getElementById('user-name');
+    
+    // 如果登录了，把名字刷到卡片上
+    if (isLoggedIn === 'true' && currentUser && userNameCard) {
+        userNameCard.innerText = currentUser;
+    }
+
+    // 4. 恢复头像和背景
     const avImg = document.getElementById('user-avatar');
     const baDiv = document.getElementById('profile-banner');
     if (localStorage.getItem('savedAvatar') && avImg) avImg.src = localStorage.getItem('savedAvatar');
     if (localStorage.getItem('savedBanner') && baDiv) baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
 
-    // 4. 图片上传监听
+    // 5. 图片上传监听
     const avInput = document.getElementById('avatar-upload');
     const baInput = document.getElementById('banner-upload');
     if(avInput) avInput.addEventListener('change', (e) => {
@@ -337,6 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // 5. 初始化欢迎屏幕
+    // 6. 初始化欢迎屏幕
     new WelcomeScreen();
 });
