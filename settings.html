@@ -6,36 +6,57 @@
     <title>设置</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 针对设置页的特殊 iOS 样式 */
-        .settings-container { background: #f2f2f7; height: 100%; overflow-y: auto; }
-        .ios-list { background: #fff; margin: 20px 15px; border-radius: 10px; overflow: hidden; }
+        .settings-container { background: #f2f2f7; height: 100vh; margin:0; }
+        #phone-shell { background: #f2f2f7; height: 100%; }
+        
+        .header-title { 
+            background: #f2f2f7; 
+            padding: 50px 15px 10px; 
+            font-weight: bold; 
+            font-size: 17px; 
+            text-align: center;
+            position: relative;
+        }
+
+        .ios-list { background: #fff; margin: 10px 15px 20px; border-radius: 10px; }
         .ios-item { 
             display: flex; align-items: center; padding: 12px 15px; 
             border-bottom: 0.5px solid #e5e5ea; cursor: pointer;
+            transition: background 0.2s;
         }
+        .ios-item:active { background: #d1d1d6; }
         .ios-item:last-child { border-bottom: none; }
         
-        /* 账户头像部分 */
-        .account-section { display: flex; align-items: center; padding: 15px; background: #fff; margin: 20px 15px; border-radius: 10px; cursor: pointer; }
-        .grey-avatar { width: 60px; height: 60px; background: #c7c7cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; margin-right: 15px; }
-        .account-info b { font-size: 20px; color: #000; }
-        .account-info p { font-size: 13px; color: #8e8e93; margin-top: 4px; }
+        .account-section { 
+            display: flex; align-items: center; padding: 15px; 
+            background: #fff; margin: 20px 15px 10px; border-radius: 10px; 
+            cursor: pointer; transition: background 0.2s;
+        }
+        .account-section:active { background: #d1d1d6; }
         
-        .arrow-r { margin-left: auto; color: #c7c7cc; }
+        .grey-avatar { 
+            width: 60px; height: 60px; background: #c7c7cc; 
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; color: #fff; font-size: 30px; margin-right: 15px; 
+        }
+        .account-info b { font-size: 19px; color: #000; display: block; }
+        .account-info p { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+        
+        .arrow-r { margin-left: auto; color: #c7c7cc; font-size: 14px; }
     </style>
 </head>
 <body class="settings-container">
     <div id="phone-shell">
         <div class="header-title">
-            <span style="position:absolute; left:15px; cursor:pointer" onclick="window.location.href='index.html'">〈 返回</span>
+            <span style="position:absolute; left:15px; color:#007aff; cursor:pointer" onclick="window.location.href='index.html'">〈 返回</span>
             <span>设置</span>
         </div>
 
-        <div class="account-section" onclick="window.location.href='login.html'">
+        <div class="account-section" id="account-btn" onclick="window.location.href='login.html'">
             <div class="grey-avatar">👤</div>
             <div class="account-info">
-                <b>请注册</b>
-                <p>Apple 账户、iCloud 等</p>
+                <b id="user-display-name">请登录</b>
+                <p id="user-display-desc">Apple 账户、iCloud 等</p>
             </div>
             <span class="arrow-r">〉</span>
         </div>
@@ -45,6 +66,34 @@
             <div class="ios-item"><span>📶 无线局域网</span><span class="arrow-r">〉</span></div>
             <div class="ios-item"><span>⚙️ 通用</span><span class="arrow-r">〉</span></div>
         </div>
+
+        <div class="ios-list">
+            <div class="ios-item" onclick="logout()" id="logout-item" style="display:none; color:#ff3b30; justify-content: center; font-weight: bold;">
+                退出登录
+            </div>
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const currentUser = localStorage.getItem('currentUser');
+            
+            if (isLoggedIn === 'true' && currentUser) {
+                document.getElementById('user-display-name').innerText = currentUser;
+                document.getElementById('user-display-desc').innerText = "Apple 账户、iCloud、App Store";
+                document.getElementById('account-btn').onclick = null; // 登录后点击不再去登录页
+                document.getElementById('logout-item').style.display = 'flex'; // 显示退出按钮
+            }
+        });
+
+        function logout() {
+            if(confirm("确定要退出吗？")) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('currentUser');
+                window.location.reload();
+            }
+        }
+    </script>
 </body>
 </html>
