@@ -6,38 +6,68 @@
     <title>找回密码</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .forgot-page { padding: 30px 20px; }
-        .code-row { display: flex; gap: 10px; margin-top: 15px; }
-        .ios-input { width: 100%; height: 45px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 16px; }
-        .ios-input::placeholder { color: #8e8e93; }
-        
-        .send-btn { 
-            width: 33.3%; background: #fff; border: 1px solid #000; 
-            border-radius: 8px; font-weight: bold; cursor: pointer;
+        /* 仅保留必要的局部样式 */
+        .code-row { 
+            display: flex; 
+            gap: 10px; 
+            width: 100%; 
+            max-width: 300px; 
+            margin-bottom: 20px; 
         }
-        
-        .pink-btn { 
-            width: 100%; height: 50px; background: #ffc0cb; 
-            border: none; border-radius: 10px; font-weight: bold; 
-            color: #000; margin-top: 40px; cursor: pointer;
+        .send-btn { 
+            flex: 1; 
+            border: 1px solid #000; 
+            background: #fff; 
+            border-radius: 10px; 
+            font-size: 13px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-   <div id="phone-shell">
-    <a href="login.html" class="back-link">〈 返回</a>
-    <div class="page-flex-container">
-        <h2 style="margin-bottom: 30px;">找回密码</h2>
+    <div id="phone-shell">
+        <a href="login.html" class="back-link">〈 返回</a>
         
-        <input type="text" class="ios-input-large" placeholder="输入qq邮箱">
-        
-        <div style="display: flex; gap: 10px; width: 100%; max-width: 300px; margin-bottom: 20px;">
-            <input type="text" class="ios-input-large" style="margin-bottom:0; flex: 2;" placeholder="输入验证码">
-            <button style="flex: 1; border: 1px solid #000; background: #fff; border-radius: 10px;">发送验证码</button>
-        </div>
+        <div class="page-flex-container">
+            <h2 style="margin-bottom: 30px;">找回密码</h2>
+            
+            <input type="text" id="forgot-email" class="ios-input-large" placeholder="输入qq邮箱">
+            
+            <div class="code-row">
+                <input type="text" class="ios-input-large" style="margin-bottom:0; flex: 2;" placeholder="输入验证码">
+                <button class="send-btn" onclick="alert('验证码已发送（模拟）')">发送验证码</button>
+            </div>
 
-        <button class="black-square-btn" onclick="window.location.href='login.html'">返回登录</button>
+            <input type="password" id="new-password" class="ios-input-large" placeholder="设置新密码">
+
+            <button class="black-square-btn" style="margin-top: 10px;" onclick="handleReset()">重置并登录</button>
+            
+            <p style="margin-top: 20px; color: #8e8e93; font-size: 14px; cursor: pointer;" onclick="window.location.href='login.html'">返回登录</p>
+        </div>
     </div>
-</div>
+
+    <script>
+    function handleReset() {
+        const email = document.getElementById('forgot-email').value.trim();
+        const newPwd = document.getElementById('new-password').value.trim();
+
+        if (!email || !newPwd) {
+            alert("请填写完整信息");
+            return;
+        }
+
+        // 检查用户是否注册过
+        const existingUser = localStorage.getItem('user_' + email);
+        if (existingUser === null) {
+            alert("该邮箱尚未注册");
+            return;
+        }
+
+        // 更新本地存储的密码
+        localStorage.setItem('user_' + email, newPwd);
+        alert("密码重置成功！请重新登录");
+        window.location.href = 'login.html';
+    }
+    </script>
 </body>
 </html>
