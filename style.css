@@ -540,3 +540,52 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     opacity: 0.7;
     transform: scale(0.95);
 }
+
+/* === 系统装饰层：灵动岛与底部条 === */
+
+/* 1. 灵动岛 (Dynamic Island) */
+#phone-shell::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 1001; /* 确保在状态栏之上 */
+}
+
+/* 2. 底部操作条 (Home Indicator) */
+#phone-shell::after {
+    content: "";
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 100px;
+    z-index: 1001;
+}
+
+/* 3. 细节微调：确保状态栏文字避开灵动岛 */
+.status-bar {
+    position: relative;
+    z-index: 1002; /* 文字要比灵动岛更高，否则看不见时间 */
+    pointer-events: none; /* 防止点击状态栏影响下方操作 */
+}
+
+/* 4. 优化 App 图标点击感 */
+.app-icon:active {
+    transform: scale(0.9);
+    opacity: 0.8;
+}
+
+/* 5. 修正输入框在 iOS 下的默认外观 */
+.ios-input-large {
+    -webkit-appearance: none;
+    outline: none;
+}
