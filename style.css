@@ -490,3 +490,53 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
 .ios-input-large::placeholder {
     color: #8e8e93; /* 初始占位符的灰色 */
 }
+
+/* === 针对建议进行的精准增补 === */
+
+/* 1. 灵动岛：让手机额头更真实 */
+#phone-shell::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 1001;
+}
+
+/* 2. 底部横条：iOS 的标志性操作条 */
+#phone-shell::after {
+    content: "";
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.3); /* 这里的颜色会根据背景自动显得自然 */
+    border-radius: 100px;
+    z-index: 1000;
+}
+
+/* 3. 优化图标排列：防止图标太靠边 */
+.app-grid {
+    padding: 0 25px !important; /* 强制覆盖之前的 padding */
+    justify-items: center;
+}
+
+/* 4. 输入框文字对齐修正 */
+.ios-input-large {
+    line-height: normal;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 5. 点击反馈：让按钮按下去有反应 */
+.app-icon:active, .black-square-btn:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+}
