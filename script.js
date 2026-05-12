@@ -350,3 +350,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. 初始化欢迎屏幕
     new WelcomeScreen();
 });
+
+function switchTab(tab) {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    
+    // 如果想去消息页但没登录，弹出提示
+    if (tab === 'message' && isLoggedIn !== 'true') {
+        alert("请先登录后再使用聊天功能");
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // 原有的切换逻辑...
+}
