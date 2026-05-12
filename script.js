@@ -57,7 +57,7 @@ function updateClock() {
     if(document.getElementById('big-date')) document.getElementById('big-date').innerText = dateStr;
 }
 
-// 页面切换
+// 页面切换核心函数
 function openPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
@@ -75,9 +75,21 @@ function openPage(pageId) {
     }
 }
 
+// 【已改好】整合后的切换标签函数：包含权限检查和UI切换
 function switchTab(tabId) {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    
+    // 权限检查：如果要进入聊天页但没登录
+    if (tabId === 'message' && isLoggedIn !== 'true') {
+        alert("请先登录后再使用聊天功能");
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 执行切换
     openPage(tabId);
-    document.getElementById('nav-bar').style.display = 'flex';
+    const navBar = document.getElementById('nav-bar');
+    if(navBar) navBar.style.display = 'flex';
 }
 
 function goHome() {
@@ -85,9 +97,17 @@ function goHome() {
     document.getElementById('nav-bar').style.display = 'none';
 }
 
+// 【新增】退出登录逻辑
+function logout() {
+    if(confirm("确定要退出登录吗？")) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        window.location.reload(); 
+    }
+}
+
 // === 2. 核心功能：保存配置 & 切换字体 ===
 
-// 字体应用函数
 function applyFont(fontKey) {
     document.body.classList.remove('font-cute', 'font-serif', 'font-modern');
     if (fontKey && fontKey !== 'default') {
@@ -95,7 +115,6 @@ function applyFont(fontKey) {
     }
 }
 
-// 唯一的保存函数：同时处理 API 和 字体
 function saveSettings() {
     localStorage.setItem('api_url', document.getElementById('api-url-input').value);
     localStorage.setItem('api_key', document.getElementById('api-key-input').value);
@@ -112,7 +131,6 @@ function saveSettings() {
     goHome();
 }
 
-// 拉取模型列表
 async function fetchModels() {
     const url = document.getElementById('api-url-input').value;
     const key = document.getElementById('api-key-input').value;
@@ -178,6 +196,7 @@ async function sendMessage() {
     loadingMsg.className = 'msg recv';
     loadingMsg.innerText = '正在思考...';
     container.appendChild(loadingMsg);
+    container.scrollTop = container.scrollHeight;
 
     try {
         const response = await fetch(`${url}/v1/chat/completions`, {
@@ -191,22 +210,17 @@ async function sendMessage() {
     container.scrollTop = container.scrollHeight;
 }
 
-// 专门用于点击"应用并保存字体"按钮的功能
 function saveFontOnly() {
     const fontSelect = document.getElementById('font-family-select');
     if (fontSelect) {
         const selectedFont = fontSelect.value;
-        
         localStorage.setItem('user-font', selectedFont);
-        
         if (typeof applyFont === "function") {
             applyFont(selectedFont);
             alert('字体样式已保存并生效！');
-        } else {
-            console.error("未找到 applyFont 函数，请检查 script.js 是否完整");
         }
     }
-} // 
+} 
 
 // === 4. 欢迎屏幕类 ===
 class WelcomeScreen {
@@ -223,14 +237,12 @@ class WelcomeScreen {
 
     init() {
         this.startLoading();
-        
-        // 保底：无论加载情况如何，3秒后强制完成进度条
         const safeTimeout = setTimeout(() => {
             if (!this.isComplete) this.completeLoading();
         }, 3000);
 
         window.addEventListener('load', () => {
-            clearTimeout(safeTimeout); // 如果正常加载完了，就取消保底计时
+            clearTimeout(safeTimeout);
             this.completeLoading();
         });
 
@@ -244,14 +256,10 @@ class WelcomeScreen {
         const increment = () => {
             if (this.currentProgress < 80 && !this.isComplete) {
                 this.targetProgress += Math.random() * 3;
-                if (this.targetProgress > 80) {
-                    this.targetProgress = 80;
-                }
+                if (this.targetProgress > 80) this.targetProgress = 80;
             }
             this.updateProgress();
-            if (!this.isComplete) {
-                setTimeout(increment, 200 + Math.random() * 300);
-            }
+            if (!this.isComplete) setTimeout(increment, 200 + Math.random() * 300);
         };
         increment();
     }
@@ -259,12 +267,8 @@ class WelcomeScreen {
     updateProgress() {
         this.currentProgress += (this.targetProgress - this.currentProgress) * 0.1;
         const percentage = Math.min(Math.floor(this.currentProgress), 100);
-        if (this.progressFill) {
-            this.progressFill.style.width = percentage + '%';
-        }
-        if (this.progressPercentage) {
-            this.progressPercentage.textContent = percentage;
-        }
+        if (this.progressFill) this.progressFill.style.width = percentage + '%';
+        if (this.progressPercentage) this.progressPercentage.textContent = percentage;
     }
 
     completeLoading() {
@@ -272,10 +276,7 @@ class WelcomeScreen {
         this.currentProgress = 100;
         this.targetProgress = 100;
         this.updateProgress();
-
-        setTimeout(() => {
-            this.hideWelcomeScreen();
-        }, 2000);
+        setTimeout(() => { this.hideWelcomeScreen(); }, 2000);
     }
 
     hideWelcomeScreen() {
@@ -284,50 +285,41 @@ class WelcomeScreen {
             this.welcomeContainer.style.opacity = '0';
             this.welcomeContainer.style.transform = 'translateY(-20px)';
         }
-
         setTimeout(() => {
             if (this.mainApp) {
                 this.mainApp.style.display = 'block';
                 this.mainApp.style.animation = 'fadeInApp 1s ease-in';
             }
             if (this.welcomeContainer) {
-                setTimeout(() => {
-                    this.welcomeContainer.style.display = 'none';
-                }, 800);
+                setTimeout(() => { this.welcomeContainer.style.display = 'none'; }, 800);
             }
         }, 800);
     }
 }
 
-// === 5. 初始化 (恢复缓存 & 登录状态) ===
+// === 5. 初始化 ===
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 时间和系统状态
     updateClock();
     setInterval(updateClock, 1000);
     updateNetworkStatus();
     updateBatteryStatus();
 
-    // 2. 恢复字体
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    // 3. 【新增：恢复登录用户名】
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const currentUser = localStorage.getItem('currentUser');
     const userNameCard = document.getElementById('user-name');
     
-    // 如果登录了，把名字刷到卡片上
     if (isLoggedIn === 'true' && currentUser && userNameCard) {
         userNameCard.innerText = currentUser;
     }
 
-    // 4. 恢复头像和背景
     const avImg = document.getElementById('user-avatar');
     const baDiv = document.getElementById('profile-banner');
     if (localStorage.getItem('savedAvatar') && avImg) avImg.src = localStorage.getItem('savedAvatar');
     if (localStorage.getItem('savedBanner') && baDiv) baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
 
-    // 5. 图片上传监听
     const avInput = document.getElementById('avatar-upload');
     const baInput = document.getElementById('banner-upload');
     if(avInput) avInput.addEventListener('change', (e) => {
@@ -347,31 +339,5 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // 6. 初始化欢迎屏幕
     new WelcomeScreen();
 });
-
-// 找到你代码中的 switchTab，统一改为这个：
-function switchTab(tabId) {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    
-    // 1. 权限拦截：如果要去的不是 home，且没登录
-    if (tabId !== 'home' && isLoggedIn !== 'true') {
-        alert("请先登录后再使用该功能");
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // 2. 执行真正的切换逻辑
-    openPage(tabId);
-    const navBar = document.getElementById('nav-bar');
-    if (navBar) navBar.style.display = 'flex';
-}
-
-function logout() {
-    if(confirm("确定要退出登录吗？")) {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('currentUser');
-        window.location.reload();
-    }
-}
