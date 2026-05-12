@@ -351,15 +351,19 @@ document.addEventListener('DOMContentLoaded', () => {
     new WelcomeScreen();
 });
 
-function switchTab(tab) {
+// 找到你代码中的 switchTab，统一改为这个：
+function switchTab(tabId) {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     
-    // 如果想去消息页但没登录，弹出提示
-    if (tab === 'message' && isLoggedIn !== 'true') {
-        alert("请先登录后再使用聊天功能");
+    // 1. 权限拦截：如果要去的不是 home，且没登录
+    if (tabId !== 'home' && isLoggedIn !== 'true') {
+        alert("请先登录后再使用该功能");
         window.location.href = 'login.html';
         return;
     }
-    
-    // 原有的切换逻辑...
+
+    // 2. 执行真正的切换逻辑
+    openPage(tabId);
+    const navBar = document.getElementById('nav-bar');
+    if (navBar) navBar.style.display = 'flex';
 }
