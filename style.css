@@ -482,3 +482,11 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     padding: 5px 10px;
     cursor: pointer;
 }
+
+.ios-input-large {
+    color: #000; /* 输入时的文字颜色 */
+}
+
+.ios-input-large::placeholder {
+    color: #8e8e93; /* 初始占位符的灰色 */
+}
