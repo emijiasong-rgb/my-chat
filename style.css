@@ -461,3 +461,24 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     font-size: 16px;
     z-index: 100;
 }
+
+#user-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-end; /* 按钮靠右 */
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+#user-header button {
+    border: 1px solid #000;
+    background: #fff;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
