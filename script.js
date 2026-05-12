@@ -367,3 +367,11 @@ function switchTab(tabId) {
     const navBar = document.getElementById('nav-bar');
     if (navBar) navBar.style.display = 'flex';
 }
+
+function logout() {
+    if(confirm("确定要退出登录吗？")) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        window.location.reload();
+    }
+}
