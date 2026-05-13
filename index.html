@@ -177,6 +177,25 @@ function logout() {
         window.location.reload();
     }
 }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    refreshUserUI();
+
+    // --- 新增逻辑：判断是否是从设置页返回的 ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const isFromSettings = urlParams.get('from') === 'settings';
+
+    if (isFromSettings) {
+        // 如果是从设置页来的，直接显示 App，不显示欢迎动画
+        document.getElementById('welcome-container').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+    } else {
+        // 如果是正常打开（比如刷新），则执行原本的加载动画
+        startLoading(); 
+    }
+    // ---------------------------------------
+});
+    
 </script>
     
 </body>
