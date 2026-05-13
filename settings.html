@@ -7,29 +7,41 @@
     <link rel="stylesheet" href="style.css"> 
     <style>
         /* 1. 强制网页大背景为深色，使手机壳居中显现 */
-        body {
-            background: #1a1a1a !important; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden; /* 禁止大背景滚动 */
-        }
+body {
+    background: #1a1a1a !important; /* 确保与图片中的深色背景一致 */
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center;     /* 垂直居中 */
+    margin: 0;
+    overflow: hidden; 
+}
 
-        /* 2. 固定手机外壳尺寸，确保与 index.html 完全一致 */
-        #phone-shell {
-            width: 393px !important;  
-            height: 852px !important; 
-            background: #f2f2f7;      
-            border-radius: 47px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;         
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-            flex-shrink: 0;
-        }
+/* 2. 固定手机外壳尺寸 */
+#phone-shell {
+    width: 393px !important;  
+    height: 852px !important; 
+    background: #f2f2f7;      
+    border-radius: 47px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;         
+    /* 这里的阴影效果会让手机壳更有立体感 */
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
+    flex-shrink: 0;
+}
+
+/* 3. 内容滚动区域：确保背景色是 iOS 设置页的灰色 */
+#viewport {
+    flex: 1;
+    overflow-y: auto;         
+    background: #f2f2f7; /* 手机内部的浅灰色背景 */
+    display: flex;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+}
 
         /* 灵动岛装饰 (如果 style.css 里没写，这里必须补上) */
         #phone-shell::before {
