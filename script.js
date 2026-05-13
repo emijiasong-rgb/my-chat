@@ -75,18 +75,16 @@ function openPage(pageId) {
     }
 }
 
-// 【已改好】整合后的切换标签函数：包含权限检查和UI切换
+// 整合后的切换标签函数
 function switchTab(tabId) {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     
-    // 权限检查：如果要进入聊天页但没登录
     if (tabId === 'message' && isLoggedIn !== 'true') {
         alert("请先登录后再使用聊天功能");
         window.location.href = 'login.html';
         return;
     }
 
-    // 执行切换
     openPage(tabId);
     const navBar = document.getElementById('nav-bar');
     if(navBar) navBar.style.display = 'flex';
@@ -97,7 +95,7 @@ function goHome() {
     document.getElementById('nav-bar').style.display = 'none';
 }
 
-// 【新增】退出登录逻辑
+// 退出登录逻辑
 function logout() {
     if(confirm("确定要退出登录吗？")) {
         localStorage.removeItem('isLoggedIn');
@@ -287,7 +285,8 @@ class WelcomeScreen {
         }
         setTimeout(() => {
             if (this.mainApp) {
-                this.mainApp.style.display = 'block';
+                // 修改：此处由 'block' 改为 'flex' 以配合 CSS 中的居中布局
+                this.mainApp.style.display = 'flex'; 
                 this.mainApp.style.animation = 'fadeInApp 1s ease-in';
             }
             if (this.welcomeContainer) {
