@@ -13,7 +13,10 @@
             padding: 15px; border-bottom: 0.5px solid #eee; font-size: 16px;
         }
         .profile-item:last-child { border-bottom: none; }
-        .profile-item input { border: none; text-align: right; font-size: 16px; color: #888; outline: none; width: 60%; }
+        .profile-item input { border: none; text-align: right; font-size: 16px; color: #888; outline: none; width: 60%; background: none; }
+        /* 生日选择器特定样式 */
+        .profile-item input[type="date"] { color: #007aff; cursor: pointer; }
+        
         .avatar-edit { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
         .logout-container { margin-top: 30px; padding: 0 15px; }
     </style>
@@ -21,9 +24,9 @@
 <body class="font-modern" style="background-color: #f2f2f7;">
 
 <div id="phone-shell" style="box-shadow: none; background: transparent;">
-    <div class="header-title" style="background: #f2f2f7; border: none; justify-content: space-between; padding: 0 15px;">
+    <div class="header-title" style="background: #f2f2f7; border: none; justify-content: space-between; padding: 50px 15px 10px; display: flex; align-items: center;">
         <span onclick="history.back()" style="color: #007aff; cursor: pointer;">〈 返回</span>
-        <span>个人信息</span>
+        <span style="font-weight: bold; font-size: 17px;">个人信息</span>
         <span onclick="saveProfile()" style="color: #007aff; font-weight: bold; cursor: pointer;">完成</span>
     </div>
 
@@ -36,14 +39,20 @@
             </div>
             <input type="file" id="avatar-input" accept="image/*" style="display: none;">
         </div>
+
         <div class="profile-item">
             <span>昵称</span>
             <input type="text" id="edit-username" placeholder="请输入昵称">
         </div>
+
+        <div class="profile-item">
+            <span>生日</span>
+            <input type="date" id="edit-birthday">
+        </div>
     </div>
 
     <div class="logout-container">
-        <button class="black-square-btn" onclick="logout()" style="width: 100%; background: white; color: #ff3b30; border: none; border-radius: 10px; height: 50px;">退出登录</button>
+        <button class="black-square-btn" onclick="logout()" style="width: 100%; background: white; color: #ff3b30; border: none; border-radius: 10px; height: 50px; font-weight: bold; font-size: 17px; cursor: pointer;">退出登录</button>
     </div>
 </div>
 
@@ -52,9 +61,11 @@
     document.addEventListener('DOMContentLoaded', () => {
         const currentUser = localStorage.getItem('currentUser');
         const savedAvatar = localStorage.getItem('savedAvatar');
+        const savedBirthday = localStorage.getItem('userBirthday'); // 读取保存的生日
         
         if (currentUser) document.getElementById('edit-username').value = currentUser;
         if (savedAvatar) document.getElementById('edit-avatar-preview').src = savedAvatar;
+        if (savedBirthday) document.getElementById('edit-birthday').value = savedBirthday; // 填充生日
     });
 
     // 处理头像预览
@@ -70,11 +81,13 @@
     function saveProfile() {
         const newName = document.getElementById('edit-username').value;
         const newAvatar = document.getElementById('edit-avatar-preview').src;
+        const newBirthday = document.getElementById('edit-birthday').value; // 获取生日值
 
         if (!newName.trim()) { alert("昵称不能为空"); return; }
 
         localStorage.setItem('currentUser', newName);
         localStorage.setItem('savedAvatar', newAvatar);
+        localStorage.setItem('userBirthday', newBirthday); // 保存生日到本地
         
         alert("修改成功");
         location.href = 'index.html'; // 返回主页
@@ -85,6 +98,7 @@
         if(confirm("确定要退出登录吗？")) {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('currentUser');
+            // 注意：通常退出时不删除 userBirthday 和 savedAvatar，除非你想彻底清空本地痕迹
             location.href = 'login.html'; 
         }
     }
