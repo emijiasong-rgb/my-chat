@@ -72,7 +72,56 @@ function openPage(pageId) {
         const savedFont = localStorage.getItem('user-font') || 'default';
         const fontSelect = document.getElementById('font-family-select');
         if(fontSelect) fontSelect.value = savedFont;
+
+        // 刷新设置页显示的头像和名字
+        refreshUserDisplay();
     }
+}
+
+// 新增：打开个人信息编辑页
+function openProfilePage() {
+    openPage('profile-edit'); // 假设你的新页面 ID 为 profile-edit
+    const currentName = localStorage.getItem('currentUser') || '未登录';
+    const currentAvatar = localStorage.getItem('savedAvatar') || '默认头像地址';
+    
+    const nameInput = document.getElementById('edit-username-input');
+    const avatarPreview = document.getElementById('edit-avatar-preview');
+    
+    if(nameInput) nameInput.value = currentName;
+    if(avatarPreview) avatarPreview.src = currentAvatar;
+}
+
+// 新增：保存个人信息并同步
+function saveProfile() {
+    const newName = document.getElementById('edit-username-input').value.trim();
+    const avatarImg = document.getElementById('edit-avatar-preview').src;
+
+    if(!newName) { alert('昵称不能为空'); return; }
+
+    localStorage.setItem('currentUser', newName);
+    localStorage.setItem('savedAvatar', avatarImg);
+    
+    refreshUserDisplay();
+    alert('修改成功！');
+    openPage('settings');
+}
+
+// 新增：刷新全局用户信息显示的辅助函数
+function refreshUserDisplay() {
+    const name = localStorage.getItem('currentUser') || '未登录';
+    const avatar = localStorage.getItem('savedAvatar');
+
+    // 更新设置页显示
+    const settingsName = document.getElementById('settings-username-display');
+    const settingsAvatar = document.getElementById('settings-avatar-display');
+    if(settingsName) settingsName.innerText = name;
+    if(settingsAvatar && avatar) settingsAvatar.src = avatar;
+
+    // 更新主页 Profile Card 显示
+    const homeName = document.getElementById('user-name');
+    const homeAvatar = document.getElementById('user-avatar');
+    if(homeName) homeName.innerText = name;
+    if(homeAvatar && avatar) homeAvatar.src = avatar;
 }
 
 // 整合后的切换标签函数
@@ -100,6 +149,7 @@ function logout() {
     if(confirm("确定要退出登录吗？")) {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('savedAvatar');
         window.location.reload(); 
     }
 }
@@ -285,7 +335,6 @@ class WelcomeScreen {
         }
         setTimeout(() => {
             if (this.mainApp) {
-                // 修改：此处由 'block' 改为 'flex' 以配合 CSS 中的居中布局
                 this.mainApp.style.display = 'flex'; 
                 this.mainApp.style.animation = 'fadeInApp 1s ease-in';
             }
@@ -306,29 +355,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const currentUser = localStorage.getItem('currentUser');
-    const userNameCard = document.getElementById('user-name');
-    
-    if (isLoggedIn === 'true' && currentUser && userNameCard) {
-        userNameCard.innerText = currentUser;
-    }
+    // 调用全局同步刷新
+    refreshUserDisplay();
 
-    const avImg = document.getElementById('user-avatar');
     const baDiv = document.getElementById('profile-banner');
-    if (localStorage.getItem('savedAvatar') && avImg) avImg.src = localStorage.getItem('savedAvatar');
     if (localStorage.getItem('savedBanner') && baDiv) baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
 
-    const avInput = document.getElementById('avatar-upload');
-    const baInput = document.getElementById('banner-upload');
-    if(avInput) avInput.addEventListener('change', (e) => {
+    // 通用图片上传逻辑：头像修改页的上传预览
+    const editAvInput = document.getElementById('edit-avatar-upload');
+    if(editAvInput) editAvInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
-            document.getElementById('user-avatar').src = ev.target.result;
-            localStorage.setItem('savedAvatar', ev.target.result); 
+            document.getElementById('edit-avatar-preview').src = ev.target.result;
         };
         reader.readAsDataURL(e.target.files[0]);
     });
+
+    // 保持主页 Banner 上传逻辑
+    const baInput = document.getElementById('banner-upload');
     if(baInput) baInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
