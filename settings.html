@@ -4,89 +4,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>设置</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
     <style>
-        .settings-container { background: #f2f2f7; height: 100vh; margin:0; }
-        #phone-shell { background: #f2f2f7; height: 100%; }
-        
+        /* 1. 强制网页大背景为深色，使手机壳居中显现 */
+        body {
+            background: #1a1a1a !important; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* 禁止大背景滚动 */
+        }
+
+        /* 2. 固定手机外壳尺寸，确保与 index.html 完全一致 */
+        #phone-shell {
+            width: 393px !important;  
+            height: 852px !important; 
+            background: #f2f2f7;      
+            border-radius: 47px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;         
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+
+        /* 灵动岛装饰 (如果 style.css 里没写，这里必须补上) */
+        #phone-shell::before {
+            content: "";
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 1001;
+        }
+
+        /* 底部 Home 条装饰 */
+        #phone-shell::after {
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 100px;
+            z-index: 1001;
+        }
+
+        /* 3. 内容滚动区域：这是解决手机变形的关键 */
+        #viewport {
+            flex: 1;
+            overflow-y: auto;         
+            display: flex;
+            flex-direction: column;
+            -webkit-overflow-scrolling: touch;
+        }
+        #viewport::-webkit-scrollbar { display: none; }
+
+        /* 内部特定组件样式 */
         .header-title { 
             background: #f2f2f7; 
-            padding: 50px 15px 10px; 
+            padding: 60px 15px 10px; /* 顶部留出灵动岛的空间 */
             font-weight: bold; 
             font-size: 17px; 
             text-align: center;
-            position: relative;
+            position: sticky; /* 让标题在滚动时顶住 */
+            top: 0;
+            z-index: 100;
         }
 
+        .account-section { 
+            display: flex; align-items: center; padding: 15px; 
+            background: #fff; margin: 10px 15px; border-radius: 10px; 
+            cursor: pointer;
+        }
+        .account-avatar { 
+            width: 60px; height: 60px; background: #c7c7cc; 
+            border-radius: 50%; overflow: hidden; margin-right: 15px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .account-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        
         .ios-list { background: #fff; margin: 10px 15px 20px; border-radius: 10px; }
         .ios-item { 
             display: flex; align-items: center; padding: 12px 15px; 
             border-bottom: 0.5px solid #e5e5ea; cursor: pointer;
-            transition: background 0.2s;
         }
-        .ios-item:active { background: #d1d1d6; }
-        .ios-item:last-child { border-bottom: none; }
-        
-        .account-section { 
-            display: flex; align-items: center; padding: 15px; 
-            background: #fff; margin: 20px 15px 10px; border-radius: 10px; 
-            cursor: pointer; transition: background 0.2s;
-        }
-        .account-section:active { background: #d1d1d6; }
-        
-        /* 修正：支持显示真实图片头像 */
-        .account-avatar { 
-            width: 60px; height: 60px; background: #c7c7cc; 
-            border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; color: #fff; font-size: 30px; margin-right: 15px; 
-            overflow: hidden; /* 确保图片不超出圆角 */
-        }
-        .account-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        .account-info b { font-size: 19px; color: #000; display: block; }
-        .account-info p { font-size: 12px; color: #8e8e93; margin-top: 2px; }
-        
-        .arrow-r { margin-left: auto; color: #c7c7cc; font-size: 14px; }
+        .arrow-r { margin-left: auto; color: #c7c7cc; }
     </style>
 </head>
-<body class="settings-container">
+<body>
     <div id="phone-shell">
-        <div class="header-title">
-            <span style="position:absolute; left:15px; color:#007aff; cursor:pointer" onclick="window.location.href='index.html'">〈 返回</span>
-            <span>设置</span>
-        </div>
-
-        <div class="account-section" id="account-btn" onclick="handleAccountClick()">
-            <div class="account-avatar" id="avatar-container">
-                <span id="default-icon">👤</span>
+        <div id="viewport">
+            <div class="header-title">
+                <span style="position:absolute; left:15px; color:#007aff; cursor:pointer" onclick="window.location.href='index.html'">〈 返回</span>
+                <span>设置</span>
             </div>
-            <div class="account-info">
-                <b id="user-display-name">请登录</b>
-                <p id="user-display-desc">Apple 账户、iCloud 等</p>
+
+            <div class="account-section" id="account-btn" onclick="handleAccountClick()">
+                <div class="account-avatar" id="avatar-container">
+                    <span id="default-icon">👤</span>
+                </div>
+                <div class="account-info">
+                    <b id="user-display-name">请登录</b>
+                    <p id="user-display-desc">Apple 账户、iCloud 等</p>
+                </div>
+                <span class="arrow-r">〉</span>
             </div>
-            <span class="arrow-r">〉</span>
-        </div>
 
-        <div class="ios-list">
-            <div class="ios-item"><span>✈️ 飞行模式</span><span class="arrow-r">〉</span></div>
-            <div class="ios-item"><span>📶 无线局域网</span><span class="arrow-r">〉</span></div>
-            <div class="ios-item"><span>⚙️ 通用</span><span class="arrow-r">〉</span></div>
+            <div class="ios-list">
+                <div class="ios-item"><span>✈️ 飞行模式</span><span class="arrow-r">〉</span></div>
+                <div class="ios-item"><span>📶 无线局域网</span><span class="arrow-r">〉</span></div>
+                <div class="ios-item"><span>⚙️ 通用</span><span class="arrow-r">〉</span></div>
+                <div class="ios-item"><span>🔔 通知</span><span class="arrow-r">〉</span></div>
+                <div class="ios-item"><span>🔊 声音与触感</span><span class="arrow-r">〉</span></div>
+            </div>
         </div>
-
-        </div>
+    </div>
 
     <script>
+        // 保持你原有的逻辑不变
         document.addEventListener('DOMContentLoaded', () => {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             const currentUser = localStorage.getItem('currentUser');
             const savedAvatar = localStorage.getItem('savedAvatar');
             
             if (isLoggedIn === 'true' && currentUser) {
-                // 更新显示昵称
                 document.getElementById('user-display-name').innerText = currentUser;
                 document.getElementById('user-display-desc').innerText = "Apple 账户、iCloud、App Store";
-                
-                // 更新显示头像
                 if (savedAvatar) {
                     const container = document.getElementById('avatar-container');
                     container.innerHTML = `<img src="${savedAvatar}" alt="avatar">`;
@@ -94,50 +147,10 @@
             }
         });
 
-        // 修正：处理点击逻辑，已登录去 profile.html，未登录去 login.html
         function handleAccountClick() {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
-            if (isLoggedIn === 'true') {
-                window.location.href = 'profile.html';
-            } else {
-                window.location.href = 'login.html';
-            }
+            window.location.href = (isLoggedIn === 'true') ? 'profile.html' : 'login.html';
         }
     </script>
 </body>
 </html>
-
-/* 1. 强制网页背景为深色，模拟第一页的效果 */
-body {
-    background: #1a1a1a !important; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-
-/* 2. 强制手机外壳尺寸与第一页完全一致 */
-#phone-shell {
-    width: 393px !important;  /* 宽度对齐 */
-    height: 852px !important; /* 高度对齐 */
-    background: #f2f2f7;      /* iOS 设置页背景色 */
-    border-radius: 47px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;         /* 防止内容溢出壳外 */
-    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-}
-
-/* 3. 极其重要：让设置内容在手机内部滚动，而不是撑大手机 */
-#viewport {
-    flex: 1;
-    overflow-y: auto;         /* 允许内部纵向滚动 */
-    padding-bottom: 40px;     /* 为底部横条留出空间 */
-}
-
-/* 隐藏滚动条让页面更像手机 */
-#viewport::-webkit-scrollbar {
-    display: none;
-}
