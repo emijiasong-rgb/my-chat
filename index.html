@@ -127,9 +127,22 @@
 <script src="script.js"></script>
 
 <script>
+// 合并后的逻辑控制
 document.addEventListener('DOMContentLoaded', function() {
     refreshUserUI();
-    startLoading(); 
+
+    // 检查是否带了 from=settings 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const isFromSettings = urlParams.get('from') === 'settings';
+
+    if (isFromSettings) {
+        // 如果是从设置页返回，立刻隐藏欢迎层，显示主应用
+        document.getElementById('welcome-container').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+    } else {
+        // 否则（如正常进入），执行加载动画
+        startLoading(); 
+    }
 });
 
 function startLoading() {
@@ -147,7 +160,6 @@ function startLoading() {
             
             setTimeout(() => {
                 welcome.style.display = 'none';
-                // 修改点：使用 flex 让画面居中显示
                 mainApp.style.display = 'flex';
             }, 500);
         }
@@ -161,7 +173,6 @@ function refreshUserUI() {
     const currentUser = localStorage.getItem('currentUser');
     const userNameCard = document.getElementById('user-name');
 
-    // 只需要更新手机壳内部的名字即可
     if (isLoggedIn === 'true' && currentUser) {
         if (userNameCard) userNameCard.innerText = currentUser;
     } else {
@@ -169,7 +180,6 @@ function refreshUserUI() {
     }
 }
 
-// 即使删掉了顶栏，保留函数防止报错
 function logout() {
     if(confirm("确定要退出登录吗？")) {
         localStorage.removeItem('isLoggedIn');
@@ -177,25 +187,6 @@ function logout() {
         window.location.reload();
     }
 }
-
-    document.addEventListener('DOMContentLoaded', function() {
-    refreshUserUI();
-
-    // --- 新增逻辑：判断是否是从设置页返回的 ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const isFromSettings = urlParams.get('from') === 'settings';
-
-    if (isFromSettings) {
-        // 如果是从设置页来的，直接显示 App，不显示欢迎动画
-        document.getElementById('welcome-container').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
-    } else {
-        // 如果是正常打开（比如刷新），则执行原本的加载动画
-        startLoading(); 
-    }
-    // ---------------------------------------
-});
-    
 </script>
     
 </body>
