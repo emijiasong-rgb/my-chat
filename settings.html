@@ -106,3 +106,38 @@
     </script>
 </body>
 </html>
+
+/* 1. 强制网页背景为深色，模拟第一页的效果 */
+body {
+    background: #1a1a1a !important; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* 2. 强制手机外壳尺寸与第一页完全一致 */
+#phone-shell {
+    width: 393px !important;  /* 宽度对齐 */
+    height: 852px !important; /* 高度对齐 */
+    background: #f2f2f7;      /* iOS 设置页背景色 */
+    border-radius: 47px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;         /* 防止内容溢出壳外 */
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+/* 3. 极其重要：让设置内容在手机内部滚动，而不是撑大手机 */
+#viewport {
+    flex: 1;
+    overflow-y: auto;         /* 允许内部纵向滚动 */
+    padding-bottom: 40px;     /* 为底部横条留出空间 */
+}
+
+/* 隐藏滚动条让页面更像手机 */
+#viewport::-webkit-scrollbar {
+    display: none;
+}
