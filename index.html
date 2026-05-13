@@ -118,10 +118,36 @@
 <script src="script.js"></script>
 
 <script>
-// 页面加载时只检查状态，不强制跳转
+// 页面加载逻辑
 document.addEventListener('DOMContentLoaded', function() {
     refreshUserUI();
+    startLoading(); // 新增：启动加载动画
 });
+
+// 新增：处理进度条并自动进入主应用
+function startLoading() {
+    const fill = document.querySelector('.progress-fill');
+    const percentText = document.querySelector('.progress-percentage');
+    const welcome = document.getElementById('welcome-container');
+    const mainApp = document.getElementById('main-app');
+    let progress = 0;
+
+    const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 15) + 5; // 模拟随机进度
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            
+            // 进度完成后切换显示状态
+            setTimeout(() => {
+                welcome.style.display = 'none';
+                mainApp.style.display = 'block';
+            }, 500);
+        }
+        if(fill) fill.style.width = progress + '%';
+        if(percentText) percentText.innerText = progress;
+    }, 150);
+}
 
 function refreshUserUI() {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
@@ -133,25 +159,21 @@ function refreshUserUI() {
     const userNameCard = document.getElementById('user-name');
 
     if (isLoggedIn === 'true' && currentUser) {
-        // 已登录：切换顶栏 UI 并填入用户名
         if (guestTools) guestTools.style.display = 'none';
         if (userTools) userTools.style.display = 'block';
         if (usernameDisplay) usernameDisplay.innerText = currentUser;
         if (userNameCard) userNameCard.innerText = currentUser;
     } else {
-        // 未登录：保持默认 UI
         if (guestTools) guestTools.style.display = 'block';
         if (userTools) userTools.style.display = 'none';
         if (userNameCard) userNameCard.innerText = "未登录用户";
     }
 }
 
-// 退出登录函数
 function logout() {
     if(confirm("确定要退出登录吗？")) {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('currentUser');
-        // 刷新页面，UI 会自动变回“未登录”状态
         window.location.reload();
     }
 }
