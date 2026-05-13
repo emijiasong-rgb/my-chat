@@ -5,19 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>lulu chat</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 确保背景占满全屏，方便手机壳居中 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 防止出现滚动条 */
+            background-color: #f0f0f0; /* 或者你喜欢的背景色 */
+        }
+        /* 主应用容器：居中核心 */
+        #main-app {
+            width: 100%;
+            height: 100%;
+            display: none; /* 初始隐藏 */
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
 
-<div id="user-header">
-    <div id="guest-tools">
-        <button onclick="window.location.href='login.html'">登录 / 注册</button>
-    </div>
-    <div id="user-tools" style="display: none;">
-        <span>欢迎回来，<b id="username-display"></b></span>
-        <button onclick="logout()">退出登录</button>
-    </div>
-</div>
-    
 <div id="welcome-container" class="welcome-container">
     <div class="welcome-content">
         <h1 class="welcome-title">欢迎来到 lulu chat</h1>
@@ -30,7 +39,7 @@
     </div>
 </div>
 
-<div id="main-app" style="display: none;">
+<div id="main-app">
     <div id="phone-shell">
         <div class="status-bar">
             <span id="clock">12:00</span>
@@ -118,13 +127,11 @@
 <script src="script.js"></script>
 
 <script>
-// 页面加载逻辑
 document.addEventListener('DOMContentLoaded', function() {
     refreshUserUI();
-    startLoading(); // 新增：启动加载动画
+    startLoading(); 
 });
 
-// 新增：处理进度条并自动进入主应用
 function startLoading() {
     const fill = document.querySelector('.progress-fill');
     const percentText = document.querySelector('.progress-percentage');
@@ -133,15 +140,15 @@ function startLoading() {
     let progress = 0;
 
     const interval = setInterval(() => {
-        progress += Math.floor(Math.random() * 15) + 5; // 模拟随机进度
+        progress += Math.floor(Math.random() * 15) + 5;
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
             
-            // 进度完成后切换显示状态
             setTimeout(() => {
                 welcome.style.display = 'none';
-                mainApp.style.display = 'block';
+                // 修改点：使用 flex 让画面居中显示
+                mainApp.style.display = 'flex';
             }, 500);
         }
         if(fill) fill.style.width = progress + '%';
@@ -152,24 +159,17 @@ function startLoading() {
 function refreshUserUI() {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const currentUser = localStorage.getItem('currentUser');
-
-    const guestTools = document.getElementById('guest-tools');
-    const userTools = document.getElementById('user-tools');
-    const usernameDisplay = document.getElementById('username-display');
     const userNameCard = document.getElementById('user-name');
 
+    // 只需要更新手机壳内部的名字即可
     if (isLoggedIn === 'true' && currentUser) {
-        if (guestTools) guestTools.style.display = 'none';
-        if (userTools) userTools.style.display = 'block';
-        if (usernameDisplay) usernameDisplay.innerText = currentUser;
         if (userNameCard) userNameCard.innerText = currentUser;
     } else {
-        if (guestTools) guestTools.style.display = 'block';
-        if (userTools) userTools.style.display = 'none';
         if (userNameCard) userNameCard.innerText = "未登录用户";
     }
 }
 
+// 即使删掉了顶栏，保留函数防止报错
 function logout() {
     if(confirm("确定要退出登录吗？")) {
         localStorage.removeItem('isLoggedIn');
