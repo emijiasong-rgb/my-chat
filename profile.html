@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>个人信息</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 个人信息页专属微调 */
+        .profile-list { margin-top: 20px; background: white; border-top: 0.5px solid #ddd; border-bottom: 0.5px solid #ddd; }
+        .profile-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px; border-bottom: 0.5px solid #eee; font-size: 16px;
+        }
+        .profile-item:last-child { border-bottom: none; }
+        .profile-item input { border: none; text-align: right; font-size: 16px; color: #888; outline: none; width: 60%; }
+        .avatar-edit { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+        .logout-container { margin-top: 30px; padding: 0 15px; }
+    </style>
+</head>
+<body class="font-modern" style="background-color: #f2f2f7;">
+
+<div id="phone-shell" style="box-shadow: none; background: transparent;">
+    <div class="header-title" style="background: #f2f2f7; border: none; justify-content: space-between; padding: 0 15px;">
+        <span onclick="history.back()" style="color: #007aff; cursor: pointer;">〈 返回</span>
+        <span>个人信息</span>
+        <span onclick="saveProfile()" style="color: #007aff; font-weight: bold; cursor: pointer;">完成</span>
+    </div>
+
+    <div class="profile-list">
+        <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
+            <span>头像</span>
+            <div style="display: flex; align-items: center;">
+                <img src="默认头像.jpg" id="edit-avatar-preview" class="avatar-edit">
+                <span style="color: #ccc; margin-left: 10px;">〉</span>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+        </div>
+        <div class="profile-item">
+            <span>昵称</span>
+            <input type="text" id="edit-username" placeholder="请输入昵称">
+        </div>
+    </div>
+
+    <div class="logout-container">
+        <button class="black-square-btn" onclick="logout()" style="width: 100%; background: white; color: #ff3b30; border: none; border-radius: 10px; height: 50px;">退出登录</button>
+    </div>
+</div>
+
+<script>
+    // 页面加载时填充当前数据
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = localStorage.getItem('currentUser');
+        const savedAvatar = localStorage.getItem('savedAvatar');
+        
+        if (currentUser) document.getElementById('edit-username').value = currentUser;
+        if (savedAvatar) document.getElementById('edit-avatar-preview').src = savedAvatar;
+    });
+
+    // 处理头像预览
+    document.getElementById('avatar-input').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            document.getElementById('edit-avatar-preview').src = ev.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // 保存修改
+    function saveProfile() {
+        const newName = document.getElementById('edit-username').value;
+        const newAvatar = document.getElementById('edit-avatar-preview').src;
+
+        if (!newName.trim()) { alert("昵称不能为空"); return; }
+
+        localStorage.setItem('currentUser', newName);
+        localStorage.setItem('savedAvatar', newAvatar);
+        
+        alert("修改成功");
+        location.href = 'index.html'; // 返回主页
+    }
+
+    // 退出登录逻辑
+    function logout() {
+        if(confirm("确定要退出登录吗？")) {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('currentUser');
+            location.href = 'login.html'; 
+        }
+    }
+</script>
+
+</body>
+</html>
