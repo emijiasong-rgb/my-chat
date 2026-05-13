@@ -5,18 +5,35 @@
     --text-grey: #888;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-tap-highlight-color: transparent; 
+}
 
+/* --- 修正：确保 body 作为背景容器完全居中 --- */
 body {
-    background: #333;
+    background: #1a1a1a; /* 深色背景更显高级，衬托手机壳 */
     height: 100vh;
+    width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden; /* 禁止浏览器出现滚动条 */
 }
 
-/* --- 修正：添加灵动岛与底部横条 --- */
+/* --- 修正：主应用容器设为 flex 居中 --- */
+#main-app {
+    width: 100%;
+    height: 100%;
+    display: flex; /* 配合脚本逻辑，确保加载完后居中 */
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- 保持原有：灵动岛与底部横条 --- */
 #phone-shell {
     width: 393px; 
     height: 852px;
@@ -25,7 +42,8 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    /* 修正：增强阴影效果，让手机壳在中间更立体 */
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
     border-radius: 47px;
     flex-shrink: 0;
 }
@@ -60,17 +78,17 @@ body {
 
 .status-bar {
     height: 44px;
-    padding: 0 20px;
+    padding: 0 28px; /* 修正：增加一点边距，避开屏幕圆角 */
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 14px;
     font-weight: bold;
-    z-index: 1002; /* 确保在灵动岛之上 */
+    z-index: 1002; 
     position: relative;
 }
 
-/* --- 以下保持你的原有样式不变 --- */
+/* --- 以下是你原有的其余样式，保持原封不动 --- */
 
 .status-icons {
     display: flex;
@@ -251,7 +269,7 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 30px 15px;
     margin-top: 20px;
-    padding: 0 20px; /* 修正：稍微加宽一点内边距更协调 */
+    padding: 0 20px;
 }
 
 .app-icon {
@@ -376,7 +394,6 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     font-weight: 300;
 }
 
-/* 统一输入框修正 */
 .ios-input-large {
     width: 100%;
     max-width: 300px;
@@ -387,7 +404,7 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     margin-bottom: 20px;
     font-size: 16px;
     color: #000;
-    -webkit-appearance: none; /* 移除 iOS 默认内阴影 */
+    -webkit-appearance: none; 
 }
 
 .black-square-btn {
@@ -416,5 +433,3 @@ body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-
     font-size: 16px;
     z-index: 100;
 }
-
-/* ...原有其余样式... */
