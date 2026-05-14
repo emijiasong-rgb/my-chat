@@ -1,193 +1,213 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>lulu chat</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* 确保背景占满全屏，方便手机壳居中 */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* 防止出现滚动条 */
-            background-color: #f0f0f0; /* 或者你喜欢的背景色 */
-        }
-        /* 主应用容器：居中核心 */
-        #main-app {
-            width: 100%;
-            height: 100%;
-            display: none; /* 初始隐藏 */
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>lulu chat</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 确保背景占满全屏，方便手机壳居中 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 防止出现滚动条 */
+            background-color: #f0f0f0; 
+        }
+        /* 主应用容器：居中核心 */
+        #main-app {
+            width: 100%;
+            height: 100%;
+            display: none; /* 初始隐藏 */
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
 
 <div id="welcome-container" class="welcome-container">
-    <div class="welcome-content">
-        <h1 class="welcome-title">欢迎来到 lulu chat</h1>
-        <div class="progress-bar-container">
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <p class="progress-text">页面加载中... <span class="progress-percentage">0</span>%</p>
-        </div>
-    </div>
+    <div class="welcome-content">
+        <h1 class="welcome-title">欢迎来到 lulu chat</h1>
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p class="progress-text">页面加载中... <span class="progress-percentage">0</span>%</p>
+        </div>
+    </div>
 </div>
 
 <div id="main-app">
-    <div id="phone-shell">
-        <div class="status-bar">
-            <span id="clock">12:00</span>
-            <div class="status-icons">
-                <span id="network-icon">
-                    <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
-                        <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
-                        <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
-                        <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
-                        <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
-                    </svg>
-                </span>
-                <span id="battery-container">
-                    <svg id="battery-icon" width="25" height="12" viewBox="0 0 25 12">
-                        <rect x="0" y="0" width="22" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1"/>
-                        <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
-                        <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
-                    </svg>
-                    <span id="battery-percent">--%</span>
-                </span>
-            </div>
-        </div>
+    <div id="phone-shell">
+        <div class="status-bar">
+            <span id="clock">12:00</span>
+            <div class="status-icons">
+                <span id="network-icon">
+                    <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
+                        <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
+                        <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
+                        <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
+                        <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+                    </svg>
+                </span>
+                <span id="battery-container">
+                    <svg id="battery-icon" width="25" height="12" viewBox="0 0 25 12">
+                        <rect x="0" y="0" width="22" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
+                    </svg>
+                    <span id="battery-percent">--%</span>
+                </span>
+            </div>
+        </div>
 
-        <div id="viewport">
-            <section id="page-home" class="page active">
-                <div class="profile-card">
-                    <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()">
-                        <div class="upload-hint-banner">更换背景图片</div>
-                    </div>
-                    <div class="profile-content-wrapper">
-                        <div class="profile-info">
-                            <div class="profile-avatar-wrapper" onclick="document.getElementById('avatar-upload').click()">
-                                <img src="默认头像.jpg" id="user-avatar">
-                                <div class="upload-hint">更换图片</div>
-                            </div>
-                            <h2 contenteditable="true" id="user-name">未登录用户</h2>
-                            <p contenteditable="true" id="user-signature">请输入个性签名</p>
-                            <span contenteditable="true" id="user-location">📍 请输入地区</span>
-                        </div>
-                        <div class="profile-clock-box">
-                            <div id="big-time">--:--</div>
-                            <div id="big-date">加载中...</div>
-                        </div>
-                    </div>
-                </div>
+        <div id="viewport">
+            <section id="page-home" class="page active">
+                <div class="profile-card">
+                    <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()">
+                        <div class="upload-hint-banner">更换背景图片</div>
+                    </div>
+                    <div class="profile-content-wrapper">
+                        <div class="profile-info">
+                            <div class="profile-avatar-wrapper" onclick="document.getElementById('avatar-upload').click()">
+                                <img src="默认头像.jpg" id="user-avatar">
+                                <div class="upload-hint">更换图片</div>
+                            </div>
+                            <h2 id="user-name">未登录用户</h2>
+                            <p id="user-signature">请输入个性签名</p>
+                            <span id="user-location">📍 请输入地区</span>
+                        </div>
+                        <div class="profile-clock-box">
+                            <div id="big-time">--:--</div>
+                            <div id="big-date">加载中...</div>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="app-grid">
-                    <div class="app-icon" onclick="switchTab('message')">
-                        <div class="icon-box">💬</div>
-                        <span>Chat</span>
-                    </div>
-                    <div class="app-icon gray-scale" onclick="alert('纪念日功能开发中...')">
-                        <div class="icon-box">🤍</div>
-                        <span>Ourtale</span>
-                    </div>
-                    <div class="app-icon" onclick="window.location.href='settings.html'">
-                        <div class="icon-box">⚙️</div>
-                        <span>Settings</span>
-                    </div>
-                </div>
-            </section>
+                <div class="app-grid">
+                    <div class="app-icon" onclick="switchTab('message')">
+                        <div class="icon-box">💬</div>
+                        <span>Chat</span>
+                    </div>
+                    <div class="app-icon gray-scale" onclick="alert('纪念日功能开发中...')">
+                        <div class="icon-box">🤍</div>
+                        <span>Ourtale</span>
+                    </div>
+                    <div class="app-icon" onclick="window.location.href='settings.html'">
+                        <div class="icon-box">⚙️</div>
+                        <span>Settings</span>
+                    </div>
+                </div>
+            </section>
 
-            <section id="page-message" class="page">
-                <div class="header-title">微信</div>
-                <div class="list-item" onclick="openChat('张三')">
-                    <div class="avatar" style="background: #ff9500; width:40px; height:40px; border-radius:5px; margin:10px;"></div>
-                    <div style="flex:1; padding-top:10px;">
-                        <b>张三</b>
-                        <p style="color:#888; font-size:13px;">今晚出来吃火锅吗？</p>
-                    </div>
-                </div>
-            </section>
-        </div>
+            <section id="page-message" class="page">
+                <div class="header-title">微信</div>
+                <div class="list-item" onclick="openChat('张三')">
+                    <div class="avatar" style="background: #ff9500; width:40px; height:40px; border-radius:5px; margin:10px;"></div>
+                    <div style="flex:1; padding-top:10px;">
+                        <b>张三</b>
+                        <p style="color:#888; font-size:13px;">今晚出来吃火锅吗？</p>
+                    </div>
+                </div>
+            </section>
+        </div>
 
-        <nav id="nav-bar" style="display: none;">
-            <div class="nav-item" onclick="switchTab('message')">💬<br>消息</div>
-            <div class="nav-item" onclick="goHome()">🏠<br>桌面</div>
-        </nav>
+        <nav id="nav-bar" style="display: none;">
+            <div class="nav-item" onclick="switchTab('message')">💬<br>消息</div>
+            <div class="nav-item" onclick="goHome()">🏠<br>桌面</div>
+        </nav>
 
-        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
-        <input type="file" id="banner-upload" accept="image/*" style="display: none;">
-    </div>
+        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+        <input type="file" id="banner-upload" accept="image/*" style="display: none;">
+    </div>
 </div>
 
 <script src="script.js"></script>
 
 <script>
-// 合并后的逻辑控制
+// 逻辑控制部分：完整保留你的原生功能，仅增强同步逻辑
 document.addEventListener('DOMContentLoaded', function() {
-    refreshUserUI();
+    refreshUserUI(); // 调用更新函数
 
-    // 检查是否带了 from=settings 参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const isFromSettings = urlParams.get('from') === 'settings';
+    const urlParams = new URLSearchParams(window.location.search);
+    const isFromSettings = urlParams.get('from') === 'settings';
 
-    if (isFromSettings) {
-        // 如果是从设置页返回，立刻隐藏欢迎层，显示主应用
-        document.getElementById('welcome-container').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
-    } else {
-        // 否则（如正常进入），执行加载动画
-        startLoading(); 
-    }
+    if (isFromSettings) {
+        document.getElementById('welcome-container').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+    } else {
+        startLoading(); 
+    }
 });
 
 function startLoading() {
-    const fill = document.querySelector('.progress-fill');
-    const percentText = document.querySelector('.progress-percentage');
-    const welcome = document.getElementById('welcome-container');
-    const mainApp = document.getElementById('main-app');
-    let progress = 0;
+    const fill = document.querySelector('.progress-fill');
+    const percentText = document.querySelector('.progress-percentage');
+    const welcome = document.getElementById('welcome-container');
+    const mainApp = document.getElementById('main-app');
+    let progress = 0;
 
-    const interval = setInterval(() => {
-        progress += Math.floor(Math.random() * 15) + 5;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            
-            setTimeout(() => {
-                welcome.style.display = 'none';
-                mainApp.style.display = 'flex';
-            }, 500);
-        }
-        if(fill) fill.style.width = progress + '%';
-        if(percentText) percentText.innerText = progress;
-    }, 150);
+    const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 15) + 5;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            
+            setTimeout(() => {
+                welcome.style.display = 'none';
+                mainApp.style.display = 'flex';
+            }, 500);
+        }
+        if(fill) fill.style.width = progress + '%';
+        if(percentText) percentText.innerText = progress;
+    }, 150);
 }
 
+// 核心增强：读取本地存储的所有信息并应用到桌面
 function refreshUserUI() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const currentUser = localStorage.getItem('currentUser');
-    const userNameCard = document.getElementById('user-name');
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const currentUser = localStorage.getItem('currentUser') || "未登录用户";
+    const avatar = localStorage.getItem('savedAvatar');
+    const bio = localStorage.getItem('userBio') || '请输入个性签名';
+    const location = localStorage.getItem('userLocation') || '请输入地区';
+    const wallpaper = localStorage.getItem('userWallpaper'); // 壁纸数据
 
-    if (isLoggedIn === 'true' && currentUser) {
-        if (userNameCard) userNameCard.innerText = currentUser;
-    } else {
-        if (userNameCard) userNameCard.innerText = "未登录用户";
-    }
+    // 更新名字
+    const userNameCard = document.getElementById('user-name');
+    if (userNameCard) userNameCard.innerText = currentUser;
+
+    // 更新头像
+    const userAvatarImg = document.getElementById('user-avatar');
+    if (userAvatarImg && avatar) userAvatarImg.src = avatar;
+
+    // 更新签名
+    const userSignature = document.getElementById('user-signature');
+    if (userSignature) userSignature.innerText = bio;
+
+    // 更新地区
+    const userLoc = document.getElementById('user-location');
+    if (userLoc) userLoc.innerText = '📍 ' + location;
+
+    // 应用壁纸到桌面背景
+    const homePage = document.getElementById('page-home');
+    if (homePage && wallpaper) {
+        homePage.style.backgroundImage = `url(${wallpaper})`;
+        homePage.style.backgroundSize = 'cover';
+        homePage.style.backgroundPosition = 'center';
+    }
 }
 
 function logout() {
-    if(confirm("确定要退出登录吗？")) {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('currentUser');
-        window.location.reload();
-    }
+    if(confirm("确定要退出登录吗？")) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('savedAvatar');
+        window.location.reload();
+    }
 }
 </script>
-    
+    
 </body>
 </html>
