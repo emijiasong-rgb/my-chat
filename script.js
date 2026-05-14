@@ -106,24 +106,33 @@ function saveProfile() {
     openPage('settings');
 }
 
-// 修改：刷新全局用户信息显示的辅助函数
 function refreshUserDisplay() {
     const name = localStorage.getItem('currentUser') || '未登录';
     const avatar = localStorage.getItem('savedAvatar');
-    const bio = localStorage.getItem('userBio') || '请输入个性签名'; // 新增：读取签名
-    const location = localStorage.getItem('userLocation') || '请输入地区'; // 新增：读取地区
+    const bio = localStorage.getItem('userBio') || '请输入个性签名'; 
+    const location = localStorage.getItem('userLocation') || '请输入地区'; 
+    const wallpaper = localStorage.getItem('userWallpaper'); // 读取壁纸
 
-    // 更新设置页显示
-    const settingsName = document.getElementById('settings-username-display');
-    const settingsAvatar = document.getElementById('settings-avatar-display');
-    if(settingsName) settingsName.innerText = name;
-    if(settingsAvatar && avatar) settingsAvatar.src = avatar;
-
-    // 更新主页 Profile Card 显示
+    // 1. 更新名字和头像
     const homeName = document.getElementById('user-name');
     const homeAvatar = document.getElementById('user-avatar');
     if(homeName) homeName.innerText = name;
     if(homeAvatar && avatar) homeAvatar.src = avatar;
+
+    // 2. 更新签名和地区 (对应你 HTML 里的 ID)
+    const homeBio = document.getElementById('user-signature');
+    const homeLocation = document.getElementById('user-location');
+    if(homeBio) homeBio.innerText = bio;
+    if(homeLocation) homeLocation.innerText = '📍 ' + location;
+
+    // 3. 更新桌面壁纸
+    const homePage = document.getElementById('page-home');
+    if (homePage && wallpaper) {
+        homePage.style.backgroundImage = `url(${wallpaper})`;
+        homePage.style.backgroundSize = 'cover';
+        homePage.style.backgroundPosition = 'center';
+    }
+}
 
     // === 新增：更新主页签名和地区显示 ===
     const homeBio = document.querySelector('.profile-info p');
