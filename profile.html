@@ -6,9 +6,9 @@
     <title>个人信息</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 页面背景（模拟外部深灰色） */
+        /* 1. 外部背景：改成第一张图那种深灰色，确保能看清手机 */
         body.font-modern {
-            background-color: #e0e0e0; 
+            background-color: #1a1a1a; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -16,30 +16,48 @@
             margin: 0;
         }
 
-        /* 手机模型容器 */
+        /* 2. 手机模型容器 */
         #phone-shell {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
             background: #f2f2f7; 
             width: 375px; 
             height: 812px; 
-            border-radius: 40px; 
+            border-radius: 47px; 
             overflow: hidden; 
             position: relative; 
-            border: 8px solid #fff; /* 白色手机边框 */
+            border: 8px solid #fff; 
         }
 
-        /* 个人信息页专属微调 */
+        /* 列表样式 */
         .profile-list { margin-top: 20px; background: white; border-top: 0.5px solid #ddd; border-bottom: 0.5px solid #ddd; }
         .profile-item { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 15px; border-bottom: 0.5px solid #eee; font-size: 16px;
         }
         .profile-item:last-child { border-bottom: none; }
-        .profile-item input { border: none; text-align: right; font-size: 16px; color: #888; outline: none; width: 60%; background: none; }
-        .profile-item input[type="date"] { color: #007aff; cursor: pointer; }
+
+        /* 3. 输入框文字颜色逻辑：初始灰色，写字变黑 */
+        .profile-item input { 
+            border: none; 
+            text-align: right; 
+            font-size: 16px; 
+            outline: none; 
+            width: 60%; 
+            background: none;
+            color: #000; /* 输入时的颜色 */
+        }
+        .profile-item input::placeholder {
+            color: #888; /* 未输入时的灰色提示词 */
+        }
         
         .avatar-edit { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
         .logout-container { margin-top: 30px; padding: 0 15px; }
+
+        /* 灵动岛装饰 */
+        #phone-shell::before {
+            content: ""; position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+            width: 120px; height: 35px; background: #000; border-radius: 20px; z-index: 1001;
+        }
     </style>
 </head>
 <body class="font-modern">
@@ -67,8 +85,27 @@
         </div>
 
         <div class="profile-item">
+            <span>个性签名</span>
+            <input type="text" id="edit-bio" placeholder="请输入个性签名">
+        </div>
+
+        <div class="profile-item">
+            <span>地区</span>
+            <input type="text" id="edit-location" placeholder="请输入地区">
+        </div>
+
+        <div class="profile-item">
             <span>生日</span>
             <input type="date" id="edit-birthday">
+        </div>
+
+        <div class="profile-item" onclick="document.getElementById('bg-input').click()">
+            <span>更换桌面壁纸</span>
+            <div style="display: flex; align-items: center;">
+                <span style="color: #888; font-size: 14px;">点击上传</span>
+                <span style="color: #ccc; margin-left: 10px;">〉</span>
+            </div>
+            <input type="file" id="bg-input" accept="image/*" style="display: none;">
         </div>
     </div>
 
@@ -78,53 +115,54 @@
 </div>
 
 <script>
-    // 页面加载时填充当前数据
     document.addEventListener('DOMContentLoaded', () => {
-        const currentUser = localStorage.getItem('currentUser');
-        const savedAvatar = localStorage.getItem('savedAvatar');
-        const savedBirthday = localStorage.getItem('userBirthday');
-        
-        if (currentUser) document.getElementById('edit-username').value = currentUser;
-        if (savedAvatar) document.getElementById('edit-avatar-preview').src = savedAvatar;
-        if (savedBirthday) document.getElementById('edit-birthday').value = savedBirthday;
+        // 加载已存数据
+        document.getElementById('edit-username').value = localStorage.getItem('currentUser') || "";
+        document.getElementById('edit-avatar-preview').src = localStorage.getItem('savedAvatar') || "默认头像.jpg";
+        document.getElementById('edit-birthday').value = localStorage.getItem('userBirthday') || "";
+        document.getElementById('edit-bio').value = localStorage.getItem('userBio') || "";
+        document.getElementById('edit-location').value = localStorage.getItem('userLocation') || "";
     });
 
-    // 处理头像预览
+    // 头像预览处理
     document.getElementById('avatar-input').addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
+        if (e.target.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(ev) {
-                document.getElementById('edit-avatar-preview').src = ev.target.result;
-            };
+            reader.onload = (ev) => document.getElementById('edit-avatar-preview').src = ev.target.result;
             reader.readAsDataURL(e.target.files[0]);
         }
     });
 
-    // 保存修改
+    // 壁纸上传处理
+    document.getElementById('bg-input').addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (ev) => localStorage.setItem('userWallpaper', ev.target.result);
+            reader.readAsDataURL(e.target.files[0]);
+            alert("壁纸已选择，点击完成后生效");
+        }
+    });
+
     function saveProfile() {
-        const newName = document.getElementById('edit-username').value;
-        const newAvatar = document.getElementById('edit-avatar-preview').src;
-        const newBirthday = document.getElementById('edit-birthday').value;
+        const name = document.getElementById('edit-username').value;
+        if (!name.trim()) { alert("昵称不能为空"); return; }
 
-        if (!newName.trim()) { alert("昵称不能为空"); return; }
-
-        localStorage.setItem('currentUser', newName);
-        localStorage.setItem('savedAvatar', newAvatar);
-        localStorage.setItem('userBirthday', newBirthday);
+        localStorage.setItem('currentUser', name);
+        localStorage.setItem('savedAvatar', document.getElementById('edit-avatar-preview').src);
+        localStorage.setItem('userBirthday', document.getElementById('edit-birthday').value);
+        localStorage.setItem('userBio', document.getElementById('edit-bio').value);
+        localStorage.setItem('userLocation', document.getElementById('edit-location').value);
         
         alert("修改成功");
         location.href = 'index.html'; 
     }
 
-    // 退出登录
     function logout() {
         if(confirm("确定要退出登录吗？")) {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('currentUser');
+            localStorage.clear();
             location.href = 'login.html'; 
         }
     }
 </script>
-
 </body>
 </html>
