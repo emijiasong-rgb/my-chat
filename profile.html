@@ -21,15 +21,40 @@
         .logout-container { margin-top: 30px; padding: 0 15px; }
     </style>
 </head>
-<body class="font-modern" style="background-color: #f2f2f7;">
+<<body class="font-modern" style="background-color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;">
 
-<div id="phone-shell" style="box-shadow: none; background: transparent;">
-    <div class="header-title" style="background: #f2f2f7; border: none; justify-content: space-between; padding: 50px 15px 10px; display: flex; align-items: center;">
+<div id="phone-shell" style="
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+    background: #f2f2f7; 
+    width: 375px; 
+    height: 812px; 
+    border-radius: 40px; 
+    overflow: hidden; 
+    position: relative; 
+    border: 8px solid #fff;">
+
+    <div class="header-title" style="background: #ffffff; border-bottom: 0.5px solid #ddd; justify-content: space-between; padding: 50px 15px 10px; display: flex; align-items: center;">
         <span onclick="history.back()" style="color: #007aff; cursor: pointer;">〈 返回</span>
         <span style="font-weight: bold; font-size: 17px;">个人信息</span>
         <span onclick="saveProfile()" style="color: #007aff; font-weight: bold; cursor: pointer;">完成</span>
     </div>
 
+    ```
+
+---
+
+### 关键修改点说明：
+
+* **`background-color: #e0e0e0`**：这是网页的最底层颜色。改深一点后，白色的“手机”就会跳出来，视觉上非常清晰。
+* **`display: flex; justify-content: center;`**：这几行代码会让你的手机模型水平垂直居中，看起来更高端。
+* **`width: 375px; height: 812px;`**：固定了手机的大小（iPhone X 比例）。如果不加这个，手机壳会撑满整个屏幕。
+* **`border-radius: 40px;`**：加上大圆角，模拟真实手机屏幕。
+* **`box-shadow`**：给手机加了一层淡淡的阴影，增加立体感。
+
+### 还有个小建议：
+在你的 `header-title` 里，我把背景改成了 `background: #ffffff;`（白色）。这样你的标题栏是白的，下面列表背景也是白的，中间夹着淡淡的灰色，会更有层次感，就像第一张图里那样。
+
+你可以直接替换试试看，如果觉得手机太小或太大，随时调整 `width` 和 `height` 即可！
     <div class="profile-list">
         <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
             <span>头像</span>
