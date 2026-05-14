@@ -27,7 +27,10 @@
 </head>
 <body>
 
- function updateClocks() {
+ <body>
+
+<script>
+function updateClocks() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -45,9 +48,11 @@
     if(document.getElementById('big-date'))
         document.getElementById('big-date').innerText = now.toLocaleDateString('zh-CN', options);
 }
+// 立即执行一次并设置定时器
 setInterval(updateClocks, 1000);
-updateClocks();
-    
+document.addEventListener('DOMContentLoaded', updateClocks);
+</script>
+
 <div id="welcome-container" class="welcome-container">
     <div class="welcome-content">
         <h1 class="welcome-title">欢迎来到 lulu chat</h1>
