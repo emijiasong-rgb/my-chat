@@ -106,10 +106,12 @@ function saveProfile() {
     openPage('settings');
 }
 
-// 新增：刷新全局用户信息显示的辅助函数
+// 修改：刷新全局用户信息显示的辅助函数
 function refreshUserDisplay() {
     const name = localStorage.getItem('currentUser') || '未登录';
     const avatar = localStorage.getItem('savedAvatar');
+    const bio = localStorage.getItem('userBio') || '请输入个性签名'; // 新增：读取签名
+    const location = localStorage.getItem('userLocation') || '请输入地区'; // 新增：读取地区
 
     // 更新设置页显示
     const settingsName = document.getElementById('settings-username-display');
@@ -122,6 +124,12 @@ function refreshUserDisplay() {
     const homeAvatar = document.getElementById('user-avatar');
     if(homeName) homeName.innerText = name;
     if(homeAvatar && avatar) homeAvatar.src = avatar;
+
+    // === 新增：更新主页签名和地区显示 ===
+    const homeBio = document.querySelector('.profile-info p');
+    const homeLocation = document.querySelector('.profile-info span');
+    if(homeBio) homeBio.innerText = bio;
+    if(homeLocation) homeLocation.innerText = '📍 ' + location;
 }
 
 // 整合后的切换标签函数
@@ -355,13 +363,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    // 调用全局同步刷新
+    // 调用全局同步刷新（现在包含签名和地区了）
     refreshUserDisplay();
 
+    // === 新增：加载桌面壁纸逻辑 ===
+    const savedWallpaper = localStorage.getItem('userWallpaper');
+    const homePage = document.getElementById('page-home');
+    if (savedWallpaper && homePage) {
+        homePage.style.backgroundImage = `url(${savedWallpaper})`;
+        homePage.style.backgroundSize = 'cover';
+        homePage.style.backgroundPosition = 'center';
+    }
+
+    // 保持主页 Banner 上传逻辑（这是你卡片上方的横幅，不是背景）
     const baDiv = document.getElementById('profile-banner');
     if (localStorage.getItem('savedBanner') && baDiv) baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
 
-    // 通用图片上传逻辑：头像修改页的上传预览
+    // ... 后面你原来的图片上传逻辑和 WelcomeScreen 保持不变 ...
     const editAvInput = document.getElementById('edit-avatar-upload');
     if(editAvInput) editAvInput.addEventListener('change', (e) => {
         const reader = new FileReader();
@@ -371,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // 保持主页 Banner 上传逻辑
     const baInput = document.getElementById('banner-upload');
     if(baInput) baInput.addEventListener('change', (e) => {
         const reader = new FileReader();
