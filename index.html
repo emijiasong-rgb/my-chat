@@ -27,7 +27,26 @@
 </head>
 <body>
 
- 
+ function updateClocks() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    // 更新顶部状态栏小时间
+    if(document.getElementById('clock')) 
+        document.getElementById('clock').innerText = `${hours}:${minutes}`;
+    
+    // 更新卡片上的大时间
+    if(document.getElementById('big-time')) 
+        document.getElementById('big-time').innerText = `${hours}:${minutes}`;
+    
+    // 更新日期
+    const options = { month: 'long', day: 'numeric', weekday: 'short' };
+    if(document.getElementById('big-date'))
+        document.getElementById('big-date').innerText = now.toLocaleDateString('zh-CN', options);
+}
+setInterval(updateClocks, 1000);
+updateClocks();
     
 <div id="welcome-container" class="welcome-container">
     <div class="welcome-content">
