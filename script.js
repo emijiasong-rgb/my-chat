@@ -73,7 +73,6 @@ function openPage(pageId) {
         const fontSelect = document.getElementById('font-family-select');
         if(fontSelect) fontSelect.value = savedFont;
 
-        // 刷新设置页显示的头像和名字
         refreshUserDisplay();
     }
 }
@@ -82,17 +81,16 @@ function openPage(pageId) {
 function openProfilePage() {
     openPage('profile-edit');
     
-    // ✅ 修正：匹配你 HTML 里的 ID
     const currentName = localStorage.getItem('currentUser') || '未登录';
     const currentAvatar = localStorage.getItem('savedAvatar') || '默认头像.jpg';
     const currentBio = localStorage.getItem('userBio') || '';
     const currentLocation = localStorage.getItem('userLocation') || '';
     const currentBirthday = localStorage.getItem('userBirthday') || '';
     
-    const nameInput = document.getElementById('edit-username');        // ✅ 和 HTML 一致
-    const bioInput = document.getElementById('edit-bio');              // ✅
-    const locationInput = document.getElementById('edit-location');    // ✅
-    const birthdayInput = document.getElementById('edit-birthday');    // ✅
+    const nameInput = document.getElementById('edit-username');
+    const bioInput = document.getElementById('edit-bio');
+    const locationInput = document.getElementById('edit-location');
+    const birthdayInput = document.getElementById('edit-birthday');
     const avatarPreview = document.getElementById('edit-avatar-preview');
     
     if(nameInput) nameInput.value = currentName;
@@ -101,14 +99,14 @@ function openProfilePage() {
     if(birthdayInput) birthdayInput.value = currentBirthday;
     if(avatarPreview) avatarPreview.src = currentAvatar;
     
-    // ✅ 检查壁纸状态
+    // 桌面壁纸状态
     const bgStatus = document.getElementById('bg-status');
     if(bgStatus && localStorage.getItem('userWallpaper')) {
         bgStatus.textContent = '已设置';
         bgStatus.style.color = '#34c759';
     }
     
-    // ✅ 检查个人主页背景状态
+    // 个人主页背景状态
     const headerBgStatus = document.getElementById('header-bg-status');
     if(headerBgStatus && localStorage.getItem('headerBackground')) {
         headerBgStatus.textContent = '已设置';
@@ -118,7 +116,6 @@ function openProfilePage() {
 
 // 保存个人信息并同步
 function saveProfile() {
-    // ✅ 修正：匹配你 HTML 里的 ID
     const newName = document.getElementById('edit-username').value.trim();
     const newBio = document.getElementById('edit-bio').value.trim();
     const newLocation = document.getElementById('edit-location').value.trim();
@@ -135,7 +132,7 @@ function saveProfile() {
     
     refreshUserDisplay();
     alert('修改成功！');
-    openPage('settings');
+    goHome(); // 修改后建议直接回主页看效果
 }
 
 function refreshUserDisplay() {
@@ -144,7 +141,7 @@ function refreshUserDisplay() {
     const bio = localStorage.getItem('userBio') || '请输入个性签名'; 
     const location = localStorage.getItem('userLocation') || '请输入地区'; 
     const wallpaper = localStorage.getItem('userWallpaper');
-    const headerBg = localStorage.getItem('headerBackground'); // ✅ 新增：头像后面背景
+    const headerBg = localStorage.getItem('headerBackground');
 
     // 1. 更新名字和头像
     const homeName = document.getElementById('user-name');
@@ -162,29 +159,25 @@ function refreshUserDisplay() {
     const homePage = document.getElementById('page-home');
     if (homePage && wallpaper) {
         homePage.style.backgroundImage = `url(${wallpaper})`;
-        homePage.style.backgroundSize = 'cover';
-        homePage.style.backgroundPosition = 'center';
     }
     
-    // ✅ 新增：更新头像后面的背景（个人主页背景）
-    const profileHeader = document.getElementById('profile-header'); // 假设这是头像区域的容器
-    if (profileHeader && headerBg) {
-        profileHeader.style.backgroundImage = `url(${headerBg})`;
-        profileHeader.style.backgroundSize = 'cover';
-        profileHeader.style.backgroundPosition = 'center';
+    // 4. 更新头像后面的背景（个人主页背景）
+    // 这里匹配你 index.html 里的 ID: profile-banner
+    const profileBanner = document.getElementById('profile-banner');
+    if (profileBanner && headerBg) {
+        profileBanner.style.backgroundImage = `url(${headerBg})`;
+        profileBanner.style.backgroundSize = 'cover';
+        profileBanner.style.backgroundPosition = 'center';
     }
 }
 
-// 整合后的切换标签函数
 function switchTab(tabId) {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
-    
     if (tabId === 'message' && isLoggedIn !== 'true') {
         alert("请先登录后再使用聊天功能");
         window.location.href = 'login.html';
         return;
     }
-
     openPage(tabId);
     const navBar = document.getElementById('nav-bar');
     if(navBar) navBar.style.display = 'flex';
@@ -195,18 +188,15 @@ function goHome() {
     document.getElementById('nav-bar').style.display = 'none';
 }
 
-// 退出登录逻辑
+// 退出登录
 function logout() {
     if(confirm("确定要退出登录吗？")) {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('savedAvatar');
-        window.location.reload(); 
+        localStorage.clear(); // 退出建议清空，或者按需 removeItem
+        window.location.href = 'login.html';
     }
 }
 
-// === 2. 核心功能：保存配置 & 切换字体 ===
-
+// === 2. 配置 & 字体 ===
 function applyFont(fontKey) {
     document.body.classList.remove('font-cute', 'font-serif', 'font-modern');
     if (fontKey && fontKey !== 'default') {
@@ -225,43 +215,11 @@ function saveSettings() {
         localStorage.setItem('user-font', selectedFont);
         applyFont(selectedFont); 
     }
-
-    alert('所有配置已保存！');
+    alert('配置已保存！');
     goHome();
 }
 
-async function fetchModels() {
-    const url = document.getElementById('api-url-input').value;
-    const key = document.getElementById('api-key-input').value;
-    const listContainer = document.getElementById('model-list-container');
-    if (!url || !key) { alert('请先填地址和Key！'); return; }
-
-    listContainer.style.display = 'block';
-    listContainer.innerHTML = '<div style="padding: 10px;">连接中...</div>';
-
-    try {
-        const response = await fetch(`${url}/v1/models`, {
-            headers: { 'Authorization': `Bearer ${key}` }
-        });
-        const data = await response.json();
-        if (data.data) {
-            listContainer.innerHTML = '';
-            data.data.forEach(m => {
-                const item = document.createElement('div');
-                item.style.cssText = 'padding: 12px; border-bottom: 0.5px solid #eee; cursor: pointer;';
-                item.innerText = m.id;
-                item.onclick = () => {
-                    document.getElementById('api-model-input').value = m.id;
-                    listContainer.style.display = 'none';
-                };
-                listContainer.appendChild(item);
-            });
-        }
-    } catch (e) { listContainer.innerHTML = '拉取失败: ' + e.message; }
-}
-
 // === 3. 聊天逻辑 ===
-
 function openChat(name) {
     document.getElementById('chat-user-name').innerText = name;
     const detail = document.getElementById('chat-detail');
@@ -309,19 +267,7 @@ async function sendMessage() {
     container.scrollTop = container.scrollHeight;
 }
 
-function saveFontOnly() {
-    const fontSelect = document.getElementById('font-family-select');
-    if (fontSelect) {
-        const selectedFont = fontSelect.value;
-        localStorage.setItem('user-font', selectedFont);
-        if (typeof applyFont === "function") {
-            applyFont(selectedFont);
-            alert('字体样式已保存并生效！');
-        }
-    }
-} 
-
-// === 4. 欢迎屏幕类 ===
+// === 4. 欢迎屏幕 ===
 class WelcomeScreen {
     constructor() {
         this.progressFill = document.querySelector('.progress-fill');
@@ -336,63 +282,45 @@ class WelcomeScreen {
 
     init() {
         this.startLoading();
-        const safeTimeout = setTimeout(() => {
-            if (!this.isComplete) this.completeLoading();
-        }, 3000);
-
-        window.addEventListener('load', () => {
-            clearTimeout(safeTimeout);
-            this.completeLoading();
-        });
-
-        if (document.readyState === 'complete') {
-            clearTimeout(safeTimeout);
-            this.completeLoading();
-        }
+        window.addEventListener('load', () => this.completeLoading());
+        setTimeout(() => { if (!this.isComplete) this.completeLoading(); }, 3500);
     }
 
     startLoading() {
         const increment = () => {
-            if (this.currentProgress < 80 && !this.isComplete) {
-                this.targetProgress += Math.random() * 3;
-                if (this.targetProgress > 80) this.targetProgress = 80;
+            if (this.currentProgress < 85 && !this.isComplete) {
+                this.targetProgress += Math.random() * 5;
+                this.updateProgress();
+                setTimeout(increment, 300);
             }
-            this.updateProgress();
-            if (!this.isComplete) setTimeout(increment, 200 + Math.random() * 300);
         };
         increment();
     }
 
     updateProgress() {
         this.currentProgress += (this.targetProgress - this.currentProgress) * 0.1;
-        const percentage = Math.min(Math.floor(this.currentProgress), 100);
-        if (this.progressFill) this.progressFill.style.width = percentage + '%';
-        if (this.progressPercentage) this.progressPercentage.textContent = percentage;
+        const p = Math.min(Math.floor(this.currentProgress), 100);
+        if (this.progressFill) this.progressFill.style.width = p + '%';
+        if (this.progressPercentage) this.progressPercentage.textContent = p;
     }
 
     completeLoading() {
         this.isComplete = true;
-        this.currentProgress = 100;
         this.targetProgress = 100;
-        this.updateProgress();
-        setTimeout(() => { this.hideWelcomeScreen(); }, 2000);
+        this.currentProgress = 100;
+        if (this.progressFill) this.progressFill.style.width = '100%';
+        if (this.progressPercentage) this.progressPercentage.textContent = '100';
+        setTimeout(() => this.hideWelcomeScreen(), 1000);
     }
 
     hideWelcomeScreen() {
         if (this.welcomeContainer) {
-            this.welcomeContainer.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
             this.welcomeContainer.style.opacity = '0';
-            this.welcomeContainer.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                this.welcomeContainer.style.display = 'none';
+                if (this.mainApp) this.mainApp.style.display = 'flex';
+            }, 800);
         }
-        setTimeout(() => {
-            if (this.mainApp) {
-                this.mainApp.style.display = 'flex'; 
-                this.mainApp.style.animation = 'fadeInApp 1s ease-in';
-            }
-            if (this.welcomeContainer) {
-                setTimeout(() => { this.welcomeContainer.style.display = 'none'; }, 800);
-            }
-        }, 800);
     }
 }
 
@@ -406,35 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    // 调用全局同步刷新
     refreshUserDisplay();
 
-    // 加载桌面壁纸
-    const savedWallpaper = localStorage.getItem('userWallpaper');
-    const homePage = document.getElementById('page-home');
-    if (savedWallpaper && homePage) {
-        homePage.style.backgroundImage = `url(${savedWallpaper})`;
-        homePage.style.backgroundSize = 'cover';
-        homePage.style.backgroundPosition = 'center';
-    }
-    
-    // ✅ 加载个人主页背景（头像后面那个背景）
-    const savedHeaderBg = localStorage.getItem('headerBackground');
-    const profileHeader = document.getElementById('profile-header');
-    if (savedHeaderBg && profileHeader) {
-        profileHeader.style.backgroundImage = `url(${savedHeaderBg})`;
-        profileHeader.style.backgroundSize = 'cover';
-        profileHeader.style.backgroundPosition = 'center';
-    }
-
-    // 保持主页 Banner 上传逻辑
-    const baDiv = document.getElementById('profile-banner');
-    if (localStorage.getItem('savedBanner') && baDiv) {
-        baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
-    }
-
-    // ✅ 头像上传监听
-    const editAvInput = document.getElementById('avatar-input');  // ✅ 改成和 HTML 一致的 ID
+    // 事件监听绑定
+    // 1. 头像预览监听
+    const editAvInput = document.getElementById('avatar-input');
     if(editAvInput) editAvInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
@@ -444,44 +348,26 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // ✅ 桌面壁纸上传监听
+    // 2. 桌面壁纸上传
     const bgInput = document.getElementById('bg-input');
     if(bgInput) bgInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
             localStorage.setItem('userWallpaper', ev.target.result);
-            const bgStatus = document.getElementById('bg-status');
-            if(bgStatus) {
-                bgStatus.textContent = '已选择';
-                bgStatus.style.color = '#ff9500';
-            }
+            const status = document.getElementById('bg-status');
+            if(status) { status.textContent = '已选择'; status.style.color = '#ff9500'; }
         };
         reader.readAsDataURL(e.target.files[0]);
     });
     
-    // ✅ 新增：个人主页背景上传监听
+    // 3. 个人主页背景上传
     const headerBgInput = document.getElementById('header-bg-input');
     if(headerBgInput) headerBgInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
             localStorage.setItem('headerBackground', ev.target.result);
-            const headerBgStatus = document.getElementById('header-bg-status');
-            if(headerBgStatus) {
-                headerBgStatus.textContent = '已选择';
-                headerBgStatus.style.color = '#ff9500';
-            }
-        };
-        reader.readAsDataURL(e.target.files[0]);
-    });
-
-    // Banner 上传
-    const baInput = document.getElementById('banner-upload');
-    if(baInput) baInput.addEventListener('change', (e) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => { 
-            const banner = document.getElementById('profile-banner');
-            if(banner) banner.style.backgroundImage = `url(${ev.target.result})`;
-            localStorage.setItem('savedBanner', ev.target.result); 
+            const status = document.getElementById('header-bg-status');
+            if(status) { status.textContent = '已选择'; status.style.color = '#ff9500'; }
         };
         reader.readAsDataURL(e.target.files[0]);
     });
