@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>个人信息</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         /* 1. 外部背景：改成第一张图那种深灰色，确保能看清手机 */
         body.font-modern {
@@ -26,6 +25,7 @@
             overflow: hidden; 
             position: relative; 
             border: 8px solid #fff; 
+            overflow-y: auto; /* 添加滚动，防止内容溢出 */
         }
 
         /* 列表样式 */
@@ -33,10 +33,10 @@
         .profile-item { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 15px; border-bottom: 0.5px solid #eee; font-size: 16px;
+            cursor: pointer;
         }
         .profile-item:last-child { border-bottom: none; }
 
-        /* 3. 输入框文字颜色逻辑：初始灰色，写字变黑 */
         .profile-item input { 
             border: none; 
             text-align: right; 
@@ -44,19 +44,26 @@
             outline: none; 
             width: 60%; 
             background: none;
-            color: #000; /* 输入时的颜色 */
+            color: #000;
         }
         .profile-item input::placeholder {
-            color: #888; /* 未输入时的灰色提示词 */
+            color: #888;
         }
         
         .avatar-edit { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
-        .logout-container { margin-top: 30px; padding: 0 15px; }
+        .logout-container { margin-top: 30px; padding: 0 15px 20px; }
 
         /* 灵动岛装饰 */
         #phone-shell::before {
             content: ""; position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
             width: 120px; height: 35px; background: #000; border-radius: 20px; z-index: 1001;
+        }
+        
+        /* 右侧箭头样式 */
+        .arrow {
+            color: #ccc;
+            margin-left: 10px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -70,42 +77,58 @@
     </div>
 
     <div class="profile-list">
+        <!-- 头像 -->
         <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
             <span>头像</span>
             <div style="display: flex; align-items: center;">
-                <img src="默认头像.jpg" id="edit-avatar-preview" class="avatar-edit">
-                <span style="color: #ccc; margin-left: 10px;">〉</span>
+                <img src="默认头像.jpg" id="edit-avatar-preview" class="avatar-edit" alt="头像">
+                <span class="arrow">〉</span>
             </div>
             <input type="file" id="avatar-input" accept="image/*" style="display: none;">
         </div>
 
+        <!-- 昵称 -->
         <div class="profile-item">
             <span>昵称</span>
             <input type="text" id="edit-username" placeholder="请输入昵称">
         </div>
 
+        <!-- 个性签名 -->
         <div class="profile-item">
             <span>个性签名</span>
             <input type="text" id="edit-bio" placeholder="请输入个性签名">
         </div>
 
+        <!-- 地区 -->
         <div class="profile-item">
             <span>地区</span>
             <input type="text" id="edit-location" placeholder="请输入地区">
         </div>
 
+        <!-- 生日 -->
         <div class="profile-item">
             <span>生日</span>
             <input type="date" id="edit-birthday">
         </div>
 
+        <!-- 更换桌面壁纸 -->
         <div class="profile-item" onclick="document.getElementById('bg-input').click()">
             <span>更换桌面壁纸</span>
             <div style="display: flex; align-items: center;">
-                <span style="color: #888; font-size: 14px;">点击上传</span>
-                <span style="color: #ccc; margin-left: 10px;">〉</span>
+                <span id="bg-status" style="color: #888; font-size: 14px;">点击上传</span>
+                <span class="arrow">〉</span>
             </div>
             <input type="file" id="bg-input" accept="image/*" style="display: none;">
+        </div>
+
+        <!-- 个人主页背景（新增） -->
+        <div class="profile-item" onclick="document.getElementById('header-bg-input').click()">
+            <span>个人主页背景</span>
+            <div style="display: flex; align-items: center;">
+                <span id="header-bg-status" style="color: #888; font-size: 14px;">点击上传</span>
+                <span class="arrow">〉</span>
+            </div>
+            <input type="file" id="header-bg-input" accept="image/*" style="display: none;">
         </div>
     </div>
 
@@ -122,6 +145,18 @@
         document.getElementById('edit-birthday').value = localStorage.getItem('userBirthday') || "";
         document.getElementById('edit-bio').value = localStorage.getItem('userBio') || "";
         document.getElementById('edit-location').value = localStorage.getItem('userLocation') || "";
+        
+        // 检查桌面壁纸状态
+        if (localStorage.getItem('userWallpaper')) {
+            document.getElementById('bg-status').textContent = '已设置';
+            document.getElementById('bg-status').style.color = '#34c759';
+        }
+        
+        // 检查个人主页背景状态
+        if (localStorage.getItem('headerBackground')) {
+            document.getElementById('header-bg-status').textContent = '已设置';
+            document.getElementById('header-bg-status').style.color = '#34c759';
+        }
     });
 
     // 头像预览处理
@@ -133,13 +168,31 @@
         }
     });
 
-    // 壁纸上传处理
+    // 桌面壁纸上传处理
     document.getElementById('bg-input').addEventListener('change', function(e) {
         if (e.target.files[0]) {
             const reader = new FileReader();
-            reader.onload = (ev) => localStorage.setItem('userWallpaper', ev.target.result);
+            reader.onload = function(ev) {
+                localStorage.setItem('userWallpaper', ev.target.result);
+                document.getElementById('bg-status').textContent = '已选择';
+                document.getElementById('bg-status').style.color = '#ff9500';
+                alert("壁纸已选择，点击完成后生效");
+            };
             reader.readAsDataURL(e.target.files[0]);
-            alert("壁纸已选择，点击完成后生效");
+        }
+    });
+
+    // 个人主页背景上传处理
+    document.getElementById('header-bg-input').addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                localStorage.setItem('headerBackground', ev.target.result);
+                document.getElementById('header-bg-status').textContent = '已选择';
+                document.getElementById('header-bg-status').style.color = '#ff9500';
+                alert("个人主页背景已选择，点击完成后生效");
+            };
+            reader.readAsDataURL(e.target.files[0]);
         }
     });
 
@@ -163,18 +216,6 @@
             location.href = 'login.html'; 
         }
     }
-    <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
-    <span>头像</span>
-    ...
-</div>
-    <div class="profile-item" onclick="document.getElementById('header-bg-input').click()">
-    <span>个人主页背景</span>
-    <div style="display: flex; align-items: center;">
-        <span id="bg-status" style="color: #888; font-size: 14px;">点击上传</span>
-        <span style="color: #ccc; margin-left: 10px;">〉</span>
-    </div>
-    <input type="file" id="header-bg-input" accept="image/*" style="display: none;">
-</div>
 </script>
 </body>
 </html>
