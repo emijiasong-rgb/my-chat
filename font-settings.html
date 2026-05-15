@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>字体样式</title>
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Dancing+Script:wght@400;700&family=Pacifico&family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@400;600&family=Roboto+Mono:wght@400;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #1a1a1a !important;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        #phone-shell {
+            width: 393px !important;
+            height: 852px !important;
+            background: #f2f2f7;
+            border-radius: 47px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+
+        #viewport {
+            flex: 1;
+            overflow-y: auto;
+            background: #f2f2f7;
+            display: flex;
+            flex-direction: column;
+            -webkit-overflow-scrolling: touch;
+        }
+        #viewport::-webkit-scrollbar { display: none; }
+
+        /* 灵动岛 */
+        #phone-shell::before {
+            content: "";
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 1001;
+        }
+
+        /* Home 条 */
+        #phone-shell::after {
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 100px;
+            z-index: 1001;
+        }
+
+        /* 标题栏 */
+        .header-bar {
+            background: #f2f2f7;
+            padding: 60px 15px 10px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            color: #007aff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 17px;
+            color: #000;
+            flex: 1;
+            text-align: center;
+            margin-right: 50px;
+        }
+
+        /* ===== 分类标题 ===== */
+        .section-title {
+            font-size: 13px;
+            color: #888;
+            padding: 20px 20px 8px;
+            letter-spacing: 1px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== 字体卡片 ===== */
+        .font-list {
+            padding: 0 15px;
+        }
+
+        .font-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            padding: 18px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .font-card:active {
+            transform: scale(0.98);
+        }
+
+        .font-card.selected {
+            border: 2px solid #007aff;
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .font-card.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            color: #007aff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .font-name {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-cute { background: #fce4ec; color: #d81b60; }
+        .tag-elegant { background: #f3e5f5; color: #7b1fa2; }
+        .tag-modern { background: #e3f2fd; color: #1976d2; }
+        .tag-hand { background: #fff3e0; color: #e65100; }
+        .tag-code { background: #e8f5e9; color: #2e7d32; }
+        .tag-classic { background: #efebe9; color: #5d4037; }
+
+        .font-preview {
+            font-size: 20px;
+            color: #000;
+            margin-bottom: 2px;
+            line-height: 1.5;
+        }
+
+        .font-preview-en {
+            font-size: 15px;
+            color: #999;
+            line-height: 1.4;
+        }
+
+        /* ===== 字体样式 ===== */
+
+        /* 0. 系统默认 */
+        .font-card.default .font-preview,
+        .font-card.default .font-preview-en {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        /* 1. 思源黑体 */
+        .font-card.noto-sans .font-preview,
+        .font-card.noto-sans .font-preview-en {
+            font-family: 'Noto Sans SC', -apple-system, sans-serif;
+        }
+
+        /* 2. 思源宋体 */
+        .font-card.noto-serif .font-preview,
+        .font-card.noto-serif .font-preview-en {
+            font-family: 'Noto Serif SC', 'Times New Roman', serif;
+        }
+
+        /* 3. 站酷快乐体 */
+        .font-card.kuaile .font-preview,
+        .font-card.kuaile .font-preview-en {
+            font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', cursive;
+        }
+
+        /* 4. 🧀 站酷奶酪体（新增） */
+        .font-card.nailao .font-preview,
+        .font-card.nailao .font-preview-en {
+            font-family: 'ZCOOL QingKe HuangYou', 'Comic Sans MS', cursive;
+            font-size: 22px;
+        }
+
+        /* 5. 马山正 */
+        .font-card.mashan .font-preview,
+        .font-card.mashan .font-preview-en {
+            font-family: 'Ma Shan Zheng', 'STKaiti', cursive;
+            font-size: 23px;
+        }
+
+        /* 6. 龙藏 */
+        .font-card.longcang .font-preview,
+        .font-card.longcang .font-preview-en {
+            font-family: 'Long Cang', 'STKaiti', cursive;
+            font-size: 23px;
+        }
+
+        /* 7. 智芒星 */
+        .font-card.zhimang .font-preview,
+        .font-card.zhimang .font-preview-en {
+            font-family: 'Zhi Mang Xing', cursive;
+            font-size: 23px;
+        }
+
+        /* 8. 刘健毛草 */
+        .font-card.liujian .font-preview,
+        .font-card.liujian .font-preview-en {
+            font-family: 'Liu Jian Mao Cao', cursive;
+            font-size: 23px;
+        }
+
+        /* 9. Dancing Script */
+        .font-card.dancing .font-preview,
+        .font-card.dancing .font-preview-en {
+            font-family: 'Dancing Script', 'Georgia', cursive;
+            font-size: 21px;
+        }
+
+        /* 10. Pacifico */
+        .font-card.pacifico .font-preview,
+        .font-card.pacifico .font-preview-en {
+            font-family: 'Pacifico', 'Georgia', cursive;
+            font-size: 20px;
+        }
+
+        /* 11. Caveat */
+        .font-card.caveat .font-preview,
+        .font-card.caveat .font-preview-en {
+            font-family: 'Caveat', 'Comic Sans MS', cursive;
+            font-size: 21px;
+        }
+
+        /* 12. Playfair Display */
+        .font-card.playfair .font-preview,
+        .font-card.playfair .font-preview-en {
+            font-family: 'Playfair Display', 'Georgia', serif;
+        }
+
+        /* 13. Montserrat */
+        .font-card.montserrat .font-preview,
+        .font-card.montserrat .font-preview-en {
+            font-family: 'Montserrat', 'Helvetica Neue', sans-serif;
+        }
+
+        /* 14. Raleway */
+        .font-card.raleway .font-preview,
+        .font-card.raleway .font-preview-en {
+            font-family: 'Raleway', 'Helvetica Neue', sans-serif;
+        }
+
+        /* 15. Roboto Mono */
+        .font-card.roboto-mono .font-preview,
+        .font-card.roboto-mono .font-preview-en {
+            font-family: 'Roboto Mono', 'SF Mono', 'Courier New', monospace;
+        }
+
+        /* 16. 系统等宽 */
+        .font-card.monospace .font-preview,
+        .font-card.monospace .font-preview-en {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+        }
+
+        /* ===== 保存按钮 ===== */
+        .save-btn-container {
+            padding: 20px 15px 35px;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: #007aff;
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+        }
+
+        .save-btn:active {
+            transform: scale(0.97);
+            background: #0056cc;
+        }
+    </style>
+</head>
+<body>
+    <div id="phone-shell">
+        <div id="viewport">
+            <!-- 标题栏 -->
+            <div class="header-bar">
+                <span class="back-btn" onclick="history.back()">〈 返回</span>
+                <span class="header-title">字体样式</span>
+            </div>
+
+            <div class="font-list">
+                
+                <!-- 0. 系统默认 -->
+                <div class="font-card default" data-font="default" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-modern">默认</span> 系统默认字体</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 1. 思源黑体 -->
+                <div class="font-card noto-sans" data-font="noto-sans" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-modern">现代</span> 思源黑体 · Noto Sans SC</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 2. 思源宋体 -->
+                <div class="font-card noto-serif" data-font="noto-serif" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-classic">古典</span> 思源宋体 · Noto Serif SC</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 3. 站酷快乐体 -->
+                <div class="font-card kuaile" data-font="kuaile" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-cute">可爱</span> 站酷快乐体 · ZCOOL KuaiLe</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 4. 🧀 站酷奶酪体（新增！） -->
+                <div class="font-card nailao" data-font="nailao" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-cute">可爱</span> 🧀 站酷奶酪体 · ZCOOL QingKe HuangYou</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 5. 马山正 -->
+                <div class="font-card mashan" data-font="mashan" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-hand">书法</span> 马山正 · Ma Shan Zheng</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 6. 龙藏 -->
+                <div class="font-card longcang" data-font="longcang" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-hand">手写</span> 龙藏 · Long Cang</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 7. 智芒星 -->
+                <div class="font-card zhimang" data-font="zhimang" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-hand">个性</span> 智芒星 · Zhi Mang Xing</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 8. 刘健毛草 -->
+                <div class="font-card liujian" data-font="liujian" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-hand">草书</span> 刘健毛草 · Liu Jian Mao Cao</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 9. Dancing Script -->
+                <div class="font-card dancing" data-font="dancing" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-elegant">优雅</span> Dancing Script</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 10. Pacifico -->
+                <div class="font-card pacifico" data-font="pacifico" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-cute">活泼</span> Pacifico</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 11. Caveat -->
+                <div class="font-card caveat" data-font="caveat" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-hand">随性</span> Caveat</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 12. Playfair Display -->
+                <div class="font-card playfair" data-font="playfair" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-elegant">高端</span> Playfair Display</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 13. Montserrat -->
+                <div class="font-card montserrat" data-font="montserrat" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-modern">极简</span> Montserrat</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 14. Raleway -->
+                <div class="font-card raleway" data-font="raleway" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-elegant">细体</span> Raleway</div>
+                    <div class="font-preview">你好世界，春眠不觉晓</div>
+                    <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
+                </div>
+
+                <!-- 15. Roboto Mono -->
+                <div class="font-card roboto-mono" data-font="roboto-mono" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-code">等宽</span> Roboto Mono</div>
+                    <div class="font-preview">console.log("你好世界")</div>
+                    <div class="font-preview-en">0123456789 · Monospaced font</div>
+                </div>
+
+                <!-- 16. 系统等宽 -->
+                <div class="font-card monospace" data-font="monospace" onclick="selectFont(this)">
+                    <div class="font-name"><span class="tag tag-code">代码</span> System Monospace</div>
+                    <div class="font-preview">console.log("你好世界")</div>
+                    <div class="font-preview-en">0123456789 · SF Mono</div>
+                </div>
+
+            </div>
+
+            <!-- 保存按钮 -->
+            <div class="save-btn-container">
+                <button class="save-btn" onclick="saveFontSetting()">保存字体设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFont = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedFont = localStorage.getItem('user-font') || 'default';
+            selectedFont = savedFont;
+            
+            const cards = document.querySelectorAll('.font-card');
+            cards.forEach(card => {
+                if (card.dataset.font === savedFont) {
+                    card.classList.add('selected');
+                }
+            });
+        });
+
+        function selectFont(card) {
+            document.querySelectorAll('.font-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedFont = card.dataset.font;
+            
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                card.style.transform = '';
+            }, 150);
+        }
+
+        function saveFontSetting() {
+            if (!selectedFont) {
+                alert('请先选择一个字体样式');
+                return;
+            }
+            
+            localStorage.setItem('user-font', selectedFont);
+            alert('字体设置已保存！返回主页即可看到效果 ✨');
+        }
+    </script>
+</body>
+</html>
