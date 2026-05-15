@@ -8,12 +8,12 @@
     <style>
         /* 1. 强制网页大背景为深色，使手机壳居中显现 */
         body {
-            background: #1a1a1a !important; /* 确保与图片中的深色背景一致 */
+            background: #1a1a1a !important;
             height: 100vh;
             width: 100vw;
             display: flex;
-            justify-content: center; /* 水平居中 */
-            align-items: center;     /* 垂直居中 */
+            justify-content: center;
+            align-items: center;
             margin: 0;
             overflow: hidden; 
         }
@@ -22,28 +22,29 @@
         #phone-shell {
             width: 393px !important;  
             height: 852px !important; 
-            background: #f2f2f7;      
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 渐变背景 */
             border-radius: 47px;
             position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;         
-            /* 这里的阴影效果会让手机壳更有立体感 */
             box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
             flex-shrink: 0;
         }
 
-        /* 3. 内容滚动区域：确保背景色是 iOS 设置页的灰色 */
+        /* 3. 内容滚动区域 */
         #viewport {
             flex: 1;
             overflow-y: auto;         
-            background: #f2f2f7; /* 手机内部的浅灰色背景 */
+            background: transparent; /* 透明，显示渐变背景 */
             display: flex;
             flex-direction: column;
             -webkit-overflow-scrolling: touch;
+            padding-bottom: 20px;
         }
+        #viewport::-webkit-scrollbar { display: none; }
 
-        /* 灵动岛装饰 (如果 style.css 里没写，这里必须补上) */
+        /* 灵动岛装饰 */
         #phone-shell::before {
             content: "";
             position: absolute;
@@ -71,59 +72,155 @@
             z-index: 1001;
         }
 
-        /* 3. 内容滚动区域：这是解决手机变形的关键 */
-        #viewport {
-            flex: 1;
-            overflow-y: auto;         
-            display: flex;
-            flex-direction: column;
-            -webkit-overflow-scrolling: touch;
-        }
-        #viewport::-webkit-scrollbar { display: none; }
-
-        /* 内部特定组件样式 */
+        /* 标题栏 */
         .header-title { 
-            background: #f2f2f7; 
-            padding: 60px 15px 10px; /* 顶部留出灵动岛的空间 */
+            background: transparent;
+            padding: 60px 15px 15px;
             font-weight: bold; 
             font-size: 17px; 
             text-align: center;
-            position: sticky; /* 让标题在滚动时顶住 */
+            color: white;
+            position: sticky;
             top: 0;
             z-index: 100;
         }
-
-        .account-section { 
-            display: flex; align-items: center; padding: 15px; 
-            background: #fff; margin: 10px 15px; border-radius: 10px; 
-            cursor: pointer;
-        }
-        .account-avatar { 
-            width: 60px; height: 60px; background: #c7c7cc; 
-            border-radius: 50%; overflow: hidden; margin-right: 15px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .account-avatar img { width: 100%; height: 100%; object-fit: cover; }
         
-        .ios-list { background: #fff; margin: 10px 15px 20px; border-radius: 10px; }
-        .ios-item { 
-            display: flex; align-items: center; padding: 12px 15px; 
-            border-bottom: 0.5px solid #e5e5ea; cursor: pointer;
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            color: white;
+            cursor: pointer;
+            font-weight: normal;
         }
-        .arrow-r { margin-left: auto; color: #c7c7cc; }
+
+        /* ===== 玻璃拟态卡片样式 ===== */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            margin: 10px 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 个人账户卡片 */
+        .account-section { 
+            display: flex; 
+            align-items: center; 
+            padding: 15px; 
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            margin: 10px 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .account-avatar { 
+            width: 60px; 
+            height: 60px; 
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%; 
+            overflow: hidden; 
+            margin-right: 15px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        .account-avatar img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        
+        .account-info {
+            flex: 1;
+        }
+        
+        .account-info b {
+            color: white;
+            font-size: 17px;
+        }
+        
+        .account-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            margin: 3px 0 0;
+        }
+
+        /* 设置列表项 */
+        .glass-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 14px 16px; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        
+        .glass-item:last-child {
+            border-bottom: none;
+        }
+        
+        .glass-item:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-item span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .arrow-r { 
+            margin-left: auto; 
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+        }
+
+        /* 退出登录按钮 */
+        .logout-btn {
+            display: block;
+            margin: 20px 15px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            color: #ff3b30;
+            font-size: 17px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
     <div id="phone-shell">
         <div id="viewport">
             <div class="header-title">
-                <span style="position:absolute; left:15px; color:#007aff; cursor:pointer" onclick="window.location.href='index.html?from=settings'">〈 返回</span>
+                <span class="back-btn" onclick="window.location.href='index.html?from=settings'">〈 返回</span>
                 <span>设置</span>
             </div>
 
+            <!-- 个人账户卡片（玻璃效果） -->
             <div class="account-section" id="account-btn" onclick="handleAccountClick()">
                 <div class="account-avatar" id="avatar-container">
-                    <span id="default-icon">👤</span>
+                    <span id="default-icon" style="font-size: 30px;">👤</span>
                 </div>
                 <div class="account-info">
                     <b id="user-display-name">请登录</b>
@@ -132,12 +229,45 @@
                 <span class="arrow-r">〉</span>
             </div>
 
-            <div class="ios-list">
-                <div class="ios-item"><span>✈️ 飞行模式</span><span class="arrow-r">〉</span></div>
-                <div class="ios-item"><span>📶 无线局域网</span><span class="arrow-r">〉</span></div>
-                <div class="ios-item"><span>⚙️ 通用</span><span class="arrow-r">〉</span></div>
-                <div class="ios-item"><span>🔔 通知</span><span class="arrow-r">〉</span></div>
-                <div class="ios-item"><span>🔊 声音与触感</span><span class="arrow-r">〉</span></div>
+            <!-- ✅ 删除了飞行模式，全部改成玻璃卡片 -->
+            <div class="glass-container">
+                <div class="glass-item" onclick="alert('无线局域网设置')">
+                    <span>📶 无线局域网</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+                <div class="glass-item" onclick="alert('通用设置')">
+                    <span>⚙️ 通用</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+                <div class="glass-item" onclick="alert('通知设置')">
+                    <span>🔔 通知</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+                <div class="glass-item" onclick="alert('声音设置')">
+                    <span>🔊 声音与触感</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+            </div>
+            
+            <!-- ✅ 新增：自定义设置组 -->
+            <div class="glass-container">
+                <div class="glass-item" onclick="window.location.href='profile.html'">
+                    <span>👤 个人信息</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+                <div class="glass-item" onclick="alert('字体设置')">
+                    <span>🔤 字体样式</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+                <div class="glass-item" onclick="alert('壁纸设置')">
+                    <span>🖼️ 更换壁纸</span>
+                    <span class="arrow-r">〉</span>
+                </div>
+            </div>
+
+            <!-- ✅ 退出登录按钮（玻璃效果） -->
+            <div class="logout-btn" onclick="handleLogout()">
+                退出登录
             </div>
         </div>
     </div>
@@ -161,6 +291,16 @@
         function handleAccountClick() {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             window.location.href = (isLoggedIn === 'true') ? 'profile.html' : 'login.html';
+        }
+        
+        // ✅ 新增退出登录功能
+        function handleLogout() {
+            if (confirm("确定要退出登录吗？")) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('savedAvatar');
+                window.location.reload();
+            }
         }
     </script>
 </body>
