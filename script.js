@@ -78,28 +78,60 @@ function openPage(pageId) {
     }
 }
 
-// 新增：打开个人信息编辑页
+// 打开个人信息编辑页
 function openProfilePage() {
-    openPage('profile-edit'); // 假设你的新页面 ID 为 profile-edit
-    const currentName = localStorage.getItem('currentUser') || '未登录';
-    const currentAvatar = localStorage.getItem('savedAvatar') || '默认头像地址';
+    openPage('profile-edit');
     
-    const nameInput = document.getElementById('edit-username-input');
+    // ✅ 修正：匹配你 HTML 里的 ID
+    const currentName = localStorage.getItem('currentUser') || '未登录';
+    const currentAvatar = localStorage.getItem('savedAvatar') || '默认头像.jpg';
+    const currentBio = localStorage.getItem('userBio') || '';
+    const currentLocation = localStorage.getItem('userLocation') || '';
+    const currentBirthday = localStorage.getItem('userBirthday') || '';
+    
+    const nameInput = document.getElementById('edit-username');        // ✅ 和 HTML 一致
+    const bioInput = document.getElementById('edit-bio');              // ✅
+    const locationInput = document.getElementById('edit-location');    // ✅
+    const birthdayInput = document.getElementById('edit-birthday');    // ✅
     const avatarPreview = document.getElementById('edit-avatar-preview');
     
     if(nameInput) nameInput.value = currentName;
+    if(bioInput) bioInput.value = currentBio;
+    if(locationInput) locationInput.value = currentLocation;
+    if(birthdayInput) birthdayInput.value = currentBirthday;
     if(avatarPreview) avatarPreview.src = currentAvatar;
+    
+    // ✅ 检查壁纸状态
+    const bgStatus = document.getElementById('bg-status');
+    if(bgStatus && localStorage.getItem('userWallpaper')) {
+        bgStatus.textContent = '已设置';
+        bgStatus.style.color = '#34c759';
+    }
+    
+    // ✅ 检查个人主页背景状态
+    const headerBgStatus = document.getElementById('header-bg-status');
+    if(headerBgStatus && localStorage.getItem('headerBackground')) {
+        headerBgStatus.textContent = '已设置';
+        headerBgStatus.style.color = '#34c759';
+    }
 }
 
-// 新增：保存个人信息并同步
+// 保存个人信息并同步
 function saveProfile() {
-    const newName = document.getElementById('edit-username-input').value.trim();
+    // ✅ 修正：匹配你 HTML 里的 ID
+    const newName = document.getElementById('edit-username').value.trim();
+    const newBio = document.getElementById('edit-bio').value.trim();
+    const newLocation = document.getElementById('edit-location').value.trim();
+    const newBirthday = document.getElementById('edit-birthday').value;
     const avatarImg = document.getElementById('edit-avatar-preview').src;
 
     if(!newName) { alert('昵称不能为空'); return; }
 
     localStorage.setItem('currentUser', newName);
     localStorage.setItem('savedAvatar', avatarImg);
+    localStorage.setItem('userBio', newBio);
+    localStorage.setItem('userLocation', newLocation);
+    localStorage.setItem('userBirthday', newBirthday);
     
     refreshUserDisplay();
     alert('修改成功！');
@@ -111,7 +143,8 @@ function refreshUserDisplay() {
     const avatar = localStorage.getItem('savedAvatar');
     const bio = localStorage.getItem('userBio') || '请输入个性签名'; 
     const location = localStorage.getItem('userLocation') || '请输入地区'; 
-    const wallpaper = localStorage.getItem('userWallpaper'); // 读取壁纸
+    const wallpaper = localStorage.getItem('userWallpaper');
+    const headerBg = localStorage.getItem('headerBackground'); // ✅ 新增：头像后面背景
 
     // 1. 更新名字和头像
     const homeName = document.getElementById('user-name');
@@ -119,7 +152,7 @@ function refreshUserDisplay() {
     if(homeName) homeName.innerText = name;
     if(homeAvatar && avatar) homeAvatar.src = avatar;
 
-    // 2. 更新签名和地区 (对应你 HTML 里的 ID)
+    // 2. 更新签名和地区
     const homeBio = document.getElementById('user-signature');
     const homeLocation = document.getElementById('user-location');
     if(homeBio) homeBio.innerText = bio;
@@ -132,13 +165,14 @@ function refreshUserDisplay() {
         homePage.style.backgroundSize = 'cover';
         homePage.style.backgroundPosition = 'center';
     }
-}
-
-    // === 新增：更新主页签名和地区显示 ===
-    const homeBio = document.querySelector('.profile-info p');
-    const homeLocation = document.querySelector('.profile-info span');
-    if(homeBio) homeBio.innerText = bio;
-    if(homeLocation) homeLocation.innerText = '📍 ' + location;
+    
+    // ✅ 新增：更新头像后面的背景（个人主页背景）
+    const profileHeader = document.getElementById('profile-header'); // 假设这是头像区域的容器
+    if (profileHeader && headerBg) {
+        profileHeader.style.backgroundImage = `url(${headerBg})`;
+        profileHeader.style.backgroundSize = 'cover';
+        profileHeader.style.backgroundPosition = 'center';
+    }
 }
 
 // 整合后的切换标签函数
@@ -372,10 +406,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
 
-    // 调用全局同步刷新（现在包含签名和地区了）
+    // 调用全局同步刷新
     refreshUserDisplay();
 
-    // === 新增：加载桌面壁纸逻辑 ===
+    // 加载桌面壁纸
     const savedWallpaper = localStorage.getItem('userWallpaper');
     const homePage = document.getElementById('page-home');
     if (savedWallpaper && homePage) {
@@ -383,26 +417,70 @@ document.addEventListener('DOMContentLoaded', () => {
         homePage.style.backgroundSize = 'cover';
         homePage.style.backgroundPosition = 'center';
     }
+    
+    // ✅ 加载个人主页背景（头像后面那个背景）
+    const savedHeaderBg = localStorage.getItem('headerBackground');
+    const profileHeader = document.getElementById('profile-header');
+    if (savedHeaderBg && profileHeader) {
+        profileHeader.style.backgroundImage = `url(${savedHeaderBg})`;
+        profileHeader.style.backgroundSize = 'cover';
+        profileHeader.style.backgroundPosition = 'center';
+    }
 
-    // 保持主页 Banner 上传逻辑（这是你卡片上方的横幅，不是背景）
+    // 保持主页 Banner 上传逻辑
     const baDiv = document.getElementById('profile-banner');
-    if (localStorage.getItem('savedBanner') && baDiv) baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
+    if (localStorage.getItem('savedBanner') && baDiv) {
+        baDiv.style.backgroundImage = `url(${localStorage.getItem('savedBanner')})`;
+    }
 
-    // ... 后面你原来的图片上传逻辑和 WelcomeScreen 保持不变 ...
-    const editAvInput = document.getElementById('edit-avatar-upload');
+    // ✅ 头像上传监听
+    const editAvInput = document.getElementById('avatar-input');  // ✅ 改成和 HTML 一致的 ID
     if(editAvInput) editAvInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
-            document.getElementById('edit-avatar-preview').src = ev.target.result;
+            const preview = document.getElementById('edit-avatar-preview');
+            if(preview) preview.src = ev.target.result;
         };
         reader.readAsDataURL(e.target.files[0]);
     });
 
+    // ✅ 桌面壁纸上传监听
+    const bgInput = document.getElementById('bg-input');
+    if(bgInput) bgInput.addEventListener('change', (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => { 
+            localStorage.setItem('userWallpaper', ev.target.result);
+            const bgStatus = document.getElementById('bg-status');
+            if(bgStatus) {
+                bgStatus.textContent = '已选择';
+                bgStatus.style.color = '#ff9500';
+            }
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+    
+    // ✅ 新增：个人主页背景上传监听
+    const headerBgInput = document.getElementById('header-bg-input');
+    if(headerBgInput) headerBgInput.addEventListener('change', (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => { 
+            localStorage.setItem('headerBackground', ev.target.result);
+            const headerBgStatus = document.getElementById('header-bg-status');
+            if(headerBgStatus) {
+                headerBgStatus.textContent = '已选择';
+                headerBgStatus.style.color = '#ff9500';
+            }
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Banner 上传
     const baInput = document.getElementById('banner-upload');
     if(baInput) baInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => { 
-            document.getElementById('profile-banner').style.backgroundImage = `url(${ev.target.result})`;
+            const banner = document.getElementById('profile-banner');
+            if(banner) banner.style.backgroundImage = `url(${ev.target.result})`;
             localStorage.setItem('savedBanner', ev.target.result); 
         };
         reader.readAsDataURL(e.target.files[0]);
