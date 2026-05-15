@@ -99,18 +99,6 @@
             margin-right: 50px;
         }
 
-        /* ===== 分类标题 ===== */
-        .section-title {
-            font-size: 13px;
-            color: #888;
-            padding: 20px 20px 8px;
-            letter-spacing: 1px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
         /* ===== 字体卡片 ===== */
         .font-list {
             padding: 0 15px;
@@ -190,112 +178,94 @@
         }
 
         /* ===== 字体样式 ===== */
-
-        /* 0. 系统默认 */
         .font-card.default .font-preview,
         .font-card.default .font-preview-en {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
         }
 
-        /* 1. 思源黑体 */
         .font-card.noto-sans .font-preview,
         .font-card.noto-sans .font-preview-en {
             font-family: 'Noto Sans SC', -apple-system, sans-serif;
         }
 
-        /* 2. 思源宋体 */
         .font-card.noto-serif .font-preview,
         .font-card.noto-serif .font-preview-en {
             font-family: 'Noto Serif SC', 'Times New Roman', serif;
         }
 
-        /* 3. 站酷快乐体 */
         .font-card.kuaile .font-preview,
         .font-card.kuaile .font-preview-en {
             font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', cursive;
         }
 
-        /* 4. 🧀 站酷奶酪体（新增） */
         .font-card.nailao .font-preview,
         .font-card.nailao .font-preview-en {
             font-family: 'ZCOOL QingKe HuangYou', 'Comic Sans MS', cursive;
             font-size: 22px;
         }
 
-        /* 5. 马山正 */
         .font-card.mashan .font-preview,
         .font-card.mashan .font-preview-en {
             font-family: 'Ma Shan Zheng', 'STKaiti', cursive;
             font-size: 23px;
         }
 
-        /* 6. 龙藏 */
         .font-card.longcang .font-preview,
         .font-card.longcang .font-preview-en {
             font-family: 'Long Cang', 'STKaiti', cursive;
             font-size: 23px;
         }
 
-        /* 7. 智芒星 */
         .font-card.zhimang .font-preview,
         .font-card.zhimang .font-preview-en {
             font-family: 'Zhi Mang Xing', cursive;
             font-size: 23px;
         }
 
-        /* 8. 刘健毛草 */
         .font-card.liujian .font-preview,
         .font-card.liujian .font-preview-en {
             font-family: 'Liu Jian Mao Cao', cursive;
             font-size: 23px;
         }
 
-        /* 9. Dancing Script */
         .font-card.dancing .font-preview,
         .font-card.dancing .font-preview-en {
             font-family: 'Dancing Script', 'Georgia', cursive;
             font-size: 21px;
         }
 
-        /* 10. Pacifico */
         .font-card.pacifico .font-preview,
         .font-card.pacifico .font-preview-en {
             font-family: 'Pacifico', 'Georgia', cursive;
             font-size: 20px;
         }
 
-        /* 11. Caveat */
         .font-card.caveat .font-preview,
         .font-card.caveat .font-preview-en {
             font-family: 'Caveat', 'Comic Sans MS', cursive;
             font-size: 21px;
         }
 
-        /* 12. Playfair Display */
         .font-card.playfair .font-preview,
         .font-card.playfair .font-preview-en {
             font-family: 'Playfair Display', 'Georgia', serif;
         }
 
-        /* 13. Montserrat */
         .font-card.montserrat .font-preview,
         .font-card.montserrat .font-preview-en {
             font-family: 'Montserrat', 'Helvetica Neue', sans-serif;
         }
 
-        /* 14. Raleway */
         .font-card.raleway .font-preview,
         .font-card.raleway .font-preview-en {
             font-family: 'Raleway', 'Helvetica Neue', sans-serif;
         }
 
-        /* 15. Roboto Mono */
         .font-card.roboto-mono .font-preview,
         .font-card.roboto-mono .font-preview-en {
             font-family: 'Roboto Mono', 'SF Mono', 'Courier New', monospace;
         }
 
-        /* 16. 系统等宽 */
         .font-card.monospace .font-preview,
         .font-card.monospace .font-preview-en {
             font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
@@ -365,7 +335,7 @@
                     <div class="font-preview-en">Hello World · The quick brown fox jumps over the lazy dog</div>
                 </div>
 
-                <!-- 4. 🧀 站酷奶酪体（新增！） -->
+                <!-- 4. 🧀 站酷奶酪体 -->
                 <div class="font-card nailao" data-font="nailao" onclick="selectFont(this)">
                     <div class="font-name"><span class="tag tag-cute">可爱</span> 🧀 站酷奶酪体 · ZCOOL QingKe HuangYou</div>
                     <div class="font-preview">你好世界，春眠不觉晓</div>
@@ -468,38 +438,72 @@
     <script>
         let selectedFont = '';
 
+        // ✅ 页面加载时初始化
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('字体页面已加载');
+            
             const savedFont = localStorage.getItem('user-font') || 'default';
             selectedFont = savedFont;
+            console.log('当前保存的字体:', savedFont);
             
+            // 高亮已选字体
             const cards = document.querySelectorAll('.font-card');
             cards.forEach(card => {
                 if (card.dataset.font === savedFont) {
                     card.classList.add('selected');
+                    console.log('已高亮字体:', savedFont);
                 }
             });
         });
 
+        // ✅ 选择字体
         function selectFont(card) {
+            console.log('点击了字体卡片:', card.dataset.font);
+            
+            // 移除所有选中状态
             document.querySelectorAll('.font-card').forEach(c => c.classList.remove('selected'));
+            
+            // 添加选中状态
             card.classList.add('selected');
             selectedFont = card.dataset.font;
             
+            console.log('当前选中字体:', selectedFont);
+            
+            // 轻触反馈
             card.style.transform = 'scale(0.98)';
             setTimeout(() => {
                 card.style.transform = '';
             }, 150);
         }
 
+        // ✅ 保存字体设置（修复版）
         function saveFontSetting() {
+            console.log('保存按钮被点击');
+            console.log('selectedFont:', selectedFont);
+            
             if (!selectedFont) {
                 alert('请先选择一个字体样式');
                 return;
             }
             
+            // 保存到 localStorage
             localStorage.setItem('user-font', selectedFont);
-            alert('字体设置已保存！返回主页即可看到效果 ✨');
+            console.log('已保存到 localStorage:', selectedFont);
+            
+            // 验证保存结果
+            const saved = localStorage.getItem('user-font');
+            console.log('验证保存结果:', saved);
+            
+            if (saved === selectedFont) {
+                alert('字体设置已保存成功！✨\n返回主页即可看到效果');
+            } else {
+                alert('保存失败，请重试');
+            }
         }
+        
+        // ✅ 确保函数在全局作用域
+        window.selectFont = selectFont;
+        window.saveFontSetting = saveFontSetting;
     </script>
 </body>
 </html>
