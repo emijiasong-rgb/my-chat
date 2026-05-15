@@ -22,7 +22,7 @@
         #phone-shell {
             width: 393px !important;  
             height: 852px !important; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 渐变背景 */
+            background: #f2f2f7; /* 浅灰色背景 */
             border-radius: 47px;
             position: relative;
             display: flex;
@@ -36,7 +36,7 @@
         #viewport {
             flex: 1;
             overflow-y: auto;         
-            background: transparent; /* 透明，显示渐变背景 */
+            background: #f2f2f7; /* 浅灰色背景 */
             display: flex;
             flex-direction: column;
             -webkit-overflow-scrolling: touch;
@@ -74,12 +74,12 @@
 
         /* 标题栏 */
         .header-title { 
-            background: transparent;
+            background: #f2f2f7;
             padding: 60px 15px 15px;
             font-weight: bold; 
             font-size: 17px; 
             text-align: center;
-            color: white;
+            color: #000;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -88,20 +88,20 @@
         .back-btn {
             position: absolute;
             left: 15px;
-            color: white;
+            color: #007aff;
             cursor: pointer;
             font-weight: normal;
         }
 
-        /* ===== 玻璃拟态卡片样式 ===== */
+        /* ===== 白色玻璃拟态卡片样式 ===== */
         .glass-container {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 16px;
             margin: 10px 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
         }
 
         /* 个人账户卡片 */
@@ -110,26 +110,26 @@
             align-items: center; 
             padding: 15px; 
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 16px;
             margin: 10px 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
         }
         
         .account-avatar { 
             width: 60px; 
             height: 60px; 
-            background: rgba(255, 255, 255, 0.3);
+            background: #e0e0e0;
             border-radius: 50%; 
             overflow: hidden; 
             margin-right: 15px;
             display: flex; 
             align-items: center; 
             justify-content: center;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
         .account-avatar img { 
             width: 100%; 
@@ -142,12 +142,12 @@
         }
         
         .account-info b {
-            color: white;
+            color: #000;
             font-size: 17px;
         }
         
         .account-info p {
-            color: rgba(255, 255, 255, 0.8);
+            color: #888;
             font-size: 13px;
             margin: 3px 0 0;
         }
@@ -157,11 +157,11 @@
             display: flex; 
             align-items: center; 
             padding: 14px 16px; 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
             cursor: pointer;
-            color: white;
+            color: #000;
             font-size: 16px;
-            transition: background 0.3s ease;
+            transition: background 0.2s ease;
         }
         
         .glass-item:last-child {
@@ -169,7 +169,7 @@
         }
         
         .glass-item:active {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.03);
         }
         
         .glass-item span:first-child {
@@ -180,7 +180,7 @@
         
         .arrow-r { 
             margin-left: auto; 
-            color: rgba(255, 255, 255, 0.5);
+            color: #c7c7cc;
             font-size: 18px;
         }
 
@@ -189,22 +189,22 @@
             display: block;
             margin: 20px 15px;
             padding: 14px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 16px;
             color: #ff3b30;
             font-size: 17px;
             font-weight: 600;
             text-align: center;
             cursor: pointer;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
         }
         
         .logout-btn:active {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.05);
             transform: scale(0.98);
         }
     </style>
@@ -217,7 +217,7 @@
                 <span>设置</span>
             </div>
 
-            <!-- 个人账户卡片（玻璃效果） -->
+            <!-- 个人账户卡片 -->
             <div class="account-section" id="account-btn" onclick="handleAccountClick()">
                 <div class="account-avatar" id="avatar-container">
                     <span id="default-icon" style="font-size: 30px;">👤</span>
@@ -229,7 +229,7 @@
                 <span class="arrow-r">〉</span>
             </div>
 
-            <!-- ✅ 删除了飞行模式，全部改成玻璃卡片 -->
+            <!-- 设置列表组1 -->
             <div class="glass-container">
                 <div class="glass-item" onclick="alert('无线局域网设置')">
                     <span>📶 无线局域网</span>
@@ -249,23 +249,19 @@
                 </div>
             </div>
             
-            <!-- ✅ 新增：自定义设置组 -->
+            <!-- 设置列表组2 -->
             <div class="glass-container">
-                <div class="glass-item" onclick="window.location.href='profile.html'">
-                    <span>👤 个人信息</span>
-                    <span class="arrow-r">〉</span>
-                </div>
                 <div class="glass-item" onclick="alert('字体设置')">
                     <span>🔤 字体样式</span>
                     <span class="arrow-r">〉</span>
                 </div>
-                <div class="glass-item" onclick="alert('壁纸设置')">
-                    <span>🖼️ 更换壁纸</span>
+                <div class="glass-item" onclick="alert('隐私设置')">
+                    <span>🔒 隐私与安全性</span>
                     <span class="arrow-r">〉</span>
                 </div>
             </div>
 
-            <!-- ✅ 退出登录按钮（玻璃效果） -->
+            <!-- 退出登录按钮 -->
             <div class="logout-btn" onclick="handleLogout()">
                 退出登录
             </div>
@@ -293,7 +289,6 @@
             window.location.href = (isLoggedIn === 'true') ? 'profile.html' : 'login.html';
         }
         
-        // ✅ 新增退出登录功能
         function handleLogout() {
             if (confirm("确定要退出登录吗？")) {
                 localStorage.removeItem('isLoggedIn');
