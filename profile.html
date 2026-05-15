@@ -163,6 +163,18 @@
             location.href = 'login.html'; 
         }
     }
+    <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
+    <span>头像</span>
+    ...
+</div>
+    <div class="profile-item" onclick="document.getElementById('header-bg-input').click()">
+    <span>个人主页背景</span>
+    <div style="display: flex; align-items: center;">
+        <span id="bg-status" style="color: #888; font-size: 14px;">点击上传</span>
+        <span style="color: #ccc; margin-left: 10px;">〉</span>
+    </div>
+    <input type="file" id="header-bg-input" accept="image/*" style="display: none;">
+</div>
 </script>
 </body>
 </html>
