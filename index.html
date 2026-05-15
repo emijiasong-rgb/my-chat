@@ -23,11 +23,19 @@
             justify-content: center;
             align-items: center;
         }
+        
+        /* ✅ 新增：个人主页背景区域样式 */
+        .profile-header-bg {
+            width: 100%;
+            height: 120px; /* 根据需要调整高度 */
+            background-size: cover;
+            background-position: center;
+            background-color: #e0e0e0; /* 默认背景色 */
+            position: relative;
+        }
     </style>
 </head>
-<body>
-
- <body>
+<body>  <!-- ✅ 删除了重复的 body 标签 -->
 
 <script>
 function updateClocks() {
@@ -92,11 +100,13 @@ document.addEventListener('DOMContentLoaded', updateClocks);
         <div id="viewport">
             <section id="page-home" class="page active">
                 <div class="profile-card">
+                    <!-- ✅ 修改：profile-banner 现在加载"个人主页背景" -->
                     <div class="profile-banner" id="profile-banner" onclick="document.getElementById('banner-upload').click()">
                         <div class="upload-hint-banner">更换背景图片</div>
                     </div>
                     <div class="profile-content-wrapper">
                         <div class="profile-info">
+                            <!-- ✅ 修改：头像上传 ID 保持为 avatar-upload，但需要在 JS 中同时支持 -->
                             <div class="profile-avatar-wrapper" onclick="document.getElementById('avatar-upload').click()">
                                 <img src="默认头像.jpg" id="user-avatar">
                                 <div class="upload-hint">更换图片</div>
@@ -145,6 +155,7 @@ document.addEventListener('DOMContentLoaded', updateClocks);
             <div class="nav-item" onclick="goHome()">🏠<br>桌面</div>
         </nav>
 
+        <!-- ✅ 保持两个上传入口：头像和banner -->
         <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
         <input type="file" id="banner-upload" accept="image/*" style="display: none;">
     </div>
@@ -165,6 +176,36 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('main-app').style.display = 'flex';
     } else {
         startLoading(); 
+    }
+    
+    // ✅ 新增：绑定头像上传事件
+    const avatarUpload = document.getElementById('avatar-upload');
+    if(avatarUpload) {
+        avatarUpload.addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('user-avatar').src = ev.target.result;
+                    localStorage.setItem('savedAvatar', ev.target.result);
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    }
+    
+    // ✅ 新增：绑定个人主页背景上传事件
+    const bannerUpload = document.getElementById('banner-upload');
+    if(bannerUpload) {
+        bannerUpload.addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('profile-banner').style.backgroundImage = `url(${ev.target.result})`;
+                    localStorage.setItem('headerBackground', ev.target.result); // ✅ 保存为 headerBackground
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
     }
 });
 
@@ -198,7 +239,8 @@ function refreshUserUI() {
     const avatar = localStorage.getItem('savedAvatar');
     const bio = localStorage.getItem('userBio') || '请输入个性签名';
     const location = localStorage.getItem('userLocation') || '请输入地区';
-    const wallpaper = localStorage.getItem('userWallpaper'); // 壁纸数据
+    const wallpaper = localStorage.getItem('userWallpaper'); // 桌面壁纸
+    const headerBg = localStorage.getItem('headerBackground'); // ✅ 新增：个人主页背景
 
     // 更新名字
     const userNameCard = document.getElementById('user-name');
@@ -216,12 +258,20 @@ function refreshUserUI() {
     const userLoc = document.getElementById('user-location');
     if (userLoc) userLoc.innerText = '📍 ' + location;
 
-    // 应用壁纸到桌面背景
+    // 应用桌面壁纸
     const homePage = document.getElementById('page-home');
     if (homePage && wallpaper) {
         homePage.style.backgroundImage = `url(${wallpaper})`;
         homePage.style.backgroundSize = 'cover';
         homePage.style.backgroundPosition = 'center';
+    }
+    
+    // ✅ 新增：应用个人主页背景（头像后面的背景）
+    const profileBanner = document.getElementById('profile-banner');
+    if (profileBanner && headerBg) {
+        profileBanner.style.backgroundImage = `url(${headerBg})`;
+        profileBanner.style.backgroundSize = 'cover';
+        profileBanner.style.backgroundPosition = 'center';
     }
 }
 
