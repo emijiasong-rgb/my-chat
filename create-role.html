@@ -370,7 +370,7 @@
         </div>
     </div>
 
-    <script>
+        <script>
         let selectedRelation = '';
         let roleAvatarData = '';
 
@@ -412,18 +412,23 @@
                 messages: []
             };
 
+            // ✅ 保存
             const roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
+            
+            // ✅ 验证保存
+            const saved = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            console.log('已保存的角色数量:', saved.length);
+            console.log('最新角色:', saved[saved.length - 1]);
             
             alert('✅ 角色创建成功！');
             window.location.href = 'chat.html';
         }
 
+        // ✅ 返回按钮
         function goBack() {
-            if (confirm('确定要返回吗？未保存的内容将丢失。')) {
-                window.location.href = 'chat.html';
-            }
+            window.location.href = 'chat.html';
         }
     </script>
 </body>
