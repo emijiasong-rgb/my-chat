@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Dancing+Script:wght@400;700&family=Pacifico&family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@400;600&family=Roboto+Mono:wght@400;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* 确保背景占满全屏 */
         body, html {
             margin: 0;
             padding: 0;
@@ -26,22 +25,12 @@
             justify-content: center;
             align-items: center;
         }
-        
-        .profile-header-bg {
-            width: 100%;
-            height: 120px;
-            background-size: cover;
-            background-position: center;
-            background-color: #e0e0e0;
-            position: relative;
-        }
 
-        /* 隐藏上传提示文字 */
         .upload-hint, .upload-hint-banner {
             display: none !important;
         }
 
-        /* ===== ✅ 字体样式定义 ===== */
+        /* ===== 字体样式定义 ===== */
         body.font-default,
         body.font-default * {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
@@ -189,8 +178,7 @@ document.addEventListener('DOMContentLoaded', updateClocks);
         <div id="viewport">
             <section id="page-home" class="page active">
                 <div class="profile-card">
-                    <div class="profile-banner" id="profile-banner" onclick="location.href='profile.html'">
-                        </div>
+                    <div class="profile-banner" id="profile-banner" onclick="location.href='profile.html'"></div>
                     <div class="profile-content-wrapper">
                         <div class="profile-info">
                             <div class="profile-avatar-wrapper" onclick="location.href='profile.html'">
@@ -207,47 +195,32 @@ document.addEventListener('DOMContentLoaded', updateClocks);
                     </div>
                 </div>
 
+                <!-- ✅ 只有三个图标，干净整洁 -->
                 <div class="app-grid">
-                    <div class="app-icon" onclick="switchTab('message')">
+                    <!-- Chat 跳转到 chat.html -->
+                    <div class="app-icon" onclick="window.location.href='chat.html'">
                         <div class="icon-box">💬</div>
                         <span>Chat</span>
                     </div>
+                    <!-- Ourtale -->
                     <div class="app-icon gray-scale" onclick="alert('纪念日功能开发中...')">
                         <div class="icon-box">🤍</div>
                         <span>Ourtale</span>
                     </div>
+                    <!-- Settings -->
                     <div class="app-icon" onclick="window.location.href='settings.html'">
                         <div class="icon-box">⚙️</div>
                         <span>Settings</span>
                     </div>
                 </div>
             </section>
-
-            <section id="page-message" class="page">
-                <div class="header-title">微信</div>
-                <div class="list-item" onclick="openChat('张三')">
-                    <div class="avatar" style="background: #ff9500; width:40px; height:40px; border-radius:5px; margin:10px;"></div>
-                    <div style="flex:1; padding-top:10px;">
-                        <b>张三</b>
-                        <p style="color:#888; font-size:13px;">今晚出来吃火锅吗？</p>
-                    </div>
-                </div>
-            </section>
         </div>
-
-        <nav id="nav-bar" style="display: none;">
-            <div class="nav-item" onclick="switchTab('message')">💬<br>消息</div>
-            <div class="nav-item" onclick="goHome()">🏠<br>桌面</div>
-        </nav>
     </div>
 </div>
-
-<script src="script.js"></script>
 
 <script>
 // ✅ 应用已保存的字体
 function applyFont(fontKey) {
-    // 移除所有字体类
     const fontClasses = [
         'font-default', 'font-noto-sans', 'font-noto-serif', 
         'font-kuaile', 'font-nailao', 'font-mashan', 
@@ -259,7 +232,6 @@ function applyFont(fontKey) {
     
     document.body.classList.remove(...fontClasses);
     
-    // 添加新字体类
     if (fontKey && fontKey !== 'default') {
         document.body.classList.add('font-' + fontKey);
     }
@@ -268,10 +240,8 @@ function applyFont(fontKey) {
 document.addEventListener('DOMContentLoaded', function() {
     // ✅ 先应用字体
     const savedFont = localStorage.getItem('user-font');
-    console.log('读取到的字体设置:', savedFont);
     if (savedFont) {
         applyFont(savedFont);
-        console.log('已应用字体:', savedFont);
     }
     
     refreshUserUI(); 
@@ -309,7 +279,7 @@ function startLoading() {
     }, 150);
 }
 
-// 核心函数：刷新主页显示
+// 刷新主页显示
 function refreshUserUI() {
     const currentUser = localStorage.getItem('currentUser') || "未登录用户";
     const avatar = localStorage.getItem('savedAvatar');
@@ -331,7 +301,7 @@ function refreshUserUI() {
         homePage.style.backgroundPosition = 'center';
     }
     
-    // 个人主页背景图应用
+    // 个人主页背景图
     const profileBanner = document.getElementById('profile-banner');
     if (profileBanner && headerBg) {
         profileBanner.style.backgroundImage = `url(${headerBg})`;
