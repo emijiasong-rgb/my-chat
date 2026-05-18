@@ -370,15 +370,15 @@
         </div>
     </div>
 
-        <script>
+            <script>
         let selectedRelation = '';
         let roleAvatarData = '';
 
         function previewRoleAvatar(event) {
-            const file = event.target.files[0];
+            var file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
+                var reader = new FileReader();
+                reader.onload = function(e) {
                     document.getElementById('role-avatar-preview').src = e.target.result;
                     roleAvatarData = e.target.result;
                 };
@@ -387,18 +387,21 @@
         }
 
         function selectRelation(tag) {
-            document.querySelectorAll('#relation-selector .relation-tag').forEach(t => t.classList.remove('selected'));
+            var tags = document.querySelectorAll('#relation-selector .relation-tag');
+            for (var i = 0; i < tags.length; i++) {
+                tags[i].classList.remove('selected');
+            }
             tag.classList.add('selected');
-            selectedRelation = tag.dataset.relation;
+            selectedRelation = tag.getAttribute('data-relation');
             document.getElementById('nickname-group').classList.add('show');
         }
 
         function saveRole() {
-            const name = document.getElementById('role-name').value.trim();
+            var name = document.getElementById('role-name').value.trim();
             if (!name) { alert('请填写角色名字'); return; }
             if (!selectedRelation) { alert('请选择关系'); return; }
 
-            const role = {
+            var role = {
                 id: Date.now(),
                 avatar: roleAvatarData,
                 name: name,
@@ -412,21 +415,14 @@
                 messages: []
             };
 
-            // ✅ 保存
-            const roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            // ✅ 验证保存
-            const saved = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            console.log('已保存的角色数量:', saved.length);
-            console.log('最新角色:', saved[saved.length - 1]);
-            
-            alert('✅ 角色创建成功！');
+            alert('角色创建成功！');
             window.location.href = 'chat.html';
         }
 
-        // ✅ 返回按钮
         function goBack() {
             window.location.href = 'chat.html';
         }
