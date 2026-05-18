@@ -370,9 +370,9 @@
         </div>
     </div>
 
-            <script>
-        let selectedRelation = '';
-        let roleAvatarData = '';
+                <script>
+        var selectedRelation = '';
+        var roleAvatarData = '';
 
         function previewRoleAvatar(event) {
             var file = event.target.files[0];
@@ -397,10 +397,26 @@
         }
 
         function saveRole() {
-            var name = document.getElementById('role-name').value.trim();
-            if (!name) { alert('请填写角色名字'); return; }
-            if (!selectedRelation) { alert('请选择关系'); return; }
+            alert('步骤1：函数被调用');
+            
+            var nameEl = document.getElementById('role-name');
+            alert('步骤2：nameEl = ' + nameEl);
+            
+            var name = nameEl.value.trim();
+            alert('步骤3：name = ' + name);
+            
+            if (!name) { 
+                alert('请填写角色名字'); 
+                return; 
+            }
+            
+            if (!selectedRelation) { 
+                alert('请选择关系'); 
+                return; 
+            }
 
+            alert('步骤4：开始创建角色对象');
+            
             var role = {
                 id: Date.now(),
                 avatar: roleAvatarData,
@@ -415,11 +431,16 @@
                 messages: []
             };
 
-            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            alert('步骤5：读取 localStorage');
+            var rolesJson = localStorage.getItem('chat_roles') || '[]';
+            var roles = JSON.parse(rolesJson);
+            
+            alert('步骤6：roles.length = ' + roles.length);
+            
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            alert('角色创建成功！');
+            alert('步骤7：保存成功！即将跳转');
             window.location.href = 'chat.html';
         }
 
