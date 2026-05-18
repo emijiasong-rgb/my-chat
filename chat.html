@@ -92,7 +92,6 @@
             position: relative;
         }
 
-        /* 柔和光晕背景 */
         .bg-ambient {
             position: absolute;
             top: -60px;
@@ -105,7 +104,6 @@
             z-index: 0;
         }
 
-        /* ===== 角色列表页 ===== */
         #role-list-page {
             position: relative;
             z-index: 1;
@@ -153,7 +151,6 @@
             background: rgba(255, 255, 255, 0.85);
         }
 
-        /* 角色列表 */
         .role-list {
             flex: 1;
             overflow-y: auto;
@@ -243,7 +240,6 @@
             font-size: 15px;
         }
 
-        /* ===== 聊天页 ===== */
         #chat-page {
             display: none;
             flex-direction: column;
@@ -296,7 +292,6 @@
             color: var(--text);
         }
 
-        /* 消息区域 */
         .messages-container {
             flex: 1;
             overflow-y: auto;
@@ -365,7 +360,6 @@
             box-shadow: 0 2px 8px rgba(91, 106, 191, 0.25);
         }
 
-        /* 输入区 */
         .input-area {
             display: flex;
             gap: 8px;
@@ -429,13 +423,13 @@
             background: rgba(0,0,0,0.4);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            z-index: 2000;
+            z-index: 9999;
             justify-content: center;
             align-items: center;
         }
 
         .modal-overlay.active {
-            display: flex;
+            display: flex !important;
         }
 
         .modal-content {
@@ -505,7 +499,6 @@
             background: rgba(91, 106, 191, 0.02);
         }
 
-        /* 关系选择器 */
         .relation-selector {
             display: flex;
             flex-wrap: wrap;
@@ -575,7 +568,6 @@
             box-shadow: 0 2px 6px rgba(91, 106, 191, 0.4);
         }
 
-        /* 头像上传 */
         .avatar-upload-area {
             display: flex;
             align-items: center;
@@ -607,7 +599,6 @@
         <div id="main-view">
             <div class="bg-ambient"></div>
 
-            <!-- 角色列表页 -->
             <div id="role-list-page">
                 <div class="chat-header">
                     <h1>对话</h1>
@@ -622,7 +613,6 @@
                 </div>
             </div>
 
-            <!-- 聊天页 -->
             <div id="chat-page">
                 <div class="chat-nav">
                     <span class="back-btn" onclick="goBackToList()">〈 返回</span>
@@ -638,7 +628,7 @@
         </div>
     </div>
 
-    <!-- 创建角色弹窗 -->
+    <!-- ✅ 弹窗在 phone-shell 外面 -->
     <div class="modal-overlay" id="create-modal">
         <div class="modal-content">
             <div class="modal-title">创建角色</div>
@@ -714,6 +704,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             renderRoleList();
+            console.log('Chat 页面加载完成');
         });
 
         function previewRoleAvatar(event) {
@@ -736,7 +727,14 @@
         }
 
         function openCreateRoleModal() {
-            document.getElementById('create-modal').classList.add('active');
+            console.log('✅ 打开弹窗函数被调用');
+            const modal = document.getElementById('create-modal');
+            console.log('弹窗元素:', modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('已添加 active 类');
+            }
+            
             document.getElementById('role-name').value = '';
             document.getElementById('role-personality').value = '';
             document.getElementById('role-background').value = '';
@@ -780,6 +778,7 @@
             
             closeCreateModal();
             renderRoleList();
+            alert('✅ 角色创建成功！');
         }
 
         function renderRoleList() {
