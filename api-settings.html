@@ -5,265 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>API 设置</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            background: #1a1a1a !important;
+            background: #1a1a1a;
             height: 100dvh;
             width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0;
+            font-family: -apple-system, sans-serif;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
 
         #phone-shell {
-            width: 100vw;
-            max-width: 430px;
-            height: 100dvh;
-            max-height: 932px;
-            background: #f2f2f7;
-            border-radius: 0;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: none;
-            flex-shrink: 0;
+            width: 100vw; max-width: 430px; height: 100dvh; max-height: 932px;
+            background: #f2f2f7; border-radius: 0;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
         #viewport {
-            flex: 1;
-            overflow-y: auto;
-            background: #f2f2f7;
-            display: flex;
-            flex-direction: column;
-            -webkit-overflow-scrolling: touch;
-            padding-top: env(safe-area-inset-top);
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
         }
         #viewport::-webkit-scrollbar { display: none; }
 
-        /* ===== 标题栏 ===== */
         .header-bar {
-            background: #f2f2f7;
-            padding: 15px 15px 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; align-items: center; padding: 15px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 10;
         }
+        .back-btn { color: #007aff; cursor: pointer; font-size: 16px; }
+        .header-title { flex: 1; text-align: center; font-weight: bold; font-size: 17px; margin-right: 30px; }
 
-        .back-btn {
-            color: #007aff;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .header-title {
-            font-weight: bold;
-            font-size: 17px;
-            color: #000;
-        }
-
-        .add-btn {
-            color: #007aff;
-            font-size: 24px;
-            font-weight: 300;
-            cursor: pointer;
-            padding: 0 5px;
-        }
-
-        .add-btn:active {
-            transform: scale(1.2);
-        }
-
-        /* ===== API 列表卡片 ===== */
-        .api-list {
-            padding: 10px 15px;
-        }
-
+        .api-list { padding: 15px; }
         .api-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-            position: relative;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.8); border-radius: 16px;
+            padding: 16px; margin-bottom: 12px; cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative;
+        }
+        .api-card:active { transform: scale(0.98); }
+        .api-card-name { font-weight: 600; font-size: 17px; margin-bottom: 4px; }
+        .api-card-url { font-size: 13px; color: #888; }
+        .api-card-model { font-size: 12px; color: #007aff; margin-top: 4px; }
+        .api-card-status { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+        .status-active { background: #d4edda; color: #28a745; }
+        .delete-btn { position: absolute; top: 12px; right: 15px; color: #ff3b30; font-size: 16px; cursor: pointer; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+        .empty-state-icon { font-size: 50px; margin-bottom: 12px; }
+
+        .add-btn-fab {
+            position: sticky; bottom: 20px; margin: 0 15px 20px;
+            padding: 14px; background: #007aff; color: white;
+            border: none; border-radius: 14px; font-size: 16px; font-weight: 600;
+            cursor: pointer; text-align: center;
         }
 
-        .api-card:active {
-            transform: scale(0.98);
-        }
-
-        .api-card-name {
-            font-weight: 600;
-            font-size: 17px;
-            color: #000;
-            margin-bottom: 6px;
-        }
-
-        .api-card-url {
-            font-size: 13px;
-            color: #888;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .api-card-status {
-            display: inline-block;
-            margin-top: 8px;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 10px;
-        }
-
-        .status-connected {
-            background: #d4edda;
-            color: #28a745;
-        }
-
-        .delete-api-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            color: #ff3b30;
-            font-size: 14px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-
-        .empty-state-text {
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .empty-state-sub {
-            font-size: 13px;
-            color: #bbb;
-        }
-
-        /* ===== 弹窗 ===== */
+        /* 弹窗 */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal-content {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 20px;
-            padding: 25px 20px;
-            width: 85%;
-            max-width: 350px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(30px);
+            border-radius: 20px; padding: 24px 20px; width: 88%; max-width: 350px;
+            max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
+        .modal-content::-webkit-scrollbar { display: none; }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .modal-title { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 18px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 13px; color: #555; margin-bottom: 5px; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 11px 14px; background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; font-size: 15px; outline: none;
         }
+        .input-group input:focus { border-color: #007aff; }
 
-        .modal-title {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-            color: #000;
+        .fetch-btn {
+            width: 100%; padding: 10px; background: #f0f0f0;
+            border: 1px solid #ddd; border-radius: 10px; font-size: 14px;
+            cursor: pointer; margin-top: -6px; margin-bottom: 12px; color: #007aff;
         }
+        .fetch-btn:active { background: #e0e0e0; }
 
-        .input-group {
-            margin-bottom: 15px;
+        .model-list {
+            max-height: 150px; overflow-y: auto; margin-top: -6px; margin-bottom: 12px;
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; display: none;
         }
+        .model-list.show { display: block; }
+        .model-item {
+            padding: 10px 14px; cursor: pointer; font-size: 14px;
+            border-bottom: 0.5px solid #eee;
+        }
+        .model-item:hover { background: rgba(0,122,255,0.05); }
+        .model-item.selected { background: rgba(0,122,255,0.1); color: #007aff; }
 
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
-            box-sizing: border-box;
-        }
-
-        .input-group input:focus {
-            border-color: #007aff;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn:active {
-            transform: scale(0.97);
-        }
-
-        .btn-cancel {
-            background: rgba(0,0,0,0.05);
-            color: #333;
-        }
-
-        .btn-save {
-            background: #007aff;
-            color: white;
-        }
+        .btn-group { display: flex; gap: 10px; margin-top: 18px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: rgba(0,0,0,0.05); color: #333; }
+        .btn-save { background: #007aff; color: white; }
+        .btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -272,10 +119,11 @@
             <div class="header-bar">
                 <span class="back-btn" onclick="window.location.href='settings.html'">〈 返回</span>
                 <span class="header-title">API 管理</span>
-                <span class="add-btn" onclick="openAddModal()">+</span>
             </div>
 
             <div class="api-list" id="api-list"></div>
+
+            <button class="add-btn-fab" onclick="openAddModal()">+ 添加 API</button>
         </div>
     </div>
 
@@ -285,22 +133,26 @@
             
             <div class="input-group">
                 <label>API 名称</label>
-                <input type="text" id="api-name-input" placeholder="例如：OpenAI、DeepSeek...">
+                <input type="text" id="api-name" placeholder="例如：OpenAI、DeepSeek">
             </div>
             
             <div class="input-group">
                 <label>API 地址</label>
-                <input type="text" id="api-url-input" placeholder="https://api.openai.com">
+                <input type="text" id="api-url" placeholder="https://api.openai.com">
             </div>
             
             <div class="input-group">
                 <label>API 密钥</label>
-                <input type="password" id="api-key-input" placeholder="sk-...">
+                <input type="password" id="api-key" placeholder="sk-...">
             </div>
+
+            <button class="fetch-btn" onclick="fetchModels()">📡 拉取模型列表</button>
             
+            <div class="model-list" id="model-list"></div>
+
             <div class="input-group">
-                <label>模型名称（可选）</label>
-                <input type="text" id="api-model-input" placeholder="gpt-3.5-turbo">
+                <label>选择的模型</label>
+                <input type="text" id="api-model" placeholder="点击上方拉取并选择模型" readonly>
             </div>
 
             <div class="btn-group">
@@ -332,18 +184,19 @@
             var container = document.getElementById('api-list');
 
             if (apis.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📡</div><div class="empty-state-text">还没有添加 API</div><div class="empty-state-sub">点击右上角 + 添加</div></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📡</div><p>还没有添加 API</p><p style="font-size:13px;color:#bbb;">点击下方按钮添加</p></div>';
                 return;
             }
 
             var html = '';
             for (var i = 0; i < apis.length; i++) {
                 var api = apis[i];
-                html += '<div class="api-card" onclick="useApi(' + i + ')">' +
-                    '<span class="delete-api-btn" onclick="deleteApi(event, ' + i + ')">🗑️</span>' +
+                html += '<div class="api-card" onclick="editApi(' + i + ')">' +
+                    '<span class="delete-btn" onclick="deleteApi(event, ' + i + ')">🗑️</span>' +
                     '<div class="api-card-name">' + escapeHtml(api.name || '未命名') + '</div>' +
-                    '<div class="api-card-url">' + escapeHtml(api.url || '未设置地址') + '</div>' +
-                    '<span class="api-card-status status-connected">● 已保存</span></div>';
+                    '<div class="api-card-url">' + escapeHtml(api.url || '') + '</div>' +
+                    '<div class="api-card-model">模型: ' + escapeHtml(api.model || '未选择') + '</div>' +
+                    '<span class="api-card-status status-active">● 已保存</span></div>';
             }
             container.innerHTML = html;
         }
@@ -351,10 +204,26 @@
         function openAddModal() {
             editingIndex = -1;
             document.getElementById('modal-title').innerText = '添加 API';
-            document.getElementById('api-name-input').value = '';
-            document.getElementById('api-url-input').value = '';
-            document.getElementById('api-key-input').value = '';
-            document.getElementById('api-model-input').value = '';
+            document.getElementById('api-name').value = '';
+            document.getElementById('api-url').value = '';
+            document.getElementById('api-key').value = '';
+            document.getElementById('api-model').value = '';
+            document.getElementById('model-list').innerHTML = '';
+            document.getElementById('model-list').classList.remove('show');
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function editApi(index) {
+            var apis = getApis();
+            var api = apis[index];
+            editingIndex = index;
+            document.getElementById('modal-title').innerText = '编辑 API';
+            document.getElementById('api-name').value = api.name || '';
+            document.getElementById('api-url').value = api.url || '';
+            document.getElementById('api-key').value = api.key || '';
+            document.getElementById('api-model').value = api.model || '';
+            document.getElementById('model-list').innerHTML = '';
+            document.getElementById('model-list').classList.remove('show');
             document.getElementById('modal-overlay').classList.add('active');
         }
 
@@ -363,17 +232,66 @@
             editingIndex = -1;
         }
 
+        function fetchModels() {
+            var url = document.getElementById('api-url').value.trim();
+            var key = document.getElementById('api-key').value.trim();
+            
+            if (!url) { alert('请先填写 API 地址'); return; }
+            if (!key) { alert('请先填写 API 密钥'); return; }
+
+            var listContainer = document.getElementById('model-list');
+            listContainer.innerHTML = '<div class="model-item" style="color:#888;">正在拉取模型...</div>';
+            listContainer.classList.add('show');
+
+            var cleanUrl = url.replace(/\/+$/, '');
+            var apiUrl = cleanUrl + '/v1/models';
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', apiUrl, true);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+            
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.data && data.data.length > 0) {
+                        listContainer.innerHTML = '';
+                        for (var i = 0; i < data.data.length; i++) {
+                            var model = data.data[i];
+                            var item = document.createElement('div');
+                            item.className = 'model-item';
+                            item.innerText = model.id;
+                            item.onclick = function() {
+                                document.querySelectorAll('.model-item').forEach(function(el) { el.classList.remove('selected'); });
+                                this.classList.add('selected');
+                                document.getElementById('api-model').value = this.innerText;
+                            };
+                            listContainer.appendChild(item);
+                        }
+                    } else {
+                        listContainer.innerHTML = '<div class="model-item" style="color:red;">未找到模型</div>';
+                    }
+                } else {
+                    listContainer.innerHTML = '<div class="model-item" style="color:red;">请求失败: ' + xhr.status + '</div>';
+                }
+            };
+            xhr.onerror = function() {
+                listContainer.innerHTML = '<div class="model-item" style="color:red;">网络错误，请检查地址是否正确</div>';
+            };
+            xhr.send();
+        }
+
         function saveApi() {
-            var name = document.getElementById('api-name-input').value.trim();
-            var url = document.getElementById('api-url-input').value.trim();
-            var key = document.getElementById('api-key-input').value.trim();
-            var model = document.getElementById('api-model-input').value.trim();
+            var name = document.getElementById('api-name').value.trim();
+            var url = document.getElementById('api-url').value.trim();
+            var key = document.getElementById('api-key').value.trim();
+            var model = document.getElementById('api-model').value.trim();
 
             if (!name) { alert('请输入 API 名称'); return; }
             if (!url) { alert('请输入 API 地址'); return; }
             if (!key) { alert('请输入 API 密钥'); return; }
+            if (!model) { alert('请拉取并选择模型'); return; }
 
-            var newApi = { name: name, url: url, key: key, model: model };
+            var newApi = { name: name, url: url.replace(/\/+$/, ''), key: key, model: model };
             var apis = getApis();
 
             if (editingIndex >= 0) {
@@ -383,26 +301,14 @@
             }
 
             saveApis(apis);
-            localStorage.setItem('api_url', url);
-            localStorage.setItem('api_key', key);
-            if (model) localStorage.setItem('api_model', model);
-            
             closeModal();
             renderApiList();
-        }
-
-        function useApi(index) {
-            var apis = getApis();
-            var api = apis[index];
-            localStorage.setItem('api_url', api.url);
-            localStorage.setItem('api_key', api.key);
-            if (api.model) localStorage.setItem('api_model', api.model);
-            alert('已选择 API: ' + api.name);
+            alert('✅ API 保存成功！');
         }
 
         function deleteApi(event, index) {
             event.stopPropagation();
-            if (!confirm('确定要删除这个 API 吗？')) return;
+            if (!confirm('确定要删除吗？')) return;
             var apis = getApis();
             apis.splice(index, 1);
             saveApis(apis);
