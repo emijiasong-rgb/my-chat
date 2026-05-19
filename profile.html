@@ -2,34 +2,67 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>个人信息</title>
     <style>
-        /* 1. 外部背景：改成第一张图那种深灰色，确保能看清手机 */
-        body.font-modern {
-            background-color: #1a1a1a; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a1a;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* 2. 手机模型容器 */
         #phone-shell {
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
-            background: #f2f2f7; 
-            width: 375px; 
-            height: 812px; 
-            border-radius: 47px; 
-            overflow: hidden; 
-            position: relative; 
-            border: 8px solid #fff; 
-            overflow-y: auto; /* 添加滚动，防止内容溢出 */
+            width: 100vw;
+            max-width: 430px;
+            height: 100dvh;
+            max-height: 932px;
+            background: #f2f2f7;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: none;
         }
 
-        /* 列表样式 */
-        .profile-list { margin-top: 20px; background: white; border-top: 0.5px solid #ddd; border-bottom: 0.5px solid #ddd; }
+        #viewport {
+            flex: 1;
+            overflow-y: auto;
+            background: #f2f2f7;
+        }
+        #viewport::-webkit-scrollbar { display: none; }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #fff;
+            border-bottom: 0.5px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-bar span {
+            cursor: pointer;
+        }
+
+        .profile-list {
+            margin-top: 15px;
+            background: white;
+            border-top: 0.5px solid #ddd;
+            border-bottom: 0.5px solid #ddd;
+        }
+
         .profile-item { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 15px; border-bottom: 0.5px solid #eee; font-size: 16px;
@@ -38,140 +71,122 @@
         .profile-item:last-child { border-bottom: none; }
 
         .profile-item input { 
-            border: none; 
-            text-align: right; 
-            font-size: 16px; 
-            outline: none; 
-            width: 60%; 
-            background: none;
-            color: #000;
+            border: none; text-align: right; font-size: 16px; 
+            outline: none; width: 60%; background: none; color: #000;
         }
-        .profile-item input::placeholder {
-            color: #888;
-        }
+        .profile-item input::placeholder { color: #888; }
         
         .avatar-edit { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
-        .logout-container { margin-top: 30px; padding: 0 15px 20px; }
 
-        /* 灵动岛装饰 */
-        #phone-shell::before {
-            content: ""; position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 35px; background: #000; border-radius: 20px; z-index: 1001;
+        .logout-container { margin-top: 30px; padding: 0 15px 30px; }
+
+        .logout-btn {
+            width: 100%; background: white; color: #ff3b30;
+            border: none; border-radius: 12px; height: 50px;
+            font-weight: bold; font-size: 17px; cursor: pointer;
         }
-        
-        /* 右侧箭头样式 */
-        .arrow {
-            color: #ccc;
-            margin-left: 10px;
-            font-size: 16px;
-        }
+        .logout-btn:active { background: #f0f0f0; }
+
+        .arrow { color: #ccc; margin-left: 10px; font-size: 16px; }
     </style>
 </head>
-<body class="font-modern">
+<body>
 
 <div id="phone-shell">
-    <div class="header-title" style="background: #ffffff; border-bottom: 0.5px solid #ddd; justify-content: space-between; padding: 50px 15px 10px; display: flex; align-items: center;">
-        <span onclick="history.back()" style="color: #007aff; cursor: pointer;">〈 返回</span>
-        <span style="font-weight: bold; font-size: 17px;">个人信息</span>
-        <span onclick="saveProfile()" style="color: #007aff; font-weight: bold; cursor: pointer;">完成</span>
-    </div>
+    <div id="viewport">
+        <div class="header-bar">
+            <span onclick="history.back()" style="color:#007aff;">〈 返回</span>
+            <span style="font-weight:bold;font-size:17px;">个人信息</span>
+            <span onclick="saveProfile()" style="color:#007aff;font-weight:bold;">完成</span>
+        </div>
 
-    <div class="profile-list">
-        <!-- 头像 -->
-        <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
-            <span>头像</span>
-            <div style="display: flex; align-items: center;">
-                <img src="默认头像.jpg" id="edit-avatar-preview" class="avatar-edit" alt="头像">
-                <span class="arrow">〉</span>
+        <div class="profile-list">
+            <div class="profile-item" onclick="document.getElementById('avatar-input').click()">
+                <span>头像</span>
+                <div style="display:flex;align-items:center;">
+                    <img src="默认头像.jpg" id="edit-avatar-preview" class="avatar-edit" alt="头像">
+                    <span class="arrow">〉</span>
+                </div>
+                <input type="file" id="avatar-input" accept="image/*" style="display:none;">
             </div>
-            <input type="file" id="avatar-input" accept="image/*" style="display: none;">
-        </div>
 
-        <!-- 昵称 -->
-        <div class="profile-item">
-            <span>昵称</span>
-            <input type="text" id="edit-username" placeholder="请输入昵称">
-        </div>
-
-        <!-- 个性签名 -->
-        <div class="profile-item">
-            <span>个性签名</span>
-            <input type="text" id="edit-bio" placeholder="请输入个性签名">
-        </div>
-
-        <!-- 地区 -->
-        <div class="profile-item">
-            <span>地区</span>
-            <input type="text" id="edit-location" placeholder="请输入地区">
-        </div>
-
-        <!-- 生日 -->
-        <div class="profile-item">
-            <span>生日</span>
-            <input type="date" id="edit-birthday">
-        </div>
-
-        <!-- 更换桌面壁纸 -->
-        <div class="profile-item" onclick="document.getElementById('bg-input').click()">
-            <span>更换桌面壁纸</span>
-            <div style="display: flex; align-items: center;">
-                <span id="bg-status" style="color: #888; font-size: 14px;">点击上传</span>
-                <span class="arrow">〉</span>
+            <div class="profile-item">
+                <span>昵称</span>
+                <input type="text" id="edit-username" placeholder="请输入昵称">
             </div>
-            <input type="file" id="bg-input" accept="image/*" style="display: none;">
-        </div>
 
-        <!-- 个人主页背景（新增） -->
-        <div class="profile-item" onclick="document.getElementById('header-bg-input').click()">
-            <span>个人主页背景</span>
-            <div style="display: flex; align-items: center;">
-                <span id="header-bg-status" style="color: #888; font-size: 14px;">点击上传</span>
-                <span class="arrow">〉</span>
+            <div class="profile-item">
+                <span>个性签名</span>
+                <input type="text" id="edit-bio" placeholder="请输入个性签名">
             </div>
-            <input type="file" id="header-bg-input" accept="image/*" style="display: none;">
-        </div>
-    </div>
 
-    <div class="logout-container">
-        <button class="black-square-btn" onclick="logout()" style="width: 100%; background: white; color: #ff3b30; border: none; border-radius: 10px; height: 50px; font-weight: bold; font-size: 17px; cursor: pointer;">退出登录</button>
+            <div class="profile-item">
+                <span>地区</span>
+                <input type="text" id="edit-location" placeholder="请输入地区">
+            </div>
+
+            <div class="profile-item">
+                <span>生日</span>
+                <input type="date" id="edit-birthday">
+            </div>
+
+            <div class="profile-item" onclick="document.getElementById('bg-input').click()">
+                <span>更换桌面壁纸</span>
+                <div style="display:flex;align-items:center;">
+                    <span id="bg-status" style="color:#888;font-size:14px;">点击上传</span>
+                    <span class="arrow">〉</span>
+                </div>
+                <input type="file" id="bg-input" accept="image/*" style="display:none;">
+            </div>
+
+            <div class="profile-item" onclick="document.getElementById('header-bg-input').click()">
+                <span>个人主页背景</span>
+                <div style="display:flex;align-items:center;">
+                    <span id="header-bg-status" style="color:#888;font-size:14px;">点击上传</span>
+                    <span class="arrow">〉</span>
+                </div>
+                <input type="file" id="header-bg-input" accept="image/*" style="display:none;">
+            </div>
+        </div>
+
+        <div class="logout-container">
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // 加载已存数据
+    document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit-username').value = localStorage.getItem('currentUser') || "";
         document.getElementById('edit-avatar-preview').src = localStorage.getItem('savedAvatar') || "默认头像.jpg";
         document.getElementById('edit-birthday').value = localStorage.getItem('userBirthday') || "";
         document.getElementById('edit-bio').value = localStorage.getItem('userBio') || "";
         document.getElementById('edit-location').value = localStorage.getItem('userLocation') || "";
         
-        // 检查桌面壁纸状态
         if (localStorage.getItem('userWallpaper')) {
             document.getElementById('bg-status').textContent = '已设置';
             document.getElementById('bg-status').style.color = '#34c759';
         }
         
-        // 检查个人主页背景状态
         if (localStorage.getItem('headerBackground')) {
             document.getElementById('header-bg-status').textContent = '已设置';
             document.getElementById('header-bg-status').style.color = '#34c759';
         }
     });
 
-    // 头像预览处理
     document.getElementById('avatar-input').addEventListener('change', function(e) {
         if (e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (ev) => document.getElementById('edit-avatar-preview').src = ev.target.result;
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                document.getElementById('edit-avatar-preview').src = ev.target.result;
+            };
             reader.readAsDataURL(e.target.files[0]);
         }
     });
 
-    // 桌面壁纸上传处理
     document.getElementById('bg-input').addEventListener('change', function(e) {
         if (e.target.files[0]) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(ev) {
                 localStorage.setItem('userWallpaper', ev.target.result);
                 document.getElementById('bg-status').textContent = '已选择';
@@ -182,10 +197,9 @@
         }
     });
 
-    // 个人主页背景上传处理
     document.getElementById('header-bg-input').addEventListener('change', function(e) {
         if (e.target.files[0]) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(ev) {
                 localStorage.setItem('headerBackground', ev.target.result);
                 document.getElementById('header-bg-status').textContent = '已选择';
@@ -197,7 +211,7 @@
     });
 
     function saveProfile() {
-        const name = document.getElementById('edit-username').value;
+        var name = document.getElementById('edit-username').value;
         if (!name.trim()) { alert("昵称不能为空"); return; }
 
         localStorage.setItem('currentUser', name);
