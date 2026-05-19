@@ -2,34 +2,70 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>lulu chat</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Dancing+Script:wght@400;700&family=Pacifico&family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@400;600&family=Roboto+Mono:wght@400;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a1a;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
-            background-color: #f0f0f0; 
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
+
         #main-app {
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            max-width: 430px;
+            height: 100dvh;
+            max-height: 932px;
             display: none;
             justify-content: center;
             align-items: center;
         }
 
-        .upload-hint, .upload-hint-banner {
-            display: none !important;
+        #phone-shell {
+            width: 100%;
+            height: 100%;
+            background: #f2f2f7;
+            border-radius: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: none;
         }
 
-        /* ===== 字体样式定义 ===== */
+        #viewport {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #viewport::-webkit-scrollbar { display: none; }
+
+        .upload-hint, .upload-hint-banner { display: none !important; }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px 6px;
+            font-size: 13px;
+            font-weight: 500;
+            background: transparent;
+        }
+
+        /* 字体样式 */
         body.font-default, body.font-default * { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important; }
         body.font-noto-sans, body.font-noto-sans * { font-family: 'Noto Sans SC', -apple-system, sans-serif !important; }
         body.font-noto-serif, body.font-noto-serif * { font-family: 'Noto Serif SC', 'Times New Roman', serif !important; }
@@ -53,17 +89,17 @@
 
 <script>
 function updateClocks() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
+    var now = new Date();
+    var hours = String(now.getHours()).padStart(2, '0');
+    var minutes = String(now.getMinutes()).padStart(2, '0');
     
     if(document.getElementById('clock')) 
-        document.getElementById('clock').innerText = `${hours}:${minutes}`;
+        document.getElementById('clock').innerText = hours + ':' + minutes;
     
     if(document.getElementById('big-time')) 
-        document.getElementById('big-time').innerText = `${hours}:${minutes}`;
+        document.getElementById('big-time').innerText = hours + ':' + minutes;
     
-    const options = { month: 'long', day: 'numeric', weekday: 'short' };
+    var options = { month: 'long', day: 'numeric', weekday: 'short' };
     if(document.getElementById('big-date'))
         document.getElementById('big-date').innerText = now.toLocaleDateString('zh-CN', options);
 }
@@ -148,7 +184,7 @@ document.addEventListener('DOMContentLoaded', updateClocks);
 
 <script>
 function applyFont(fontKey) {
-    const fontClasses = [
+    var fontClasses = [
         'font-default', 'font-noto-sans', 'font-noto-serif', 
         'font-kuaile', 'font-nailao', 'font-mashan', 
         'font-longcang', 'font-zhimang', 'font-liujian',
@@ -156,20 +192,22 @@ function applyFont(fontKey) {
         'font-playfair', 'font-montserrat', 'font-raleway',
         'font-roboto-mono', 'font-monospace'
     ];
-    document.body.classList.remove(...fontClasses);
+    for (var i = 0; i < fontClasses.length; i++) {
+        document.body.classList.remove(fontClasses[i]);
+    }
     if (fontKey && fontKey !== 'default') {
         document.body.classList.add('font-' + fontKey);
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const savedFont = localStorage.getItem('user-font');
+    var savedFont = localStorage.getItem('user-font');
     if (savedFont) applyFont(savedFont);
     
     refreshUserUI(); 
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const isFromSettings = urlParams.get('from') === 'settings';
+    var urlParams = new URLSearchParams(window.location.search);
+    var isFromSettings = urlParams.get('from') === 'settings';
 
     if (isFromSettings) {
         document.getElementById('welcome-container').style.display = 'none';
@@ -180,18 +218,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function startLoading() {
-    const fill = document.querySelector('.progress-fill');
-    const percentText = document.querySelector('.progress-percentage');
-    const welcome = document.getElementById('welcome-container');
-    const mainApp = document.getElementById('main-app');
-    let progress = 0;
+    var fill = document.querySelector('.progress-fill');
+    var percentText = document.querySelector('.progress-percentage');
+    var welcome = document.getElementById('welcome-container');
+    var mainApp = document.getElementById('main-app');
+    var progress = 0;
 
-    const interval = setInterval(() => {
+    var interval = setInterval(function() {
         progress += Math.floor(Math.random() * 15) + 5;
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
-            setTimeout(() => {
+            setTimeout(function() {
                 welcome.style.display = 'none';
                 mainApp.style.display = 'flex';
             }, 500);
@@ -202,28 +240,28 @@ function startLoading() {
 }
 
 function refreshUserUI() {
-    const currentUser = localStorage.getItem('currentUser') || "未登录用户";
-    const avatar = localStorage.getItem('savedAvatar');
-    const bio = localStorage.getItem('userBio') || '请输入个性签名';
-    const location = localStorage.getItem('userLocation') || '请输入地区';
-    const wallpaper = localStorage.getItem('userWallpaper'); 
-    const headerBg = localStorage.getItem('headerBackgroundImage') || localStorage.getItem('headerBackground'); 
+    var currentUser = localStorage.getItem('currentUser') || "未登录用户";
+    var avatar = localStorage.getItem('savedAvatar');
+    var bio = localStorage.getItem('userBio') || '请输入个性签名';
+    var location = localStorage.getItem('userLocation') || '请输入地区';
+    var wallpaper = localStorage.getItem('userWallpaper'); 
+    var headerBg = localStorage.getItem('headerBackgroundImage') || localStorage.getItem('headerBackground'); 
 
     if (document.getElementById('user-name')) document.getElementById('user-name').innerText = currentUser;
     if (document.getElementById('user-avatar') && avatar) document.getElementById('user-avatar').src = avatar;
     if (document.getElementById('user-signature')) document.getElementById('user-signature').innerText = bio;
     if (document.getElementById('user-location')) document.getElementById('user-location').innerText = '📍 ' + location;
 
-    const homePage = document.getElementById('page-home');
+    var homePage = document.getElementById('page-home');
     if (homePage && wallpaper) {
-        homePage.style.backgroundImage = `url(${wallpaper})`;
+        homePage.style.backgroundImage = 'url(' + wallpaper + ')';
         homePage.style.backgroundSize = 'cover';
         homePage.style.backgroundPosition = 'center';
     }
     
-    const profileBanner = document.getElementById('profile-banner');
+    var profileBanner = document.getElementById('profile-banner');
     if (profileBanner && headerBg) {
-        profileBanner.style.backgroundImage = `url(${headerBg})`;
+        profileBanner.style.backgroundImage = 'url(' + headerBg + ')';
         profileBanner.style.backgroundSize = 'cover';
         profileBanner.style.backgroundPosition = 'center';
     }
