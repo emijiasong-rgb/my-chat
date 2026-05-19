@@ -83,7 +83,6 @@
         .empty-role { text-align:center; padding:100px 20px; color:var(--text-tertiary); }
         .empty-role-icon { font-size:56px; margin-bottom:12px; opacity:0.6; }
 
-        /* ===== 聊天页 ===== */
         #chat-page { display:none; flex-direction:column; height:100%; z-index:1; }
         #chat-page.active { display:flex; }
 
@@ -95,10 +94,9 @@
         .back-btn { color:var(--accent); font-size:16px; cursor:pointer; padding:4px 6px; }
         .chat-nav-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; }
         .chat-nav-info { flex:1; }
-        .chat-nav-name { font-weight:600; font-size:15px; color:var(--text); }
+        .chat-nav-name { font-weight:600; font-size:15px; color:var(--text); transition:all 0.3s; }
         .chat-nav-relation { font-size:11px; color:var(--text-tertiary); }
         
-        /* 三个点 */
         .more-btn {
             width:32px; height:32px; border:none; background:none;
             font-size:20px; cursor:pointer; color:var(--text); padding:4px;
@@ -138,10 +136,25 @@
             border-top-right-radius:4px; box-shadow:0 2px 8px rgba(91,106,191,0.2);
         }
 
-        /* 时间戳 */
-        .msg-time {
-            font-size:10px; color:var(--text-tertiary); text-align:center;
-            margin:8px 0; opacity:0.7;
+        /* ===== 三个点跳动动画 ===== */
+        .typing-dots {
+            display:inline-flex; gap:4px; padding:4px 0;
+        }
+        .typing-dots span {
+            width:7px; height:7px; background:#8e8e93;
+            border-radius:50%; animation:bounce 1.4s infinite;
+        }
+        .typing-dots span:nth-child(2) { animation-delay:0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay:0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform:translateY(0); opacity:0.3; }
+            30% { transform:translateY(-8px); opacity:1; }
+        }
+
+        /* 导航栏正在输入 */
+        .chat-nav-name.typing-status {
+            color:var(--accent);
         }
 
         .input-area {
@@ -249,6 +262,7 @@
             document.getElementById('chat-page').classList.add('active');
             document.getElementById('chat-nav-avatar').src = currentChatRole.avatar || '';
             document.getElementById('chat-nav-name').innerText = currentChatRole.name;
+            document.getElementById('chat-nav-name').classList.remove('typing-status');
             document.getElementById('chat-nav-relation').innerText = currentChatRole.relation || '';
             renderMessages();
         }
@@ -272,7 +286,9 @@
             for (var i = 0; i < currentChatRole.messages.length; i++) {
                 var msg = currentChatRole.messages[i];
                 var avatar = msg.type === 'ai' ? (currentChatRole.avatar || '') : '';
-                html += '<div class="msg-wrapper ' + msg.type + '"><img class="msg-avatar" src="' + avatar + '" alt=""><div class="msg-bubble">' + escapeHtml(msg.text) + '</div></div>';
+                var isTyping = msg.text.indexOf('typing-dots') !== -1;
+                var content = isTyping ? msg.text : escapeHtml(msg.text);
+                html += '<div class="msg-wrapper ' + msg.type + '"><img class="msg-avatar" src="' + avatar + '" alt=""><div class="msg-bubble">' + content + '</div></div>';
             }
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
@@ -291,23 +307,32 @@
 
         function callApiForReply(userMsg) {
             if (!currentApi) {
+                showTypingStatus();
+                currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>' });
+                updateRoleMessages(); renderMessages();
                 setTimeout(function() {
+                    currentChatRole.messages.pop();
                     var reply = generateLocalReply();
                     currentChatRole.messages.push({ type: 'ai', text: reply });
                     updateRoleMessages(); renderMessages();
-                }, 500);
+                    hideTypingStatus();
+                }, 1500);
                 return;
             }
 
+            showTypingStatus();
+            currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>' });
+            updateRoleMessages(); renderMessages();
+
             var systemPrompt = buildSystemPrompt();
             var messages = [{ role: 'system', content: systemPrompt }];
-            var historyStart = Math.max(0, currentChatRole.messages.length - 10);
+            var historyStart = Math.max(0, currentChatRole.messages.length - 12);
             for (var i = historyStart; i < currentChatRole.messages.length; i++) {
-                messages.push({ role: currentChatRole.messages[i].type === 'user' ? 'user' : 'assistant', content: currentChatRole.messages[i].text });
+                var msg = currentChatRole.messages[i];
+                if (msg.text.indexOf('typing-dots') === -1) {
+                    messages.push({ role: msg.type === 'user' ? 'user' : 'assistant', content: msg.text });
+                }
             }
-
-            currentChatRole.messages.push({ type: 'ai', text: '...' });
-            updateRoleMessages(); renderMessages();
 
             var xhr = new XMLHttpRequest();
             xhr.open('POST', currentApi.url + '/v1/chat/completions', true);
@@ -323,13 +348,31 @@
                     currentChatRole.messages.push({ type: 'ai', text: '⚠️ 错误: ' + xhr.status });
                 }
                 updateRoleMessages(); renderMessages();
+                hideTypingStatus();
             };
             xhr.onerror = function() {
                 currentChatRole.messages.pop();
                 currentChatRole.messages.push({ type: 'ai', text: '⚠️ 网络错误' });
                 updateRoleMessages(); renderMessages();
+                hideTypingStatus();
             };
             xhr.send(JSON.stringify({ model: currentApi.model, messages: messages, temperature: 0.8, max_tokens: 500 }));
+        }
+
+        function showTypingStatus() {
+            var nameEl = document.getElementById('chat-nav-name');
+            if (nameEl && currentChatRole) {
+                nameEl.innerText = currentChatRole.name + ' · 正在输入中...';
+                nameEl.classList.add('typing-status');
+            }
+        }
+
+        function hideTypingStatus() {
+            var nameEl = document.getElementById('chat-nav-name');
+            if (nameEl && currentChatRole) {
+                nameEl.innerText = currentChatRole.name;
+                nameEl.classList.remove('typing-status');
+            }
         }
 
         function buildSystemPrompt() {
