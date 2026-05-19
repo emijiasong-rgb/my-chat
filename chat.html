@@ -28,30 +28,34 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
+                body {
             background: #1a1a1a;
-            height: 100vh;
+            height: 100dvh;
             width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: 'Noto Sans SC', -apple-system, sans-serif;
             overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         #phone-shell {
-            width: 393px;
-            height: 852px;
+            width: 100vw;
+            max-width: 430px;
+            height: 100dvh;
+            max-height: 932px;
             background: #f2f2f7;
-            border-radius: 47px;
+            border-radius: 0;
             position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            box-shadow: none;
         }
 
-        #phone-shell::before {
+
             content: "";
             position: absolute;
             top: 11px;
@@ -64,7 +68,6 @@
             z-index: 1001;
         }
 
-        #phone-shell::after {
             content: "";
             position: absolute;
             bottom: 8px;
@@ -77,15 +80,16 @@
             z-index: 1001;
         }
 
-        #main-view {
+                #main-view {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding-top: 55px;
+            padding-top: env(safe-area-inset-top);
             background: #f2f2f7;
             position: relative;
         }
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
         .bg-ambient {
             position: absolute;
