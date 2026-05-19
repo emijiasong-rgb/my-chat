@@ -2,92 +2,122 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>登录</title>
-    <link rel="stylesheet" href="style.css">
     <style>
-        /* 保持你的原有的样式不变 */
-        .login-page { background: #fff; padding: 40px 20px; text-align: center; }
-        .profile-box { 
-            border: 1px solid #000; display: inline-block; 
-            padding: 20px 40px; border-radius: 15px; margin-bottom: 30px;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a1a;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
-        .login-avatar { width: 80px; height: 80px; background: #c7c7cc; border-radius: 50%; margin: 0 auto 10px; }
-        .profile-box span { font-weight: bold; font-size: 18px; }
-    </style>
-</head>
 
-<body>
-    <div id="phone-shell">
-        <a href="settings.html" class="back-link">〈 返回</a>
+        #phone-shell {
+            width: 100vw;
+            max-width: 430px;
+            height: 100dvh;
+            max-height: 932px;
+            background: #fff;
+            border-radius: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: none;
+        }
 
-        <div class="page-flex-container">
-            <div style="border: 1px solid #000; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 40px;">
-                <div class="login-avatar"></div>
-                <b style="font-size: 18px;">请注册</b>
-            </div>
+        .back-link {
+            position: absolute;
+            top: env(safe-area-inset-top);
+            left: 15px;
+            padding: 15px 5px;
+            color: #007aff;
+            text-decoration: none;
+            font-size: 16px;
+            z-index: 10;
+        }
 
-            <div style="width: 100%; max-width: 300px; text-align: left;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">QQ邮箱/用户名</label>
-                <input type="text" id="login-username" class="ios-input-large" placeholder="输入qq邮箱/用户名">
-                <input type="password" id="login-password" class="ios-input-large" placeholder="输入密码">
-            </div>
+        .page-flex-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 30px;
+            padding-top: 60px;
+        }
 
-            <div style="width: 100%; max-width: 300px; display: flex; justify-content: space-between; margin-bottom: 30px;">
-                <span style="color: #007aff; cursor: pointer; font-size: 13px;" onclick="window.location.href='forgot.html'">忘记密码</span>
-                <span style="color: #007aff; cursor: pointer; font-size: 13px;" onclick="window.location.href='register.html'">还没有账号</span>
-            </div>
+        .login-box {
+            border: 1px solid #000;
+            padding: 30px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 300px;
+        }
 
-            <button class="black-square-btn" id="login-submit-btn" onclick="handleLogin()">登录</button>
-        </div>
-    </div>
+        .login-avatar {
+            width: 80px;
+            height: 80px;
+            background: #c7c7cc;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+        }
 
-<script>
-// 等页面加载完成后再绑定事件，更稳定
-document.addEventListener('DOMContentLoaded', function() {
-    const loginBtn = document.getElementById('login-submit-btn');
-    
-    // 移除 onclick 属性，改用 addEventListener（移动端更兼容）
-    if (loginBtn) {
-        loginBtn.removeAttribute('onclick');
-        loginBtn.addEventListener('click', handleLogin);
-    }
-});
+        .ios-input-large {
+            width: 100%;
+            max-width: 300px;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+            background: #f9f9f9;
+            display: block;
+        }
 
-function handleLogin() {
-    const emailInput = document.getElementById('login-username').value.trim();
-    const passwordInput = document.getElementById('login-password').value.trim();
+        .link-row {
+            width: 100%;
+            max-width: 300px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
 
-    if (!emailInput || !passwordInput) {
-        showMessage("请输入账号和密码");
-        return;
-    }
+        .link-row span {
+            color: #007aff;
+            cursor: pointer;
+            font-size: 13px;
+        }
 
-    const savedPassword = localStorage.getItem('user_' + emailInput);
+        .black-square-btn {
+            width: 100%;
+            max-width: 300px;
+            padding: 14px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-    if (savedPassword === null) {
-        showMessage("该账号尚未注册，请先点击'还没有账号'进行注册");
-    } else if (savedPassword === passwordInput) {
-        // 登录成功：保存状态
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('currentUser', emailInput);
-        showMessage("登录成功！");
-        
-        // 留在登录页，并显示已登录的UI
-        showLoggedInUI(emailInput);
-    } else {
-        showMessage("密码错误，请重新输入");
-    }
-}
+        .black-square-btn:active {
+            background: #333;
+        }
 
-// 自定义提示（不用 alert，移动端更稳）
-function showMessage(msg) {
-    // 检查页面上是否已有提示框
-    let msgDiv = document.getElementById('custom-message');
-    if (!msgDiv) {
-        msgDiv = document.createElement('div');
-        msgDiv.id = 'custom-message';
-        msgDiv.style.cssText = `
+        #custom-message {
             position: fixed;
             top: 50%;
             left: 50%;
@@ -100,76 +130,107 @@ function showMessage(msg) {
             z-index: 9999;
             text-align: center;
             max-width: 80%;
-            word-wrap: break-word;
-        `;
-        document.body.appendChild(msgDiv);
-    }
-    
-    msgDiv.innerText = msg;
-    msgDiv.style.display = 'block';
-    
-    setTimeout(() => {
-        msgDiv.style.display = 'none';
-    }, 2000);
-}
+            display: none;
+        }
+    </style>
+</head>
 
-// 登录成功后显示用户信息
-function showLoggedInUI(username) {
-    const container = document.querySelector('.page-flex-container');
-    
-    // 隐藏登录表单相关的元素
-    const loginBox = container.querySelector('div[style*="border: 1px solid #000; padding: 20px;"]');
-    const usernameInput = document.getElementById('login-username');
-    const passwordInput = document.getElementById('login-password');
-    const loginBtn = document.getElementById('login-submit-btn');
-    const linksDiv = container.querySelector('div[style*="display: flex; justify-content: space-between;"]');
-    
-    if (loginBox) loginBox.style.display = 'none';
-    if (usernameInput) usernameInput.style.display = 'none';
-    if (passwordInput) passwordInput.style.display = 'none';
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (linksDiv) linksDiv.style.display = 'none';
-    
-    // 显示已登录状态
-    const loggedInDiv = document.createElement('div');
-    loggedInDiv.id = 'loggedin-panel';
-    loggedInDiv.style.cssText = 'text-align: center; padding: 20px; width: 100%; max-width: 300px;';
-    loggedInDiv.innerHTML = `
-        <div style="border: 1px solid #000; padding: 30px 20px; border-radius: 15px; margin-bottom: 30px;">
-            <div class="login-avatar" style="background: #07c160; margin-bottom: 15px;"></div>
-            <b style="font-size: 20px;">${escapeHtml(username)}</b>
-            <p style="color: #666; margin-top: 10px;">已登录</p>
+<body>
+    <div id="phone-shell">
+        <a href="settings.html" class="back-link">〈 返回</a>
+
+        <div class="page-flex-container">
+            <div class="login-box">
+                <div class="login-avatar"></div>
+                <b style="font-size: 18px;">请登录</b>
+            </div>
+
+            <input type="text" id="login-username" class="ios-input-large" placeholder="输入qq邮箱/用户名">
+            <input type="password" id="login-password" class="ios-input-large" placeholder="输入密码">
+
+            <div class="link-row">
+                <span onclick="window.location.href='forgot.html'">忘记密码</span>
+                <span onclick="window.location.href='register.html'">还没有账号</span>
+            </div>
+
+            <button class="black-square-btn" id="login-submit-btn">登录</button>
         </div>
-        <button class="black-square-btn" id="logout-btn" style="background: #ff3b30; border: none;">退出登录</button>
-        <button class="black-square-btn" id="go-home-btn" style="margin-top: 15px; background: #000;">进入主页面</button>
-    `;
-    container.appendChild(loggedInDiv);
-    
-    // 退出登录按钮事件
-    document.getElementById('logout-btn').addEventListener('click', function() {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('currentUser');
-        window.location.reload();
-    });
-    
-    // 进入主页面按钮事件
-    document.getElementById('go-home-btn').addEventListener('click', function() {
-        window.location.href = 'index.html';
-    });
-}
+    </div>
 
-// 防止 XSS 攻击
-function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
+    <div id="custom-message"></div>
 
-// 进入主页面（保留兼容）
-function goToHome() {
-    window.location.href = 'index.html';
-}
-</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loginBtn = document.getElementById('login-submit-btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', handleLogin);
+            }
+        });
+
+        function handleLogin() {
+            var emailInput = document.getElementById('login-username').value.trim();
+            var passwordInput = document.getElementById('login-password').value.trim();
+
+            if (!emailInput || !passwordInput) {
+                showMessage("请输入账号和密码");
+                return;
+            }
+
+            var savedPassword = localStorage.getItem('user_' + emailInput);
+
+            if (savedPassword === null) {
+                showMessage("该账号尚未注册");
+            } else if (savedPassword === passwordInput) {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('currentUser', emailInput);
+                showMessage("登录成功！");
+                showLoggedInUI(emailInput);
+            } else {
+                showMessage("密码错误，请重新输入");
+            }
+        }
+
+        function showMessage(msg) {
+            var msgDiv = document.getElementById('custom-message');
+            msgDiv.innerText = msg;
+            msgDiv.style.display = 'block';
+            setTimeout(function() {
+                msgDiv.style.display = 'none';
+            }, 2000);
+        }
+
+        function showLoggedInUI(username) {
+            var container = document.querySelector('.page-flex-container');
+            container.innerHTML = '';
+
+            var html = '<div class="login-box">' +
+                '<div class="login-avatar" style="background:#07c160;"></div>' +
+                '<b style="font-size:20px;">' + escapeHtml(username) + '</b>' +
+                '<p style="color:#666;margin-top:10px;">已登录</p></div>' +
+                '<button class="black-square-btn" id="logout-btn" style="background:#ff3b30;margin-bottom:15px;">退出登录</button>' +
+                '<button class="black-square-btn" id="go-home-btn">进入主页面</button>';
+            
+            container.innerHTML = html;
+
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('currentUser');
+                window.location.reload();
+            });
+
+            document.getElementById('go-home-btn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+</body>
+</html>
