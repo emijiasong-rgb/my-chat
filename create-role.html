@@ -77,6 +77,7 @@
         .save-btn {
             width:100%; padding:14px; background:var(--accent); color:white;
             border:none; border-radius:14px; font-size:17px; font-weight:600; cursor:pointer;
+            display:block; text-align:center;
         }
     </style>
 </head>
@@ -109,18 +110,9 @@
 
                 <div class="section-card">
                     <div class="section-title">关系设置</div>
-                    <div class="input-group">
-                        <label>你的名字</label>
-                        <input type="text" id="user-name-input" placeholder="你的名字">
-                    </div>
-                    <div class="input-group">
-                        <label>角色所在地区</label>
-                        <input type="text" id="role-location" placeholder="角色在哪个城市">
-                    </div>
-                    <div class="input-group">
-                        <label>你的偏好/忌口</label>
-                        <input type="text" id="user-preference" placeholder="不喜欢什么话题...">
-                    </div>
+                    <div class="input-group"><label>你的名字</label><input type="text" id="user-name-input" placeholder="你的名字"></div>
+                    <div class="input-group"><label>角色所在地区</label><input type="text" id="role-location" placeholder="角色在哪个城市"></div>
+                    <div class="input-group"><label>你的偏好/忌口</label><input type="text" id="user-preference" placeholder="不喜欢什么话题..."></div>
                     <div class="input-group">
                         <label>关系 *</label>
                         <div class="relation-selector" id="relation-selector">
@@ -137,31 +129,30 @@
                         </div>
                     </div>
                     <div class="nickname-section" id="nickname-section">
-                        <div class="input-group">
-                            <label>角色对你的称呼 *</label>
-                            <input type="text" id="user-nickname" placeholder="必填，角色叫你什么">
-                        </div>
-                        <div class="input-group">
-                            <label>备选称呼 1（选填）</label>
-                            <input type="text" id="user-nickname2" placeholder="其他称呼方式">
-                        </div>
-                        <div class="input-group">
-                            <label>备选称呼 2（选填）</label>
-                            <input type="text" id="user-nickname3" placeholder="其他称呼方式">
-                        </div>
+                        <div class="input-group"><label>角色对你的称呼 *</label><input type="text" id="user-nickname" placeholder="必填，角色叫你什么"></div>
+                        <div class="input-group"><label>备选称呼 1（选填）</label><input type="text" id="user-nickname2" placeholder="其他称呼方式"></div>
+                        <div class="input-group"><label>备选称呼 2（选填）</label><input type="text" id="user-nickname3" placeholder="其他称呼方式"></div>
                     </div>
                 </div>
             </div>
 
             <div class="save-btn-container">
-                <button class="save-btn" onclick="saveRole()">💾 保存角色</button>
+                <button class="save-btn" id="save-role-btn">💾 保存角色</button>
             </div>
         </div>
     </div>
 
-        <script>
+    <script>
         var selectedRelation = '';
         var roleAvatarData = '';
+
+        // 页面加载时绑定事件
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('save-role-btn');
+            if (btn) {
+                btn.addEventListener('click', saveRole);
+            }
+        });
 
         function previewRoleAvatar(event) {
             var file = event.target.files[0];
@@ -186,28 +177,16 @@
         function saveRole() {
             alert('步骤1：开始保存');
             
-            var nameEl = document.getElementById('role-name');
-            if (!nameEl) { alert('找不到角色名字输入框！'); return; }
-            
-            var name = nameEl.value.trim();
-            alert('步骤2：名字=' + name);
-            
+            var name = document.getElementById('role-name').value.trim();
             if (!name) { alert('请填写角色名字'); return; }
             if (!selectedRelation) { alert('请选择关系'); return; }
             
-            var nicknameEl = document.getElementById('user-nickname');
-            if (!nicknameEl) { alert('找不到称呼输入框！'); return; }
-            
-            var nickname = nicknameEl.value.trim();
-            alert('步骤3：称呼=' + nickname);
-            
+            var nickname = document.getElementById('user-nickname').value.trim();
             if (!nickname) { alert('请填写角色对你的称呼'); return; }
 
-            alert('步骤4：生成手机号微信号');
             var randomPhone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
             var randomWechat = 'wxid_' + Math.random().toString(36).substring(2, 10);
 
-            alert('步骤5：组装角色对象');
             var role = {
                 id: Date.now(),
                 avatar: roleAvatarData,
@@ -228,15 +207,11 @@
                 messages: []
             };
 
-            alert('步骤6：读取localStorage');
-            var rolesJson = localStorage.getItem('chat_roles') || '[]';
-            var roles = JSON.parse(rolesJson);
-            alert('步骤7：当前角色数=' + roles.length);
-
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            alert('步骤8：保存成功！跳转chat.html');
+            alert('✅ 保存成功！');
             window.location.href = 'chat.html';
         }
     </script>
