@@ -166,12 +166,12 @@
             document.getElementById('nickname-section').classList.add('show');
         }
 
-        function saveRole() {
+                function saveRole() {
             var name = document.getElementById('role-name').value.trim();
-            if (!name) { return; }
-            if (!selectedRelation) { return; }
+            if (!name) return;
+            if (!selectedRelation) return;
             var nickname = document.getElementById('user-nickname').value.trim();
-            if (!nickname) { return; }
+            if (!nickname) return;
 
             var randomPhone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
             var randomWechat = 'wxid_' + Math.random().toString(36).substring(2, 10);
@@ -200,7 +200,8 @@
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            window.location.href = 'chat.html';
+            // ✅ 直接跳转
+            location.href = 'chat.html';
         }
     </script>
 </body>
