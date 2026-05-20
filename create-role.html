@@ -4,91 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>创建角色</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #f2f2f7;
+            --card-bg: rgba(255,255,255,0.72);
+            --card-border: rgba(255,255,255,0.8);
+            --accent: #5b6abf;
+            --accent-soft: rgba(91,106,191,0.08);
+            --text: #1c1c1e;
+            --text-secondary: #636366;
+            --text-tertiary: #8e8e93;
+            --separator: rgba(0,0,0,0.06);
+            --shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background:#1a1a1a; height:100dvh; width:100vw;
             display:flex; justify-content:center; align-items:center;
-            font-family:-apple-system,sans-serif; overflow:hidden;
+            font-family:'Noto Sans SC',-apple-system,sans-serif; overflow:hidden;
             padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
         }
         #phone-shell {
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
-            background:#f2f2f7; border-radius:0; display:flex; flex-direction:column; overflow:hidden;
+            background:var(--bg); border-radius:0; display:flex; flex-direction:column; overflow:hidden;
+            position:relative;
         }
-        #viewport { flex:1; overflow-y:auto; padding:16px; padding-top:env(safe-area-inset-top); }
+        /* 顶部柔和光晕 */
+        #phone-shell::before {
+            content:""; position:absolute; top:-40px; left:-20px; right:-20px; height:200px;
+            background:radial-gradient(ellipse at 30% 30%, rgba(139,149,214,0.1) 0%, transparent 60%);
+            pointer-events:none; z-index:0;
+        }
+        #viewport { flex:1; overflow-y:auto; padding:16px; padding-top:env(safe-area-inset-top); position:relative; z-index:1; }
         #viewport::-webkit-scrollbar { display:none; }
 
-        .header {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:10px 0; margin-bottom:16px;
+        /* 导航栏 */
+        .nav-bar {
+            display:flex; align-items:center; padding:8px 0 16px;
         }
-        .header a { color:#5b6abf; font-size:16px; text-decoration:none; }
-        .header span { font-weight:700; font-size:17px; }
+        .nav-back {
+            width:36px; height:36px; border-radius:50%;
+            background:var(--card-bg); backdrop-filter:blur(20px);
+            display:flex; align-items:center; justify-content:center;
+            color:var(--accent); font-size:18px; text-decoration:none;
+            box-shadow:var(--shadow);
+        }
+        .nav-title { flex:1; text-align:center; font-weight:700; font-size:17px; color:var(--text); margin-right:36px; }
 
+        /* 卡片 */
         .card {
-            background:rgba(255,255,255,0.7); backdrop-filter:blur(20px);
-            border-radius:18px; padding:20px 16px; margin-bottom:14px;
-            border:1px solid rgba(255,255,255,0.7);
+            background:var(--card-bg); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+            border:1px solid var(--card-border); border-radius:20px;
+            padding:20px 18px; margin-bottom:12px; box-shadow:var(--shadow);
         }
-        .card-title { font-size:13px; color:#8e8e93; margin-bottom:14px; }
+        .card-title {
+            font-size:12px; color:var(--text-tertiary); text-transform:uppercase;
+            letter-spacing:1px; font-weight:600; margin-bottom:16px;
+        }
 
         /* 头像 */
-        .avatar-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
-        .avatar-img { width:64px; height:64px; border-radius:50%; object-fit:cover; background:#e8e8ed; cursor:pointer; }
-        .avatar-hint { font-size:14px; color:#5b6abf; cursor:pointer; }
+        .avatar-row { display:flex; align-items:center; gap:16px; }
+        .avatar-img {
+            width:72px; height:72px; border-radius:50%; object-fit:cover;
+            background:#e8e8ed; cursor:pointer; flex-shrink:0;
+            box-shadow:0 4px 16px rgba(0,0,0,0.08); border:3px solid #fff;
+            transition:transform 0.2s;
+        }
+        .avatar-img:active { transform:scale(0.95); }
+        .avatar-info { flex:1; }
+        .avatar-hint { font-size:15px; color:var(--accent); cursor:pointer; font-weight:500; }
+        .avatar-sub { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
 
-        .field { margin-bottom:12px; }
+        /* 表单 */
+        .field { margin-bottom:14px; }
         .field:last-child { margin-bottom:0; }
-        .field label { display:block; font-size:13px; color:#636366; margin-bottom:4px; }
+        .field label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:5px; font-weight:500; }
         .field input, .field textarea, .field select {
-            width:100%; padding:10px 14px; border:1px solid #ddd;
-            border-radius:10px; font-size:15px; outline:none; background:#f9f9f9;
+            width:100%; padding:12px 14px; background:rgba(0,0,0,0.02);
+            border:1.5px solid rgba(0,0,0,0.08); border-radius:12px;
+            font-size:15px; outline:none; font-family:inherit; color:var(--text);
+            transition:all 0.2s;
         }
+        .field input:focus, .field textarea:focus { border-color:var(--accent); background:#fff; box-shadow:0 0 0 4px var(--accent-soft); }
         .field textarea { min-height:60px; resize:vertical; }
-        .field select { font-family:inherit; }
+        .field input::placeholder, .field textarea::placeholder { color:#c7c7cc; }
 
-        .option-row { display:flex; gap:8px; margin-bottom:8px; }
+        /* 选项按钮 */
+        .option-row { display:flex; gap:6px; margin-bottom:10px; }
         .option-btn {
-            flex:1; padding:10px; border:1px solid #ddd; border-radius:10px;
-            text-align:center; font-size:14px; cursor:pointer; background:#fff;
+            flex:1; padding:10px 8px; border:1.5px solid rgba(0,0,0,0.08);
+            border-radius:10px; text-align:center; font-size:13px; font-weight:500;
+            cursor:pointer; background:#fff; color:var(--text-secondary);
+            transition:all 0.2s;
         }
-        .option-btn.on { background:#5b6abf; color:#fff; border-color:#5b6abf; }
+        .option-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 2px 8px rgba(91,106,191,0.25); }
+        .option-btn:active { transform:scale(0.96); }
 
-        .tags { display:flex; flex-wrap:wrap; gap:8px; }
+        /* 关系标签 */
+        .tags { display:flex; flex-wrap:wrap; gap:7px; }
         .tag {
-            padding:7px 14px; border:1px solid #ddd; border-radius:20px;
-            font-size:13px; cursor:pointer; background:#fff;
+            padding:8px 15px; border:1.5px solid rgba(0,0,0,0.08);
+            border-radius:20px; font-size:13px; cursor:pointer;
+            background:#fff; color:var(--text-secondary); font-weight:500;
+            transition:all 0.2s;
         }
-        .tag.on { background:#5b6abf; color:#fff; border-color:#5b6abf; }
+        .tag.on { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 2px 8px rgba(91,106,191,0.25); }
+        .tag:active { transform:scale(0.95); }
 
-        .nickname-box { display:none; margin-top:12px; }
-        .nickname-box.show { display:block; }
+        .nickname-box { display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--separator); }
+        .nickname-box.show { display:block; animation:fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
 
+        /* 保存按钮 */
         .save-link {
-            display:block; width:100%; padding:14px; background:#5b6abf;
-            color:#fff; text-align:center; border-radius:14px;
-            font-size:17px; font-weight:600; text-decoration:none; margin-top:8px;
+            display:block; width:100%; padding:16px; background:var(--accent);
+            color:#fff; text-align:center; border-radius:16px;
+            font-size:17px; font-weight:600; text-decoration:none;
+            margin-top:8px; box-shadow:0 8px 24px rgba(91,106,191,0.3);
+            transition:all 0.2s;
         }
-        .save-link.done { background:#34c759; }
+        .save-link:active { transform:scale(0.97); opacity:0.9; }
+        .save-link.done { background:#34c759; box-shadow:0 8px 24px rgba(52,199,89,0.3); }
+
+        /* 底部留白 */
+        .bottom-space { height:30px; }
     </style>
 </head>
 <body>
     <div id="phone-shell">
         <div id="viewport">
-            <div class="header">
-                <a href="chat.html">〈 返回</a>
-                <span>创建角色</span>
-                <span style="opacity:0;">完成</span>
+            <!-- 导航 -->
+            <div class="nav-bar">
+                <a href="chat.html" class="nav-back">〈</a>
+                <span class="nav-title">创建角色</span>
             </div>
 
-            <!-- 头像卡片 -->
+            <!-- 头像 -->
             <div class="card">
                 <div class="avatar-row">
-                    <img class="avatar-img" id="avatar-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23e8e8ed'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='30'%3E🤖%3C/text%3E%3C/svg%3E" onclick="document.getElementById('avatar-file').click()">
-                    <div>
-                        <span class="avatar-hint" onclick="document.getElementById('avatar-file').click()">点击更换头像</span>
-                        <p style="font-size:12px;color:#c7c7cc;">可选，默认机器人头像</p>
+                    <img class="avatar-img" id="avatar-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Ccircle cx='36' cy='36' r='36' fill='%23e8e8ed'/%3E%3Ctext x='36' y='44' text-anchor='middle' font-size='32'%3E🤖%3C/text%3E%3C/svg%3E" onclick="document.getElementById('avatar-file').click()">
+                    <div class="avatar-info">
+                        <div class="avatar-hint" onclick="document.getElementById('avatar-file').click()">设置头像</div>
+                        <div class="avatar-sub">点击更换，默认为机器人</div>
                     </div>
                     <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="previewAvatar(event)">
                 </div>
@@ -96,57 +156,55 @@
 
             <!-- 基本信息 -->
             <div class="card">
-                <div class="card-title">基本信息</div>
+                <div class="card-title">📋 基本信息</div>
                 <div class="field">
-                    <label>角色名字 *</label>
-                    <input type="text" id="role-name" placeholder="给角色起个名字">
+                    <label>角色名字</label>
+                    <input type="text" id="role-name" placeholder="给你的角色起个名字">
                 </div>
                 <div class="field">
                     <label>性格特点</label>
-                    <textarea id="role-personality" placeholder="温柔体贴、幽默风趣..."></textarea>
+                    <textarea id="role-personality" placeholder="温柔体贴、幽默风趣、有点傲娇..."></textarea>
                 </div>
                 <div class="field">
                     <label>口头禅</label>
-                    <input type="text" id="role-catchphrase" placeholder="角色常说的话">
+                    <input type="text" id="role-catchphrase" placeholder="角色最常说的那句话">
                 </div>
             </div>
 
-            <!-- 手机号和微信号 -->
+            <!-- 联系方式 -->
             <div class="card">
-                <div class="card-title">联系方式</div>
-                
+                <div class="card-title">📱 联系方式</div>
                 <div class="field">
                     <label>手机号</label>
                     <div class="option-row">
-                        <div class="option-btn on" id="phone-opt-sys" onclick="setPhoneMode('sys')">🎲 系统随机</div>
-                        <div class="option-btn" id="phone-opt-cus" onclick="setPhoneMode('cus')">✏️ 自己写</div>
+                        <div class="option-btn on" id="phone-opt-sys" onclick="setPhoneMode('sys')">🎲 随机生成</div>
+                        <div class="option-btn" id="phone-opt-cus" onclick="setPhoneMode('cus')">✏️ 手动输入</div>
                     </div>
-                    <input type="text" id="phone-input" placeholder="系统自动生成..." readonly style="color:#999;">
+                    <input type="text" id="phone-input" placeholder="系统将自动生成号码..." readonly style="color:#999;">
                 </div>
-
                 <div class="field">
                     <label>微信号</label>
                     <div class="option-row">
-                        <div class="option-btn on" id="wechat-opt-sys" onclick="setWechatMode('sys')">🎲 系统随机</div>
-                        <div class="option-btn" id="wechat-opt-cus" onclick="setWechatMode('cus')">✏️ 自己写</div>
+                        <div class="option-btn on" id="wechat-opt-sys" onclick="setWechatMode('sys')">🎲 随机生成</div>
+                        <div class="option-btn" id="wechat-opt-cus" onclick="setWechatMode('cus')">✏️ 手动输入</div>
                     </div>
-                    <input type="text" id="wechat-input" placeholder="系统自动生成..." readonly style="color:#999;">
+                    <input type="text" id="wechat-input" placeholder="系统将自动生成微信号..." readonly style="color:#999;">
                 </div>
             </div>
 
             <!-- 关系设置 -->
             <div class="card">
-                <div class="card-title">关系设置</div>
+                <div class="card-title">💕 关系设置</div>
                 <div class="field">
                     <label>你的名字</label>
                     <input type="text" id="user-name" placeholder="你的名字">
                 </div>
                 <div class="field">
                     <label>角色所在地区</label>
-                    <input type="text" id="role-location" placeholder="角色在哪个城市">
+                    <input type="text" id="role-location" placeholder="角色在哪个城市？">
                 </div>
                 <div class="field">
-                    <label>关系 *（点击选择）</label>
+                    <label>你和角色的关系</label>
                     <div class="tags" id="relation-tags">
                         <span class="tag" data-r="朋友" onclick="pick(this)">朋友</span>
                         <span class="tag" data-r="同学" onclick="pick(this)">同学</span>
@@ -154,7 +212,7 @@
                         <span class="tag" data-r="哥哥" onclick="pick(this)">哥哥</span>
                         <span class="tag" data-r="弟弟" onclick="pick(this)">弟弟</span>
                         <span class="tag" data-r="姐姐" onclick="pick(this)">姐姐</span>
-                        <span class="tag" data-r="暧昧对象" onclick="pick(this)">暧昧对象</span>
+                        <span class="tag" data-r="暧昧对象" onclick="pick(this)">暧昧</span>
                         <span class="tag" data-r="crush" onclick="pick(this)">crush</span>
                         <span class="tag" data-r="老公" onclick="pick(this)">老公</span>
                         <span class="tag" data-r="老婆" onclick="pick(this)">老婆</span>
@@ -162,21 +220,23 @@
                 </div>
                 <div class="nickname-box" id="nick-box">
                     <div class="field">
-                        <label>角色对你的称呼 *</label>
-                        <input type="text" id="user-nickname" placeholder="必填，角色叫你什么">
+                        <label>TA怎么称呼你</label>
+                        <input type="text" id="user-nickname" placeholder="必填，角色叫你什么？">
                     </div>
                     <div class="field">
-                        <label>备选称呼1（选填）</label>
-                        <input type="text" id="user-nickname2" placeholder="其他称呼">
+                        <label>备选称呼</label>
+                        <input type="text" id="user-nickname2" placeholder="选填，其他叫法">
                     </div>
                     <div class="field">
-                        <label>备选称呼2（选填）</label>
-                        <input type="text" id="user-nickname3" placeholder="其他称呼">
+                        <label>另一个备选</label>
+                        <input type="text" id="user-nickname3" placeholder="选填，另一个叫法">
                     </div>
                 </div>
             </div>
 
-            <a href="#" class="save-link" id="save-btn" onclick="save();return false;">💾 保存角色</a>
+            <!-- 保存 -->
+            <a href="#" class="save-link" id="save-btn" onclick="save();return false;">✨ 创建角色</a>
+            <div class="bottom-space"></div>
         </div>
     </div>
 
@@ -186,7 +246,6 @@
         var phoneMode = 'sys';
         var wechatMode = 'sys';
 
-        // 头像预览
         function previewAvatar(event) {
             var file = event.target.files[0];
             if (file) {
@@ -199,19 +258,18 @@
             }
         }
 
-        // 手机号模式
         function setPhoneMode(mode) {
             phoneMode = mode;
             document.getElementById('phone-opt-sys').classList.toggle('on', mode === 'sys');
             document.getElementById('phone-opt-cus').classList.toggle('on', mode === 'cus');
             var input = document.getElementById('phone-input');
             if (mode === 'sys') {
-                input.placeholder = '系统自动生成...';
+                input.placeholder = '系统将自动生成号码...';
                 input.value = '';
                 input.readOnly = true;
                 input.style.color = '#999';
             } else {
-                input.placeholder = '输入手机号';
+                input.placeholder = '请输入手机号';
                 input.value = '';
                 input.readOnly = false;
                 input.style.color = '#000';
@@ -219,19 +277,18 @@
             }
         }
 
-        // 微信号模式
         function setWechatMode(mode) {
             wechatMode = mode;
             document.getElementById('wechat-opt-sys').classList.toggle('on', mode === 'sys');
             document.getElementById('wechat-opt-cus').classList.toggle('on', mode === 'cus');
             var input = document.getElementById('wechat-input');
             if (mode === 'sys') {
-                input.placeholder = '系统自动生成...';
+                input.placeholder = '系统将自动生成微信号...';
                 input.value = '';
                 input.readOnly = true;
                 input.style.color = '#999';
             } else {
-                input.placeholder = '输入微信号';
+                input.placeholder = '请输入微信号';
                 input.value = '';
                 input.readOnly = false;
                 input.style.color = '#000';
@@ -239,7 +296,6 @@
             }
         }
 
-        // 选关系
         function pick(tag) {
             var tags = document.querySelectorAll('#relation-tags .tag');
             for (var i = 0; i < tags.length; i++) { tags[i].classList.remove('on'); }
@@ -248,7 +304,6 @@
             document.getElementById('nick-box').classList.add('show');
         }
 
-        // 保存
         function save() {
             var name = document.getElementById('role-name').value.trim();
             if (!name) return;
@@ -256,40 +311,19 @@
             var nick = document.getElementById('user-nickname').value.trim();
             if (!nick) return;
 
-            // 手机号
-            var phone;
-            if (phoneMode === 'sys') {
-                phone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
-            } else {
-                phone = document.getElementById('phone-input').value.trim();
-            }
-
-            // 微信号
-            var wx;
-            if (wechatMode === 'sys') {
-                wx = 'wxid_' + Math.random().toString(36).substring(2, 10);
-            } else {
-                wx = document.getElementById('wechat-input').value.trim();
-            }
+            var phone = phoneMode === 'sys' ? '1' + Math.floor(Math.random() * 9000000000 + 1000000000) : document.getElementById('phone-input').value.trim();
+            var wx = wechatMode === 'sys' ? 'wxid_' + Math.random().toString(36).substring(2, 10) : document.getElementById('wechat-input').value.trim();
 
             var role = {
-                id: Date.now(),
-                avatar: avatarData,
-                name: name,
-                gender: '',
+                id: Date.now(), avatar: avatarData, name: name, gender: '',
                 personality: document.getElementById('role-personality').value.trim(),
-                background: '',
-                catchphrase: document.getElementById('role-catchphrase').value.trim(),
+                background: '', catchphrase: document.getElementById('role-catchphrase').value.trim(),
                 userName: document.getElementById('user-name').value.trim(),
                 userLocation: document.getElementById('role-location').value.trim(),
-                userPreference: '',
-                relation: rel,
-                userNickname: nick,
+                userPreference: '', relation: rel, userNickname: nick,
                 userNickname2: document.getElementById('user-nickname2').value.trim(),
                 userNickname3: document.getElementById('user-nickname3').value.trim(),
-                phone: phone,
-                wechatId: wx,
-                messages: []
+                phone: phone, wechatId: wx, messages: []
             };
 
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
@@ -297,14 +331,11 @@
             localStorage.setItem('chat_roles', JSON.stringify(roles));
 
             var btn = document.getElementById('save-btn');
-            btn.innerText = '✅ 已保存！点击返回';
+            btn.innerText = '✅ 创建成功！返回';
             btn.classList.add('done');
             btn.href = 'chat.html';
             btn.onclick = null;
-
-            setTimeout(function() {
-                window.open('chat.html', '_self');
-            }, 600);
+            setTimeout(function() { window.open('chat.html', '_self'); }, 600);
         }
     </script>
 </body>
