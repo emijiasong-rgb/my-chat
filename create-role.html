@@ -191,6 +191,10 @@
             var nickname = document.getElementById('user-nickname').value.trim();
             if (!nickname) { alert('请填写角色对你的称呼'); return; }
 
+            // ✅ 自动生成随机手机号和微信号
+            var randomPhone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
+            var randomWechat = 'wxid_' + Math.random().toString(36).substring(2, 10);
+
             var role = {
                 id: Date.now(),
                 avatar: roleAvatarData,
@@ -206,6 +210,8 @@
                 userNickname: nickname,
                 userNickname2: document.getElementById('user-nickname2').value.trim(),
                 userNickname3: document.getElementById('user-nickname3').value.trim(),
+                phone: randomPhone,
+                wechatId: randomWechat,
                 messages: []
             };
 
