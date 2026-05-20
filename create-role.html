@@ -70,8 +70,8 @@
         }
         .relation-tag.selected { background:var(--accent); color:white; border-color:var(--accent); }
 
-        .nickname-input { margin-top:12px; display:none; }
-        .nickname-input.show { display:block; }
+        .nickname-section { display:none; margin-top:4px; }
+        .nickname-section.show { display:block; }
 
         .save-btn-container { padding:8px 16px 30px; }
         .save-btn {
@@ -109,8 +109,18 @@
 
                 <div class="section-card">
                     <div class="section-title">关系设置</div>
-                    <div class="input-group"><label>你的名字</label><input type="text" id="user-name-input" placeholder="角色怎么称呼你"></div>
-                    <div class="input-group"><label>你的偏好/忌口</label><input type="text" id="user-preference" placeholder="不喜欢什么话题..."></div>
+                    <div class="input-group">
+                        <label>你的名字</label>
+                        <input type="text" id="user-name-input" placeholder="你的名字">
+                    </div>
+                    <div class="input-group">
+                        <label>角色所在地区</label>
+                        <input type="text" id="role-location" placeholder="角色在哪个城市">
+                    </div>
+                    <div class="input-group">
+                        <label>你的偏好/忌口</label>
+                        <input type="text" id="user-preference" placeholder="不喜欢什么话题...">
+                    </div>
                     <div class="input-group">
                         <label>关系 *</label>
                         <div class="relation-selector" id="relation-selector">
@@ -126,9 +136,19 @@
                             <span class="relation-tag" data-relation="老婆" onclick="selectRelation(this)">老婆</span>
                         </div>
                     </div>
-                    <div class="input-group nickname-input" id="nickname-group">
-                        <label>对你的称呼</label>
-                        <input type="text" id="user-nickname" placeholder="选完关系后，角色叫你什么">
+                    <div class="nickname-section" id="nickname-section">
+                        <div class="input-group">
+                            <label>角色对你的称呼 *</label>
+                            <input type="text" id="user-nickname" placeholder="必填，角色叫你什么">
+                        </div>
+                        <div class="input-group">
+                            <label>备选称呼 1（选填）</label>
+                            <input type="text" id="user-nickname2" placeholder="其他称呼方式">
+                        </div>
+                        <div class="input-group">
+                            <label>备选称呼 2（选填）</label>
+                            <input type="text" id="user-nickname3" placeholder="其他称呼方式">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -160,25 +180,32 @@
             for (var i = 0; i < tags.length; i++) { tags[i].classList.remove('selected'); }
             tag.classList.add('selected');
             selectedRelation = tag.getAttribute('data-relation');
-            document.getElementById('nickname-group').classList.add('show');
+            document.getElementById('nickname-section').classList.add('show');
         }
 
         function saveRole() {
             var name = document.getElementById('role-name').value.trim();
             if (!name) { alert('请填写角色名字'); return; }
             if (!selectedRelation) { alert('请选择关系'); return; }
+            
+            var nickname = document.getElementById('user-nickname').value.trim();
+            if (!nickname) { alert('请填写角色对你的称呼'); return; }
 
             var role = {
                 id: Date.now(),
                 avatar: roleAvatarData,
                 name: name,
+                gender: '',
                 personality: document.getElementById('role-personality').value.trim(),
                 background: document.getElementById('role-background').value.trim(),
                 catchphrase: document.getElementById('role-catchphrase').value.trim(),
                 userName: document.getElementById('user-name-input').value.trim(),
+                userLocation: document.getElementById('role-location').value.trim(),
                 userPreference: document.getElementById('user-preference').value.trim(),
                 relation: selectedRelation,
-                userNickname: document.getElementById('user-nickname').value.trim(),
+                userNickname: nickname,
+                userNickname2: document.getElementById('user-nickname2').value.trim(),
+                userNickname3: document.getElementById('user-nickname3').value.trim(),
                 messages: []
             };
 
