@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>设置备注</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background:#1a1a1a; height:100dvh; width:100vw;
+            display:flex; justify-content:center; align-items:center;
+            font-family:-apple-system,sans-serif; overflow:hidden;
+            padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+        }
+        #phone-shell {
+            width:100vw; max-width:430px; height:100dvh; max-height:932px;
+            background:#f2f2f7; border-radius:0; display:flex; flex-direction:column; overflow:hidden;
+        }
+        #viewport { flex:1; overflow-y:auto; }
+        #viewport::-webkit-scrollbar { display:none; }
+
+        .nav-bar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:12px 16px; background:#fff; border-bottom:0.5px solid #e5e5ea;
+            position:sticky; top:0; z-index:10;
+        }
+        .nav-back { color:#000; font-size:17px; cursor:pointer; }
+        .nav-title { font-size:17px; font-weight:600; }
+        .nav-save { color:#576b95; font-size:17px; cursor:pointer; font-weight:500; }
+
+        .section {
+            background:#fff; margin:10px 0;
+            border-top:0.5px solid #e5e5ea; border-bottom:0.5px solid #e5e5ea;
+        }
+        .section-title {
+            padding:8px 16px; font-size:13px; color:#8e8e93; text-transform:uppercase;
+        }
+        .input-row {
+            display:flex; align-items:center; padding:12px 16px;
+            border-bottom:0.5px solid #f0f0f0; background:#fff;
+        }
+        .input-row:last-child { border-bottom:none; }
+        .input-label { width:70px; font-size:15px; color:#000; flex-shrink:0; }
+        .input-field {
+            flex:1; border:none; outline:none; font-size:15px;
+            text-align:right; color:#000; background:transparent;
+        }
+        .input-field::placeholder { color:#c7c7cc; }
+
+        .tag-row {
+            padding:12px 16px; background:#fff;
+        }
+        .tag-label { font-size:15px; color:#000; margin-bottom:10px; display:block; }
+        .tag-grid { display:flex; flex-wrap:wrap; gap:8px; }
+        .tag-item {
+            padding:6px 14px; border:1px solid #ddd; border-radius:20px;
+            font-size:14px; cursor:pointer; color:#333; background:#fff;
+        }
+        .tag-item.selected { background:#576b95; color:#fff; border-color:#576b95; }
+        .tag-item:active { opacity:0.7; }
+
+        .extra-section { background:#fff; margin:10px 0; }
+        .extra-row {
+            display:flex; align-items:center; padding:14px 16px;
+            border-bottom:0.5px solid #f0f0f0; cursor:pointer;
+        }
+        .extra-row:active { background:#f5f5f5; }
+        .extra-label { font-size:15px; color:#000; }
+        .extra-value { flex:1; text-align:right; font-size:15px; color:#8e8e93; }
+        .extra-arrow { color:#c7c7cc; margin-left:8px; }
+    </style>
+</head>
+<body>
+    <div id="phone-shell">
+        <div id="viewport">
+            <div class="nav-bar">
+                <span class="nav-back" onclick="history.back()">取消</span>
+                <span class="nav-title">设置备注</span>
+                <span class="nav-save" onclick="saveRemark()">保存</span>
+            </div>
+
+            <div class="section">
+                <div class="input-row">
+                    <span class="input-label">备注</span>
+                    <input type="text" class="input-field" id="remark-input" placeholder="添加备注">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">添加标签</div>
+                <div class="tag-row">
+                    <div class="tag-grid" id="tag-grid">
+                        <span class="tag-item" data-tag="闺蜜" onclick="toggleTag(this)">闺蜜</span>
+                        <span class="tag-item" data-tag="兄弟" onclick="toggleTag(this)">兄弟</span>
+                        <span class="tag-item" data-tag="同事" onclick="toggleTag(this)">同事</span>
+                        <span class="tag-item" data-tag="家人" onclick="toggleTag(this)">家人</span>
+                        <span class="tag-item" data-tag="死党" onclick="toggleTag(this)">死党</span>
+                        <span class="tag-item" data-tag="同学" onclick="toggleTag(this)">同学</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="extra-section">
+                <div class="extra-row" onclick="document.getElementById('phone-input').focus()">
+                    <span class="extra-label">电话号码</span>
+                    <span class="extra-value" id="phone-display">未设置</span>
+                    <span class="extra-arrow">〉</span>
+                </div>
+                <div class="extra-row" onclick="document.getElementById('desc-input').focus()">
+                    <span class="extra-label">描述</span>
+                    <span class="extra-value" id="desc-display">未设置</span>
+                    <span class="extra-arrow">〉</span>
+                </div>
+            </div>
+
+            <div style="padding:16px;">
+                <input type="text" id="phone-input" placeholder="电话号码" style="display:none;width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;font-size:15px;" oninput="updatePhoneDisplay()">
+                <textarea id="desc-input" placeholder="添加描述..." style="display:none;width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px;min-height:60px;resize:vertical;" oninput="updateDescDisplay()"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var roleId = null;
+        var selectedTags = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var params = new URLSearchParams(window.location.search);
+            roleId = parseInt(params.get('id'));
+            if (!roleId) { window.location.href = 'chat.html'; return; }
+            loadExistingData();
+        });
+
+        function loadExistingData() {
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            for (var i = 0; i < roles.length; i++) {
+                if (roles[i].id === roleId) {
+                    document.getElementById('remark-input').value = roles[i].remark || '';
+                    document.getElementById('phone-input').value = roles[i].phone || '';
+                    document.getElementById('desc-input').value = roles[i].description || '';
+                    updatePhoneDisplay();
+                    updateDescDisplay();
+                    if (roles[i].tags) {
+                        selectedTags = roles[i].tags;
+                        highlightTags();
+                    }
+                    break;
+                }
+            }
+        }
+
+        function toggleTag(tag) {
+            var tagName = tag.getAttribute('data-tag');
+            var index = selectedTags.indexOf(tagName);
+            if (index >= 0) {
+                selectedTags.splice(index, 1);
+                tag.classList.remove('selected');
+            } else {
+                selectedTags.push(tagName);
+                tag.classList.add('selected');
+            }
+        }
+
+        function highlightTags() {
+            var tags = document.querySelectorAll('.tag-item');
+            for (var i = 0; i < tags.length; i++) {
+                if (selectedTags.indexOf(tags[i].getAttribute('data-tag')) >= 0) {
+                    tags[i].classList.add('selected');
+                }
+            }
+        }
+
+        function updatePhoneDisplay() {
+            var val = document.getElementById('phone-input').value;
+            document.getElementById('phone-display').innerText = val || '未设置';
+            document.getElementById('phone-display').style.color = val ? '#000' : '#8e8e93';
+        }
+
+        function updateDescDisplay() {
+            var val = document.getElementById('desc-input').value;
+            document.getElementById('desc-display').innerText = val || '未设置';
+            document.getElementById('desc-display').style.color = val ? '#000' : '#8e8e93';
+        }
+
+        function saveRemark() {
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            for (var i = 0; i < roles.length; i++) {
+                if (roles[i].id === roleId) {
+                    roles[i].remark = document.getElementById('remark-input').value.trim();
+                    roles[i].phone = document.getElementById('phone-input').value.trim();
+                    roles[i].description = document.getElementById('desc-input').value.trim();
+                    roles[i].tags = selectedTags;
+                    break;
+                }
+            }
+            localStorage.setItem('chat_roles', JSON.stringify(roles));
+            alert('✅ 备注已保存');
+            history.back();
+        }
+    </script>
+</body>
+</html>
