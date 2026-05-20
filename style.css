@@ -1,435 +1,247 @@
 :root {
---primary-color: #07c160;
---bg-color: #ededed;
---text-main: #000;
---text-grey: #888;
+    --primary-color: #07c160;
+    --bg-color: #ededed;
+    --text-main: #000;
+    --text-grey: #888;
 }
 
 * {
-box-sizing: border-box;
-margin: 0;
-padding: 0;
--webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* --- 修正：确保 body 作为背景容器完全居中 --- */
 body {
-background: #1a1a1a; /* 深色背景更显高级，衬托手机壳 */
-height: 100vh;
-width: 100vw;
-display: flex;
-justify-content: center;
-align-items: center;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-overflow: hidden; /* 禁止浏览器出现滚动条 */
+    background: #1a1a1a;
+    height: 100dvh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* --- 修正：主应用容器设为 flex 居中 --- */
 #main-app {
-width: 100%;
-height: 100%;
-display: flex; /* 配合脚本逻辑，确保加载完后居中 */
-justify-content: center;
-align-items: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* --- 保持原有：灵动岛与底部横条 --- */
 #phone-shell {
-width: 393px;
-height: 852px;
-background: #fff;
-position: relative;
-display: flex;
-flex-direction: column;
-overflow: hidden;
-/* 修正：增强阴影效果，让手机壳在中间更立体 */
-box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-border-radius: 47px;
-flex-shrink: 0;
-}
-
-/* 灵动岛黑色药丸 */
-#phone-shell::before {
-content: "";
-position: absolute;
-top: 11px;
-left: 50%;
-transform: translateX(-50%);
-width: 120px;
-height: 35px;
-background: #000;
-border-radius: 20px;
-z-index: 1001;
-}
-
-/* 底部 Home 横条 */
-#phone-shell::after {
-content: "";
-position: absolute;
-bottom: 8px;
-left: 50%;
-transform: translateX(-50%);
-width: 134px;
-height: 5px;
-background: rgba(0, 0, 0, 0.3);
-border-radius: 100px;
-z-index: 1001;
+    width: 100vw;
+    max-width: 430px;
+    height: 100dvh;
+    max-height: 932px;
+    background: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: none;
+    border-radius: 0;
+    flex-shrink: 0;
 }
 
 .status-bar {
-height: 44px;
-padding: 0 28px; /* 修正：增加一点边距，避开屏幕圆角 */
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-size: 14px;
-font-weight: bold;
-z-index: 1002;
-position: relative;
+    height: 44px;
+    padding: 0 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1002;
+    position: relative;
 }
 
-/* --- 以下是你原有的其余样式，保持原封不动 --- */
-
-.status-icons {
-display: flex;
-align-items: center;
-gap: 8px;
-}
-
-#network-icon {
-display: flex;
-align-items: center;
-}
-
-#battery-container {
-display: flex;
-align-items: center;
-gap: 4px;
-}
-
-#battery-percent {
-font-size: 12px;
-font-weight: 600;
-}
-
-#battery-level {
-transition: width 0.3s ease;
-}
+.status-icons { display: flex; align-items: center; gap: 8px; }
+#network-icon { display: flex; align-items: center; }
+#battery-container { display: flex; align-items: center; gap: 4px; }
+#battery-percent { font-size: 12px; font-weight: 600; }
+#battery-level { transition: width 0.3s ease; }
 
 #viewport {
-flex: 1;
-position: relative;
-overflow: hidden;
-background: #ededed;
-display: flex;
-flex-direction: column;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #ededed;
+    display: flex;
+    flex-direction: column;
 }
 
 .page {
-position: absolute;
-top: 0; left: 0; width: 100%; height: 100%;
-background: var(--bg-color);
-display: none;
-flex-direction: column;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-color);
+    display: none;
+    flex-direction: column;
 }
-
 .page.active { display: flex; }
 
 #page-home {
-flex: 1;
-width: 100%;
-background: #ededed url('https://w.wallhaven.cc/full/85/wallhaven-85m89y.jpg') center/cover no-repeat;
-padding: 20px;
-display: none;
-flex-direction: column;
-gap: 15px;
+    flex: 1;
+    width: 100%;
+    background: #ededed center/cover no-repeat;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 15px;
 }
-
-#page-home.active {
-display: flex;
-}
+#page-home.active { display: flex; }
 
 .profile-card {
-background: rgba(255, 255, 255, 0.6);
-backdrop-filter: blur(15px);
--webkit-backdrop-filter: blur(15px);
-border-radius: 28px;
-padding: 20px;
-position: relative;
-border: 1px solid rgba(255, 255, 255, 0.3);
-box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-margin-bottom: 5px;
-display: flex;
-flex-direction: column;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 28px;
+    padding: 20px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
 }
 
 .profile-banner {
-height: 100px;
-width: 100%;
-border-radius: 18px;
-background: rgba(200, 200, 200, 0.3) center/cover;
-cursor: pointer;
-position: relative;
-overflow: hidden;
-}
-
-.upload-hint-banner {
-position: absolute;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-background: rgba(255,255,255,0.7);
-padding: 5px 10px;
-border-radius: 20px;
-font-size: 12px;
-color: #333;
-border: 1px solid #ddd;
+    height: 100px;
+    width: 100%;
+    border-radius: 18px;
+    background: rgba(200, 200, 200, 0.3) center/cover;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 .profile-content-wrapper {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding-top: 45px;
-position: relative;
-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 45px;
+    position: relative;
+    width: 100%;
 }
 
 .profile-avatar-wrapper {
-position: absolute;
-left: 0;
-top: -40px;
-z-index: 10;
+    position: absolute;
+    left: 0;
+    top: -40px;
+    z-index: 10;
 }
 
 .profile-avatar-wrapper img {
-width: 75px;
-height: 75px;
-border-radius: 50%;
-border: 4px solid rgba(255,255,255,0.9);
-object-fit: cover;
-background: #fff;
-cursor: pointer;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.9);
+    object-fit: cover;
+    background: #fff;
+    cursor: pointer;
 }
 
-.upload-hint {
-position: absolute;
-bottom: 0;
-width: 100%;
-background: rgba(0,0,0,0.5);
-color: white;
-font-size: 10px;
-text-align: center;
-border-bottom-left-radius: 50%;
-border-bottom-right-radius: 50%;
-padding: 2px 0;
-pointer-events: none;
-}
+.upload-hint { display: none; }
+.upload-hint-banner { display: none; }
 
-.profile-info {
-flex: 1.2;
-text-align: left;
-display: flex;
-flex-direction: column;
-}
-.profile-info h2 { font-size: 20px; color: #333; outline: none; margin-bottom: 2px; }
-.profile-info p { font-size: 13px; color: #666; outline: none; margin-bottom: 4px; }
-.profile-info span { font-size: 11px; color: #888; outline: none; }
+.profile-info { flex: 1.2; text-align: left; display: flex; flex-direction: column; }
+.profile-info h2 { font-size: 20px; color: #333; margin-bottom: 2px; }
+.profile-info p { font-size: 13px; color: #666; margin-bottom: 4px; }
+.profile-info span { font-size: 11px; color: #888; }
 
 .profile-clock-box {
-flex: 1;
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-text-align: center;
-border-left: 1px solid rgba(0,0,0,0.08);
-margin-left: 10px;
-padding: 5px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-left: 1px solid rgba(0,0,0,0.08);
+    margin-left: 10px;
+    padding: 5px 0;
 }
 
-.profile-clock-box #big-time {
-font-size: 32px;
-font-weight: 700;
-color: #333;
-line-height: 1;
-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-}
-
-.profile-clock-box #big-date {
-font-size: 11px;
-color: #666;
-margin-top: 5px;
-letter-spacing: 1px;
-text-transform: uppercase;
-}
+.profile-clock-box #big-time { font-size: 32px; font-weight: 700; color: #333; }
+.profile-clock-box #big-date { font-size: 11px; color: #666; margin-top: 5px; }
 
 .app-grid {
-display: grid;
-grid-template-columns: repeat(4, 1fr);
-gap: 30px 15px;
-margin-top: 20px;
-padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px 15px;
+    margin-top: 20px;
+    padding: 0 20px;
 }
 
-.app-icon {
-display: flex;
-flex-direction: column;
-align-items: center;
-cursor: pointer;
-transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.app-icon:active {
-transform: scale(0.85);
-opacity: 0.7;
-}
+.app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.app-icon:active { transform: scale(0.85); opacity: 0.7; }
 
 .icon-box {
-width: 50px;
-height: 50px;
-background: rgba(255, 255, 255, 0.4) !important;
-backdrop-filter: blur(8px);
--webkit-backdrop-filter: blur(8px);
-border-radius: 50% !important;
-margin-bottom: 8px;
-display: flex;
-justify-content: center;
-align-items: center;
-font-size: 22px;
-border: 1.5px solid rgba(255, 255, 255, 0.6);
-box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    width: 50px; height: 50px;
+    background: rgba(255,255,255,0.4) !important;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-radius: 50% !important;
+    margin-bottom: 8px;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 22px;
+    border: 1.5px solid rgba(255,255,255,0.6);
 }
 
-.app-icon span {
-color: #444;
-font-size: 10px;
-font-weight: 600;
-letter-spacing: 1px;
-text-transform: uppercase;
-opacity: 0.8;
+.app-icon span { color: #444; font-size: 10px; font-weight: 600; }
+
+.app-icon.gray-scale { opacity: 0.6; }
+.app-icon.gray-scale .icon-box { filter: grayscale(1); }
+
+.header-title {
+    height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; border-bottom: 1px solid #ddd;
+    background: var(--bg-color); flex-shrink: 0;
 }
 
-.app-icon.gray-scale {
-opacity: 0.6;
-}
-.app-icon.gray-scale .icon-box {
-filter: grayscale(1);
-background: rgba(255, 255, 255, 0.2) !important;
-}
-
-.settings-group { margin-top: 20px; background: white; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
-.settings-item { display: flex; flex-direction: column; padding: 15px; border-bottom: 0.5px solid #eee; }
-.settings-item label { font-size: 14px; color: #666; margin-bottom: 8px; }
-.settings-item input { height: 40px; border: 1px solid #ddd; border-radius: 6px; padding: 0 10px; font-size: 14px; outline: none; }
-.btn-save { margin: 20px; background: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; }
-.header-title { height: 44px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-bottom: 1px solid #ddd; background: var(--bg-color); flex-shrink: 0; }
-
-body.font-cute { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif !important; font-weight: 500; }
-body.font-serif { font-family: "Optima", "Georgia", "Times New Roman", serif !important; }
-body.font-modern { font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-serif !important; letter-spacing: 0.5px; }
-
-#font-family-select {
-cursor: pointer;
--webkit-appearance: none;
-}
+body.font-cute { font-family: "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif !important; }
+body.font-serif { font-family: "Optima","Georgia","Times New Roman",serif !important; }
+body.font-modern { font-family: "SF Pro Display","Helvetica Neue",Arial,sans-serif !important; }
 
 .welcome-container {
-width: 100%;
-height: 100%;
-display: flex;
-justify-content: center;
-align-items: center;
-background-color: #ffffff;
-position: fixed;
-top: 0;
-left: 0;
-z-index: 9999;
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    background-color: #ffffff;
+    position: fixed; top: 0; left: 0; z-index: 9999;
 }
 
-.welcome-content {
-text-align: center;
-opacity: 0;
-animation: fadeInUp 1.5s ease-out forwards;
-}
+.welcome-content { text-align: center; animation: fadeInUp 1.5s ease-out forwards; }
+@keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
 
-@keyframes fadeInUp {
-from { opacity: 0; transform: translateY(30px); }
-to { opacity: 1; transform: translateY(0); }
-}
-
-.welcome-title {
-font-size: 3.5rem;
-color: #333333;
-margin-bottom: 60px;
-font-weight: 300;
-letter-spacing: 2px;
-}
-
-.progress-bar-container {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 20px;
-}
-
-.progress-bar {
-width: 300px;
-height: 6px;
-background-color: #e0e0e0;
-border-radius: 10px;
-overflow: hidden;
-}
-.progress-fill {
-height: 100%;
-background-color: #000000;
-width: 0%;
-border-radius: 10px;
-transition: width 0.3s ease;
-}
-
-.progress-text {
-font-size: 1rem;
-color: #666666;
-font-weight: 300;
-}
+.welcome-title { font-size: 3.5rem; color: #333; margin-bottom: 60px; font-weight: 300; }
+.progress-bar-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.progress-bar { width: 300px; height: 6px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: #000; width: 0%; border-radius: 10px; transition: width 0.3s; }
+.progress-text { font-size: 1rem; color: #666; font-weight: 300; }
 
 .ios-input-large {
-width: 100%;
-max-width: 300px;
-height: 50px;
-border: 1px solid #ddd;
-border-radius: 10px;
-padding: 0 15px;
-margin-bottom: 20px;
-font-size: 16px;
-color: #000;
--webkit-appearance: none;
+    width: 100%; max-width: 300px; height: 50px;
+    border: 1px solid #ddd; border-radius: 10px;
+    padding: 0 15px; margin-bottom: 20px; font-size: 16px;
 }
 
 .black-square-btn {
-background: #000;
-color: #fff;
-border: 1px solid #000;
-border-radius: 12px;
-padding: 15px 30px;
-font-size: 16px;
-font-weight: bold;
-cursor: pointer;
-min-width: 120px;
-transition: opacity 0.2s;
+    background: #000; color: #fff; border: 1px solid #000;
+    border-radius: 12px; padding: 15px 30px;
+    font-size: 16px; font-weight: bold; cursor: pointer;
 }
-
-.black-square-btn:active {
-opacity: 0.8;
-}
+.black-square-btn:active { opacity: 0.8; }
 
 .back-link {
-position: absolute;
-top: 60px;
-left: 20px;
-color: #007aff;
-text-decoration: none;
-font-size: 16px;
-z-index: 100;
+    position: absolute;
+    top: env(safe-area-inset-top);
+    left: 20px;
+    color: #007aff;
+    text-decoration: none;
+    font-size: 16px;
+    z-index: 100;
+    padding-top: 10px;
 }
