@@ -217,26 +217,14 @@
             if (!name) return;
             if (!selectedRelation) return;
 
-            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            for (var i = 0; i < roles.length; i++) {
-                if (roles[i].id === roleId) {
-                    roles[i].name = name;
-                    roles[i].avatar = roleAvatarData;
-                    roles[i].gender = document.getElementById('role-gender').value;
-                    roles[i].userLocation = document.getElementById('role-location').value.trim();
-                    roles[i].phone = document.getElementById('role-phone').value.trim();
-                    roles[i].wechatId = document.getElementById('role-wechat').value.trim();
-                    roles[i].personality = document.getElementById('role-personality').value.trim();
-                    roles[i].background = document.getElementById('role-background').value.trim();
-                    roles[i].catchphrase = document.getElementById('role-catchphrase').value.trim();
-                    roles[i].userName = document.getElementById('user-name-input').value.trim();
-                    roles[i].userPreference = document.getElementById('user-preference').value.trim();
-                    roles[i].relation = selectedRelation;
-                    roles[i].userNickname = document.getElementById('user-nickname').value.trim();
-                    break;
-                }
-            }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
+            
+            var a = document.createElement('a');
+            a.href = 'contact-detail.html?id=' + roleId;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             
             // ✅ 直接跳转，不用 alert
             location.href = 'contact-detail.html?id=' + roleId;
