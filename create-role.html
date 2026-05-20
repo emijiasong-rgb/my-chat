@@ -142,17 +142,9 @@
         </div>
     </div>
 
-    <script>
+        <script>
         var selectedRelation = '';
         var roleAvatarData = '';
-
-        // 页面加载时绑定事件
-        document.addEventListener('DOMContentLoaded', function() {
-            var btn = document.getElementById('save-role-btn');
-            if (btn) {
-                btn.addEventListener('click', saveRole);
-            }
-        });
 
         function previewRoleAvatar(event) {
             var file = event.target.files[0];
@@ -175,14 +167,11 @@
         }
 
         function saveRole() {
-            alert('步骤1：开始保存');
-            
             var name = document.getElementById('role-name').value.trim();
-            if (!name) { alert('请填写角色名字'); return; }
-            if (!selectedRelation) { alert('请选择关系'); return; }
-            
+            if (!name) { return; }
+            if (!selectedRelation) { return; }
             var nickname = document.getElementById('user-nickname').value.trim();
-            if (!nickname) { alert('请填写角色对你的称呼'); return; }
+            if (!nickname) { return; }
 
             var randomPhone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
             var randomWechat = 'wxid_' + Math.random().toString(36).substring(2, 10);
@@ -211,7 +200,6 @@
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            alert('✅ 保存成功！');
             window.location.href = 'chat.html';
         }
     </script>
