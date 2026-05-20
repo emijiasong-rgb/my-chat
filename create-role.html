@@ -159,7 +159,7 @@
         </div>
     </div>
 
-    <script>
+        <script>
         var selectedRelation = '';
         var roleAvatarData = '';
 
@@ -184,17 +184,30 @@
         }
 
         function saveRole() {
-            var name = document.getElementById('role-name').value.trim();
+            alert('步骤1：开始保存');
+            
+            var nameEl = document.getElementById('role-name');
+            if (!nameEl) { alert('找不到角色名字输入框！'); return; }
+            
+            var name = nameEl.value.trim();
+            alert('步骤2：名字=' + name);
+            
             if (!name) { alert('请填写角色名字'); return; }
             if (!selectedRelation) { alert('请选择关系'); return; }
             
-            var nickname = document.getElementById('user-nickname').value.trim();
+            var nicknameEl = document.getElementById('user-nickname');
+            if (!nicknameEl) { alert('找不到称呼输入框！'); return; }
+            
+            var nickname = nicknameEl.value.trim();
+            alert('步骤3：称呼=' + nickname);
+            
             if (!nickname) { alert('请填写角色对你的称呼'); return; }
 
-            // ✅ 自动生成随机手机号和微信号
+            alert('步骤4：生成手机号微信号');
             var randomPhone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
             var randomWechat = 'wxid_' + Math.random().toString(36).substring(2, 10);
 
+            alert('步骤5：组装角色对象');
             var role = {
                 id: Date.now(),
                 avatar: roleAvatarData,
@@ -215,11 +228,15 @@
                 messages: []
             };
 
-            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            alert('步骤6：读取localStorage');
+            var rolesJson = localStorage.getItem('chat_roles') || '[]';
+            var roles = JSON.parse(rolesJson);
+            alert('步骤7：当前角色数=' + roles.length);
+
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            alert('✅ 角色创建成功！');
+            alert('步骤8：保存成功！跳转chat.html');
             window.location.href = 'chat.html';
         }
     </script>
