@@ -267,10 +267,10 @@
             renderMessages();
         }
 
-        function editCurrentRole() {
-            if (!currentChatRole) return;
-            window.location.href = 'edit-role.html?id=' + currentChatRole.id;
-        }
+function editCurrentRole() {
+    if (!currentChatRole) return;
+    window.location.href = 'contact-detail.html?id=' + currentChatRole.id;
+}
 
         function goBackToList() {
             document.getElementById('role-list-page').style.display = 'flex';
