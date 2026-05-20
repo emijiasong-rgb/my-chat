@@ -212,10 +212,10 @@
             document.getElementById('nickname-group').classList.add('show');
         }
 
-        function saveRole() {
+                function saveRole() {
             var name = document.getElementById('role-name').value.trim();
-            if (!name) { alert('请填写角色名字'); return; }
-            if (!selectedRelation) { alert('请选择关系'); return; }
+            if (!name) return;
+            if (!selectedRelation) return;
 
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             for (var i = 0; i < roles.length; i++) {
@@ -236,10 +236,10 @@
                     break;
                 }
             }
-
             localStorage.setItem('chat_roles', JSON.stringify(roles));
-            alert('✅ 角色已更新！');
-            window.location.href = 'contact-detail.html?id=' + roleId;
+            
+            // ✅ 直接跳转，不用 alert
+            location.href = 'contact-detail.html?id=' + roleId;
         }
     </script>
 </body>
