@@ -35,7 +35,6 @@
         #viewport { flex:1; overflow-y:auto; padding:20px 16px; padding-top:env(safe-area-inset-top); position:relative; z-index:1; }
         #viewport::-webkit-scrollbar { display:none; }
 
-        /* 导航 */
         .nav {
             display:flex; align-items:center; padding:4px 0 20px;
         }
@@ -45,7 +44,6 @@
         }
         .nav-title { flex:1; text-align:center; font-weight:500; font-size:16px; color:var(--text); margin-right:40px; letter-spacing:-0.3px; }
 
-        /* 卡片 */
         .card {
             background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
             border:1px solid var(--card-border); border-radius:14px;
@@ -56,7 +54,6 @@
             letter-spacing:1.5px; font-weight:500; margin-bottom:14px;
         }
 
-        /* 头像 */
         .avatar-row { display:flex; align-items:center; gap:14px; }
         .avatar-img {
             width:64px; height:64px; border-radius:50%; object-fit:cover;
@@ -67,7 +64,6 @@
         .avatar-hint { font-size:14px; color:var(--text); cursor:pointer; font-weight:400; }
         .avatar-sub { font-size:11px; color:var(--text-tertiary); margin-top:1px; }
 
-        /* 表单 */
         .field { margin-bottom:12px; }
         .field:last-child { margin-bottom:0; }
         .field label {
@@ -86,7 +82,6 @@
         .field textarea { min-height:56px; resize:vertical; }
         .field input::placeholder, .field textarea::placeholder { color:#c0c0c0; font-weight:300; }
 
-        /* 选项 */
         .option-row { display:flex; gap:6px; margin-bottom:8px; }
         .option-btn {
             flex:1; padding:8px 6px; border:1px solid rgba(0,0,0,0.06);
@@ -97,7 +92,6 @@
         .option-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
         .option-btn:active { transform:scale(0.96); }
 
-        /* 标签 */
         .tags { display:flex; flex-wrap:wrap; gap:6px; }
         .tag {
             padding:7px 13px; border:1px solid rgba(0,0,0,0.06);
@@ -112,7 +106,6 @@
         .nick-box.show { display:block; animation:fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
 
-        /* 保存 */
         .save-link {
             display:block; width:100%; padding:14px; background:var(--accent);
             color:#fff; text-align:center; border-radius:10px;
@@ -144,12 +137,13 @@
                 </div>
             </div>
 
-            <!-- 信息 -->
+            <!-- 基本信息 -->
             <div class="card">
                 <div class="card-label">基本信息</div>
                 <div class="field"><label>名字</label><input type="text" id="role-name" placeholder="角色名字"></div>
                 <div class="field"><label>性格</label><textarea id="role-personality" placeholder="温柔、幽默、傲娇..."></textarea></div>
                 <div class="field"><label>口头禅</label><input type="text" id="role-catchphrase" placeholder="常说的话"></div>
+                <div class="field"><label>角色背景</label><textarea id="role-background" placeholder="角色的背景故事..."></textarea></div>
             </div>
 
             <!-- 联系方式 -->
@@ -247,7 +241,8 @@
             var role = {
                 id: Date.now(), avatar: avatarData, name: name, gender: '',
                 personality: document.getElementById('role-personality').value.trim(),
-                background: '', catchphrase: document.getElementById('role-catchphrase').value.trim(),
+                background: document.getElementById('role-background').value.trim(),
+                catchphrase: document.getElementById('role-catchphrase').value.trim(),
                 userName: document.getElementById('user-name').value.trim(),
                 userLocation: document.getElementById('role-location').value.trim(),
                 userPreference: '', relation: rel, userNickname: nick,
