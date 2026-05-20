@@ -33,14 +33,27 @@
         }
         .card-title { font-size:13px; color:#8e8e93; margin-bottom:14px; }
 
+        /* 头像 */
+        .avatar-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+        .avatar-img { width:64px; height:64px; border-radius:50%; object-fit:cover; background:#e8e8ed; cursor:pointer; }
+        .avatar-hint { font-size:14px; color:#5b6abf; cursor:pointer; }
+
         .field { margin-bottom:12px; }
         .field:last-child { margin-bottom:0; }
         .field label { display:block; font-size:13px; color:#636366; margin-bottom:4px; }
-        .field input, .field textarea {
+        .field input, .field textarea, .field select {
             width:100%; padding:10px 14px; border:1px solid #ddd;
             border-radius:10px; font-size:15px; outline:none; background:#f9f9f9;
         }
         .field textarea { min-height:60px; resize:vertical; }
+        .field select { font-family:inherit; }
+
+        .option-row { display:flex; gap:8px; margin-bottom:8px; }
+        .option-btn {
+            flex:1; padding:10px; border:1px solid #ddd; border-radius:10px;
+            text-align:center; font-size:14px; cursor:pointer; background:#fff;
+        }
+        .option-btn.on { background:#5b6abf; color:#fff; border-color:#5b6abf; }
 
         .tags { display:flex; flex-wrap:wrap; gap:8px; }
         .tag {
@@ -57,6 +70,7 @@
             color:#fff; text-align:center; border-radius:14px;
             font-size:17px; font-weight:600; text-decoration:none; margin-top:8px;
         }
+        .save-link.done { background:#34c759; }
     </style>
 </head>
 <body>
@@ -65,9 +79,22 @@
             <div class="header">
                 <a href="chat.html">〈 返回</a>
                 <span>创建角色</span>
-                <a href="chat.html" style="opacity:0;">完成</a>
+                <span style="opacity:0;">完成</span>
             </div>
 
+            <!-- 头像卡片 -->
+            <div class="card">
+                <div class="avatar-row">
+                    <img class="avatar-img" id="avatar-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23e8e8ed'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='30'%3E🤖%3C/text%3E%3C/svg%3E" onclick="document.getElementById('avatar-file').click()">
+                    <div>
+                        <span class="avatar-hint" onclick="document.getElementById('avatar-file').click()">点击更换头像</span>
+                        <p style="font-size:12px;color:#c7c7cc;">可选，默认机器人头像</p>
+                    </div>
+                    <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="previewAvatar(event)">
+                </div>
+            </div>
+
+            <!-- 基本信息 -->
             <div class="card">
                 <div class="card-title">基本信息</div>
                 <div class="field">
@@ -84,6 +111,30 @@
                 </div>
             </div>
 
+            <!-- 手机号和微信号 -->
+            <div class="card">
+                <div class="card-title">联系方式</div>
+                
+                <div class="field">
+                    <label>手机号</label>
+                    <div class="option-row">
+                        <div class="option-btn on" id="phone-opt-sys" onclick="setPhoneMode('sys')">🎲 系统随机</div>
+                        <div class="option-btn" id="phone-opt-cus" onclick="setPhoneMode('cus')">✏️ 自己写</div>
+                    </div>
+                    <input type="text" id="phone-input" placeholder="系统自动生成..." readonly style="color:#999;">
+                </div>
+
+                <div class="field">
+                    <label>微信号</label>
+                    <div class="option-row">
+                        <div class="option-btn on" id="wechat-opt-sys" onclick="setWechatMode('sys')">🎲 系统随机</div>
+                        <div class="option-btn" id="wechat-opt-cus" onclick="setWechatMode('cus')">✏️ 自己写</div>
+                    </div>
+                    <input type="text" id="wechat-input" placeholder="系统自动生成..." readonly style="color:#999;">
+                </div>
+            </div>
+
+            <!-- 关系设置 -->
             <div class="card">
                 <div class="card-title">关系设置</div>
                 <div class="field">
@@ -131,7 +182,64 @@
 
     <script>
         var rel = '';
+        var avatarData = '';
+        var phoneMode = 'sys';
+        var wechatMode = 'sys';
 
+        // 头像预览
+        function previewAvatar(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                    avatarData = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 手机号模式
+        function setPhoneMode(mode) {
+            phoneMode = mode;
+            document.getElementById('phone-opt-sys').classList.toggle('on', mode === 'sys');
+            document.getElementById('phone-opt-cus').classList.toggle('on', mode === 'cus');
+            var input = document.getElementById('phone-input');
+            if (mode === 'sys') {
+                input.placeholder = '系统自动生成...';
+                input.value = '';
+                input.readOnly = true;
+                input.style.color = '#999';
+            } else {
+                input.placeholder = '输入手机号';
+                input.value = '';
+                input.readOnly = false;
+                input.style.color = '#000';
+                input.focus();
+            }
+        }
+
+        // 微信号模式
+        function setWechatMode(mode) {
+            wechatMode = mode;
+            document.getElementById('wechat-opt-sys').classList.toggle('on', mode === 'sys');
+            document.getElementById('wechat-opt-cus').classList.toggle('on', mode === 'cus');
+            var input = document.getElementById('wechat-input');
+            if (mode === 'sys') {
+                input.placeholder = '系统自动生成...';
+                input.value = '';
+                input.readOnly = true;
+                input.style.color = '#999';
+            } else {
+                input.placeholder = '输入微信号';
+                input.value = '';
+                input.readOnly = false;
+                input.style.color = '#000';
+                input.focus();
+            }
+        }
+
+        // 选关系
         function pick(tag) {
             var tags = document.querySelectorAll('#relation-tags .tag');
             for (var i = 0; i < tags.length; i++) { tags[i].classList.remove('on'); }
@@ -140,6 +248,7 @@
             document.getElementById('nick-box').classList.add('show');
         }
 
+        // 保存
         function save() {
             var name = document.getElementById('role-name').value.trim();
             if (!name) return;
@@ -147,12 +256,25 @@
             var nick = document.getElementById('user-nickname').value.trim();
             if (!nick) return;
 
-            var phone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
-            var wx = 'wxid_' + Math.random().toString(36).substring(2, 10);
+            // 手机号
+            var phone;
+            if (phoneMode === 'sys') {
+                phone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
+            } else {
+                phone = document.getElementById('phone-input').value.trim();
+            }
+
+            // 微信号
+            var wx;
+            if (wechatMode === 'sys') {
+                wx = 'wxid_' + Math.random().toString(36).substring(2, 10);
+            } else {
+                wx = document.getElementById('wechat-input').value.trim();
+            }
 
             var role = {
                 id: Date.now(),
-                avatar: '',
+                avatar: avatarData,
                 name: name,
                 gender: '',
                 personality: document.getElementById('role-personality').value.trim(),
@@ -174,13 +296,15 @@
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
 
-            document.getElementById('save-btn').innerText = '✅ 已保存！点击返回';
-            document.getElementById('save-btn').href = 'chat.html';
-            document.getElementById('save-btn').onclick = null;
-            
+            var btn = document.getElementById('save-btn');
+            btn.innerText = '✅ 已保存！点击返回';
+            btn.classList.add('done');
+            btn.href = 'chat.html';
+            btn.onclick = null;
+
             setTimeout(function() {
                 window.open('chat.html', '_self');
-            }, 500);
+            }, 600);
         }
     </script>
 </body>
