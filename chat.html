@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>对话</title>
+    <title>信息</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,8 +16,9 @@
             --text-secondary: #888;
             --text-tertiary: #b0b0b0;
             --accent: #1a1a1a;
+            --red-dot: #ff3b30;
             --separator: rgba(0,0,0,0.05);
-            --shadow: 0 1px 12px rgba(0,0,0,0.03);
+            --shadow: 0 1px 8px rgba(0,0,0,0.02);
             --glass: blur(28px);
             --bubble-user: #1a1a1a;
             --bubble-ai: rgba(255,255,255,0.65);
@@ -34,55 +35,71 @@
             background:var(--bg); border-radius:0; display:flex; flex-direction:column; overflow:hidden;
             position:relative;
         }
+
+        /* 状态栏 */
+        .status-bar {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:12px 24px 6px; font-size:12px; font-weight:600; color:var(--text);
+        }
+        .status-icons { display:flex; align-items:center; gap:6px; }
+        #battery-container { display:flex; align-items:center; gap:3px; }
+
         #main-view { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; z-index:1; }
 
-        /* 顶部 */
+        /* 列表头部 */
         .list-header {
             display:flex; align-items:center; justify-content:space-between;
-            padding:16px 20px 8px;
+            padding:8px 20px 12px;
         }
         .list-header h1 {
-            font-size:32px; font-weight:700; color:var(--text);
-            letter-spacing:-1.5px;
+            font-size:34px; font-weight:800; color:var(--text);
+            letter-spacing:-2px;
         }
+        .header-right { display:flex; gap:12px; align-items:center; }
         .add-btn {
-            width:38px; height:38px; background:var(--card-bg);
+            width:34px; height:34px; background:var(--card-bg);
             backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
             border:1px solid var(--card-border); border-radius:50%;
             display:flex; align-items:center; justify-content:center;
-            font-size:22px; color:var(--text); text-decoration:none;
-            font-weight:300; box-shadow:var(--shadow); transition:all 0.2s;
+            font-size:20px; color:var(--text); text-decoration:none;
+            font-weight:300; box-shadow:var(--shadow);
         }
-        .add-btn:active { transform:scale(0.92); background:rgba(255,255,255,0.8); }
 
         /* 列表 */
-        .role-list { flex:1; overflow-y:auto; padding:8px 16px 16px; display:flex; flex-direction:column; gap:6px; }
+        .role-list { flex:1; overflow-y:auto; padding:4px 16px 16px; display:flex; flex-direction:column; gap:2px; }
         .role-list::-webkit-scrollbar { display:none; }
 
         .role-card {
-            background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
-            border:1px solid var(--card-border); border-radius:12px;
-            padding:14px; display:flex; align-items:center; gap:12px;
-            cursor:pointer; box-shadow:var(--shadow); transition:all 0.15s;
-            text-decoration:none;
+            display:flex; align-items:center; gap:12px; padding:12px 14px;
+            cursor:pointer; text-decoration:none; position:relative;
+            border-radius:10px; transition:background 0.15s;
         }
-        .role-card:active { transform:scale(0.985); background:rgba(255,255,255,0.78); }
+        .role-card:active { background:rgba(0,0,0,0.03); }
+        .role-avatar-wrap { position:relative; flex-shrink:0; }
         .role-avatar {
-            width:50px; height:50px; border-radius:50%; object-fit:cover;
-            background:#e0e0e0; flex-shrink:0; border:2px solid rgba(255,255,255,0.7);
+            width:52px; height:52px; border-radius:50%; object-fit:cover;
+            background:#e0e0e0; border:2px solid rgba(255,255,255,0.7);
         }
-        .role-info { flex:1; min-width:0; }
-        .role-top { display:flex; align-items:baseline; gap:6px; margin-bottom:2px; }
-        .role-name { font-size:16px; font-weight:500; color:var(--text); letter-spacing:-0.3px; }
-        .role-relation {
-            font-size:11px; color:var(--text-tertiary); font-weight:400;
-            background:rgba(0,0,0,0.03); padding:1px 8px; border-radius:6px;
+        .unread-dot {
+            position:absolute; top:-2px; right:-2px;
+            width:10px; height:10px; background:var(--red-dot);
+            border-radius:50%; border:2px solid #fff; display:none;
         }
-        .role-preview { font-size:13px; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .role-time { font-size:11px; color:var(--text-tertiary); flex-shrink:0; }
+        .unread-dot.show { display:block; }
 
-        .empty-state { text-align:center; padding:80px 20px; }
-        .empty-icon { font-size:48px; opacity:0.4; margin-bottom:12px; }
+        .role-info { flex:1; min-width:0; }
+        .role-top { display:flex; align-items:baseline; gap:6px; margin-bottom:1px; }
+        .role-name { font-size:16px; font-weight:500; color:var(--text); letter-spacing:-0.3px; }
+        .role-time { font-size:11px; color:var(--text-tertiary); flex-shrink:0; }
+        .role-bottom { display:flex; align-items:center; gap:8px; }
+        .role-preview {
+            font-size:14px; color:var(--text-tertiary); flex:1;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .role-preview.unread { color:var(--text); font-weight:400; }
+
+        .empty-state { text-align:center; padding:100px 20px; }
+        .empty-icon { font-size:44px; opacity:0.35; margin-bottom:12px; }
         .empty-text { font-size:14px; color:var(--text-tertiary); }
         .empty-sub { font-size:12px; color:var(--text-tertiary); margin-top:4px; opacity:0.7; }
 
@@ -91,14 +108,14 @@
         #chat-page.active { display:flex; }
 
         .chat-nav {
-            display:flex; align-items:center; padding:10px 14px;
+            display:flex; align-items:center; padding:8px 14px;
             background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
             border-bottom:1px solid var(--separator); gap:10px; z-index:10;
         }
         .back-btn { font-size:16px; color:var(--text); cursor:pointer; text-decoration:none; font-weight:400; }
         .chat-nav-avatar { width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.7); }
         .chat-nav-info { flex:1; }
-        .chat-nav-name { font-size:15px; font-weight:500; color:var(--text); transition:all 0.3s; }
+        .chat-nav-name { font-size:15px; font-weight:500; color:var(--text); }
         .chat-nav-name.typing { color:#888; }
         .more-btn {
             width:28px; height:28px; border:none; background:none;
@@ -107,8 +124,8 @@
         }
 
         .messages-container {
-            flex:1; overflow-y:auto; padding:20px 16px;
-            display:flex; flex-direction:column; gap:4px;
+            flex:1; overflow-y:auto; padding:16px 14px;
+            display:flex; flex-direction:column; gap:2px;
         }
         .messages-container::-webkit-scrollbar { display:none; }
 
@@ -120,10 +137,7 @@
         .msg-wrapper.user { align-self:flex-end; flex-direction:row-reverse; }
         .msg-wrapper.ai { align-self:flex-start; }
 
-        .msg-avatar {
-            width:26px; height:26px; border-radius:50%; object-fit:cover;
-            flex-shrink:0; margin-top:2px; opacity:0.8;
-        }
+        .msg-avatar { width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; margin-top:2px; opacity:0.8; }
 
         .msg-bubble {
             padding:10px 13px; border-radius:14px; font-size:15px;
@@ -135,59 +149,68 @@
             color:var(--text); box-shadow:var(--shadow);
         }
         .msg-wrapper.user .msg-bubble {
-            background:var(--bubble-user); color:#fff;
-            border-top-right-radius:3px;
+            background:var(--bubble-user); color:#fff; border-top-right-radius:3px;
         }
 
-        /* 三个点 */
         .typing-dots { display:inline-flex; gap:3px; padding:2px 0; }
-        .typing-dots span {
-            width:6px; height:6px; background:#b0b0b0; border-radius:50%;
-            animation:bounce 1.4s infinite;
-        }
+        .typing-dots span { width:6px; height:6px; background:#b0b0b0; border-radius:50%; animation:bounce 1.4s infinite; }
         .typing-dots span:nth-child(2) { animation-delay:0.2s; }
         .typing-dots span:nth-child(3) { animation-delay:0.4s; }
-        @keyframes bounce {
-            0%,60%,100% { transform:translateY(0); opacity:0.3; }
-            30% { transform:translateY(-6px); opacity:1; }
-        }
+        @keyframes bounce { 0%,60%,100% { transform:translateY(0); opacity:0.3; } 30% { transform:translateY(-6px); opacity:1; } }
 
-        /* 输入区 */
-        .input-area {
-            display:flex; gap:6px; padding:8px 12px 12px; align-items:center;
-            background:transparent; z-index:10;
-        }
+        .input-area { display:flex; gap:6px; padding:8px 12px 12px; align-items:center; background:transparent; z-index:10; }
         .input-area input {
             flex:1; padding:10px 15px;
             background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
             border:1px solid var(--card-border); border-radius:22px;
             font-size:15px; outline:none; color:var(--text); font-weight:400;
-            transition:all 0.2s;
         }
         .input-area input:focus { border-color:rgba(0,0,0,0.25); box-shadow:0 0 0 3px rgba(0,0,0,0.04); }
         .input-area input::placeholder { color:#c0c0c0; font-weight:300; }
         .send-btn {
             width:36px; height:36px; background:var(--accent); color:#fff;
-            border:none; border-radius:50%; font-size:15px; cursor:pointer;
-            flex-shrink:0; transition:all 0.2s;
+            border:none; border-radius:50%; font-size:15px; cursor:pointer; flex-shrink:0;
         }
         .send-btn:active { transform:scale(0.9); opacity:0.8; }
     </style>
 </head>
 <body>
     <div id="phone-shell">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span id="clock">12:00</span>
+            <div class="status-icons">
+                <svg width="16" height="11" viewBox="0 0 18 12" fill="currentColor">
+                    <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
+                    <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
+                    <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
+                    <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+                </svg>
+                <span id="battery-container">
+                    <svg width="22" height="11" viewBox="0 0 25 12">
+                        <rect x="0" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
+                    </svg>
+                    <span id="battery-percent">--%</span>
+                </span>
+            </div>
+        </div>
+
         <div id="main-view">
             <!-- 列表页 -->
             <div id="role-list-page">
                 <div class="list-header">
-                    <h1>对话</h1>
-                    <a href="create-role2.html" class="add-btn">+</a>
+                    <h1>信息</h1>
+                    <div class="header-right">
+                        <a href="create-role2.html" class="add-btn">+</a>
+                    </div>
                 </div>
                 <div class="role-list" id="role-list">
                     <div class="empty-state">
                         <div class="empty-icon">💬</div>
-                        <div class="empty-text">还没有对话</div>
-                        <div class="empty-sub">点击 + 创建角色</div>
+                        <div class="empty-text">暂无消息</div>
+                        <div class="empty-sub">点击 + 创建角色开始对话</div>
                     </div>
                 </div>
             </div>
@@ -204,7 +227,7 @@
                 </div>
                 <div class="messages-container" id="messages-container"></div>
                 <div class="input-area">
-                    <input type="text" id="chat-input" placeholder="消息..." onkeydown="if(event.key==='Enter')sendMsg()">
+                    <input type="text" id="chat-input" placeholder="信息" onkeydown="if(event.key==='Enter')sendMsg()">
                     <button class="send-btn" onclick="sendMsg()">↑</button>
                 </div>
             </div>
@@ -215,7 +238,30 @@
         var currentChatRole = null;
         var currentApi = null;
 
-        document.addEventListener('DOMContentLoaded', function() { renderRoleList(); });
+        function updateClock() {
+            var now = new Date();
+            var h = String(now.getHours()).padStart(2, '0');
+            var m = String(now.getMinutes()).padStart(2, '0');
+            var el = document.getElementById('clock');
+            if (el) el.innerText = h + ':' + m;
+        }
+        setInterval(updateClock, 1000);
+
+        function updateBattery() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(b) {
+                    var lvl = Math.round(b.level * 100);
+                    var pel = document.getElementById('battery-percent');
+                    var lel = document.getElementById('battery-level');
+                    if (pel) pel.textContent = lvl + '%';
+                    if (lel) { lel.setAttribute('width', Math.round((lvl/100)*18)); lel.setAttribute('fill', lvl <= 20 ? '#ff3b30' : 'currentColor'); }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateClock(); updateBattery(); renderRoleList();
+        });
 
         function getActiveApi() {
             var apis = JSON.parse(localStorage.getItem('saved_apis') || '[]');
@@ -226,25 +272,41 @@
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             var container = document.getElementById('role-list');
             if (roles.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">还没有对话</div><div class="empty-sub">点击 + 创建角色</div></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击 + 创建角色开始对话</div></div>';
                 return;
             }
             var html = '';
             for (var i = 0; i < roles.length; i++) {
                 var r = roles[i];
-                var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1].text : '';
+                var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1] : null;
+                var preview = lastMsg ? lastMsg.text : (r.personality || '');
+                var hasUnread = r.unread && r.unread > 0;
+                var time = lastMsg ? formatTime(lastMsg.time || r.id) : '';
                 html += '<div class="role-card" onclick="openChat(' + r.id + ')">' +
-                    '<img class="role-avatar" src="' + (r.avatar || '') + '" alt="">' +
-                    '<div class="role-info"><div class="role-top"><span class="role-name">' + (r.remark || r.name) + '</span><span class="role-relation">' + (r.relation || '') + '</span></div>' +
-                    '<div class="role-preview">' + (lastMsg || r.personality || '') + '</div></div></div>';
+                    '<div class="role-avatar-wrap"><img class="role-avatar" src="' + (r.avatar || '') + '" alt=""><div class="unread-dot' + (hasUnread ? ' show' : '') + '"></div></div>' +
+                    '<div class="role-info"><div class="role-top"><span class="role-name">' + escapeHtml(r.remark || r.name) + '</span><span class="role-time">' + time + '</span></div>' +
+                    '<div class="role-bottom"><span class="role-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</span></div></div></div>';
             }
             container.innerHTML = html;
+        }
+
+        function formatTime(ts) {
+            var d = new Date(ts);
+            var now = new Date();
+            var h = String(d.getHours()).padStart(2, '0');
+            var m = String(d.getMinutes()).padStart(2, '0');
+            if (d.toDateString() === now.toDateString()) return h + ':' + m;
+            var yesterday = new Date(now); yesterday.setDate(now.getDate()-1);
+            if (d.toDateString() === yesterday.toDateString()) return '昨天';
+            return String(d.getMonth()+1) + '/' + String(d.getDate());
         }
 
         function openChat(roleId) {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             for (var i = 0; i < roles.length; i++) { if (roles[i].id === roleId) { currentChatRole = roles[i]; break; } }
             if (!currentChatRole) return;
+            currentChatRole.unread = 0;
+            updateRoleMessages();
             currentApi = getActiveApi();
             document.getElementById('role-list-page').style.display = 'none';
             document.getElementById('chat-page').classList.add('active');
@@ -280,7 +342,7 @@
             var input = document.getElementById('chat-input');
             var text = input.value.trim();
             if (!text || !currentChatRole) return;
-            currentChatRole.messages.push({ type: 'user', text: text });
+            currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
             input.value = ''; updateRoleMessages(); renderMessages();
             callApiForReply(text);
         }
@@ -288,18 +350,19 @@
         function callApiForReply(userMsg) {
             if (!currentApi) {
                 showTyping();
-                currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>' });
+                currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>', time: Date.now() });
                 updateRoleMessages(); renderMessages();
                 setTimeout(function() {
                     currentChatRole.messages.pop();
                     var reply = generateLocalReply();
-                    currentChatRole.messages.push({ type: 'ai', text: reply });
+                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                    currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                     updateRoleMessages(); renderMessages(); hideTyping();
                 }, 1500);
                 return;
             }
             showTyping();
-            currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>' });
+            currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>', time: Date.now() });
             updateRoleMessages(); renderMessages();
 
             var systemPrompt = buildPrompt();
@@ -318,11 +381,12 @@
                 currentChatRole.messages.pop();
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
-                    currentChatRole.messages.push({ type: 'ai', text: data.choices && data.choices[0] ? data.choices[0].message.content : '...' });
-                } else { currentChatRole.messages.push({ type: 'ai', text: '错误 ' + xhr.status }); }
+                    currentChatRole.messages.push({ type: 'ai', text: data.choices && data.choices[0] ? data.choices[0].message.content : '...', time: Date.now() });
+                } else { currentChatRole.messages.push({ type: 'ai', text: '错误 ' + xhr.status, time: Date.now() }); }
+                currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                 updateRoleMessages(); renderMessages(); hideTyping();
             };
-            xhr.onerror = function() { currentChatRole.messages.pop(); currentChatRole.messages.push({ type: 'ai', text: '网络错误' }); updateRoleMessages(); renderMessages(); hideTyping(); };
+            xhr.onerror = function() { currentChatRole.messages.pop(); currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() }); currentChatRole.unread = (currentChatRole.unread || 0) + 1; updateRoleMessages(); renderMessages(); hideTyping(); };
             xhr.send(JSON.stringify({ model: currentApi.model, messages: messages, temperature: 0.8, max_tokens: 500 }));
         }
 
