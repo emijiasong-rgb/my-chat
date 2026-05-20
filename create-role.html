@@ -166,7 +166,7 @@
             document.getElementById('nickname-section').classList.add('show');
         }
 
-                function saveRole() {
+        function saveRole() {
             var name = document.getElementById('role-name').value.trim();
             if (!name) return;
             if (!selectedRelation) return;
@@ -200,8 +200,13 @@
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
             
-            // ✅ 直接跳转
-            location.href = 'chat.html';
+            // ✅ 终极跳转方案：创建隐藏链接并自动点击
+            var a = document.createElement('a');
+            a.href = 'chat.html';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
 </body>
