@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>设置备注</title>
     <style>
+        :root {
+            --bg: #f2f2f7;
+            --text: #1c1c1e;
+            --text-secondary: #636366;
+            --text-tertiary: #8e8e93;
+            --accent: #576b95;
+        }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background:#1a1a1a; height:100dvh; width:100vw;
@@ -16,24 +23,26 @@
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
             background:#f2f2f7; border-radius:0; display:flex; flex-direction:column; overflow:hidden;
         }
-        #viewport { flex:1; overflow-y:auto; }
+        #viewport { flex:1; overflow-y:auto; background:#f2f2f7; }
         #viewport::-webkit-scrollbar { display:none; }
 
         .nav-bar {
             display:flex; align-items:center; justify-content:space-between;
-            padding:12px 16px; background:#fff; border-bottom:0.5px solid #e5e5ea;
-            position:sticky; top:0; z-index:10;
+            padding:12px 16px; background:rgba(255,255,255,0.9);
+            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border-bottom:0.5px solid #e5e5ea; position:sticky; top:0; z-index:10;
         }
         .nav-back { color:#000; font-size:17px; cursor:pointer; }
         .nav-title { font-size:17px; font-weight:600; }
-        .nav-save { color:#576b95; font-size:17px; cursor:pointer; font-weight:500; }
+        .nav-save { color:var(--accent); font-size:17px; cursor:pointer; font-weight:500; }
 
         .section {
             background:#fff; margin:10px 0;
             border-top:0.5px solid #e5e5ea; border-bottom:0.5px solid #e5e5ea;
         }
         .section-title {
-            padding:8px 16px; font-size:13px; color:#8e8e93; text-transform:uppercase;
+            padding:8px 16px; font-size:13px; color:var(--text-tertiary);
+            text-transform:uppercase; letter-spacing:0.5px;
         }
         .input-row {
             display:flex; align-items:center; padding:12px 16px;
@@ -47,27 +56,51 @@
         }
         .input-field::placeholder { color:#c7c7cc; }
 
-        .tag-row {
-            padding:12px 16px; background:#fff;
-        }
+        .tag-row { padding:12px 16px; background:#fff; }
         .tag-label { font-size:15px; color:#000; margin-bottom:10px; display:block; }
         .tag-grid { display:flex; flex-wrap:wrap; gap:8px; }
         .tag-item {
             padding:6px 14px; border:1px solid #ddd; border-radius:20px;
             font-size:14px; cursor:pointer; color:#333; background:#fff;
+            transition:all 0.2s;
         }
-        .tag-item.selected { background:#576b95; color:#fff; border-color:#576b95; }
+        .tag-item.selected { background:var(--accent); color:#fff; border-color:var(--accent); }
         .tag-item:active { opacity:0.7; }
 
-        .extra-section { background:#fff; margin:10px 0; }
-        .extra-row {
+        .edit-row {
             display:flex; align-items:center; padding:14px 16px;
-            border-bottom:0.5px solid #f0f0f0; cursor:pointer;
+            background:#fff; cursor:pointer;
         }
-        .extra-row:active { background:#f5f5f5; }
-        .extra-label { font-size:15px; color:#000; }
-        .extra-value { flex:1; text-align:right; font-size:15px; color:#8e8e93; }
-        .extra-arrow { color:#c7c7cc; margin-left:8px; }
+        .edit-row:active { background:#f5f5f5; }
+        .edit-icon { margin-right:12px; font-size:16px; }
+        .edit-label { font-size:15px; color:#000; flex:1; }
+        .edit-value { font-size:14px; color:var(--text-tertiary); margin-right:6px; }
+        .edit-arrow { color:#c7c7cc; font-size:15px; }
+
+        /* 弹窗 */
+        .modal-overlay {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-content {
+            background:rgba(255,255,255,0.95); backdrop-filter:blur(30px);
+            border-radius:20px; padding:24px 20px; width:88%; max-width:340px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-title { font-size:17px; font-weight:600; text-align:center; margin-bottom:18px; }
+        .modal-input {
+            width:100%; padding:12px 14px; border:1px solid #ddd; border-radius:10px;
+            font-size:15px; outline:none; margin-bottom:16px;
+        }
+        .modal-input:focus { border-color:var(--accent); }
+        .modal-btns { display:flex; gap:10px; }
+        .modal-btn {
+            flex:1; padding:12px; border:none; border-radius:10px;
+            font-size:15px; font-weight:500; cursor:pointer;
+        }
+        .modal-btn-cancel { background:#f0f0f0; color:#333; }
+        .modal-btn-save { background:var(--accent); color:#fff; }
     </style>
 </head>
 <body>
@@ -76,9 +109,10 @@
             <div class="nav-bar">
                 <span class="nav-back" onclick="history.back()">取消</span>
                 <span class="nav-title">设置备注</span>
-                <span class="nav-save" onclick="saveRemark()">保存</span>
+                <span class="nav-save" onclick="saveAll()">保存</span>
             </div>
 
+            <!-- 备注 -->
             <div class="section">
                 <div class="input-row">
                     <span class="input-label">备注</span>
@@ -86,6 +120,7 @@
                 </div>
             </div>
 
+            <!-- 标签 -->
             <div class="section">
                 <div class="section-title">添加标签</div>
                 <div class="tag-row">
@@ -100,22 +135,39 @@
                 </div>
             </div>
 
-            <div class="extra-section">
-                <div class="extra-row" onclick="document.getElementById('phone-input').focus()">
-                    <span class="extra-label">电话号码</span>
-                    <span class="extra-value" id="phone-display">未设置</span>
-                    <span class="extra-arrow">〉</span>
+            <!-- 可编辑信息 -->
+            <div class="section">
+                <div class="section-title">联系方式</div>
+                <div class="edit-row" onclick="openEditModal('phone')">
+                    <span class="edit-icon">📱</span>
+                    <span class="edit-label">电话号码</span>
+                    <span class="edit-value" id="phone-display">未设置</span>
+                    <span class="edit-arrow">〉</span>
                 </div>
-                <div class="extra-row" onclick="document.getElementById('desc-input').focus()">
-                    <span class="extra-label">描述</span>
-                    <span class="extra-value" id="desc-display">未设置</span>
-                    <span class="extra-arrow">〉</span>
+                <div class="edit-row" onclick="openEditModal('wechat')">
+                    <span class="edit-icon">💬</span>
+                    <span class="edit-label">微信号</span>
+                    <span class="edit-value" id="wechat-display">未设置</span>
+                    <span class="edit-arrow">〉</span>
+                </div>
+                <div class="edit-row" onclick="openEditModal('desc')">
+                    <span class="edit-icon">📝</span>
+                    <span class="edit-label">描述</span>
+                    <span class="edit-value" id="desc-display">未设置</span>
+                    <span class="edit-arrow">〉</span>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div style="padding:16px;">
-                <input type="text" id="phone-input" placeholder="电话号码" style="display:none;width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;font-size:15px;" oninput="updatePhoneDisplay()">
-                <textarea id="desc-input" placeholder="添加描述..." style="display:none;width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px;min-height:60px;resize:vertical;" oninput="updateDescDisplay()"></textarea>
+    <!-- 编辑弹窗 -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">编辑</div>
+            <input type="text" class="modal-input" id="modal-input" placeholder="">
+            <div class="modal-btns">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                <button class="modal-btn modal-btn-save" onclick="saveModal()">确定</button>
             </div>
         </div>
     </div>
@@ -123,6 +175,7 @@
     <script>
         var roleId = null;
         var selectedTags = [];
+        var currentEditType = '';
 
         document.addEventListener('DOMContentLoaded', function() {
             var params = new URLSearchParams(window.location.search);
@@ -135,13 +188,13 @@
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             for (var i = 0; i < roles.length; i++) {
                 if (roles[i].id === roleId) {
-                    document.getElementById('remark-input').value = roles[i].remark || '';
-                    document.getElementById('phone-input').value = roles[i].phone || '';
-                    document.getElementById('desc-input').value = roles[i].description || '';
-                    updatePhoneDisplay();
-                    updateDescDisplay();
-                    if (roles[i].tags) {
-                        selectedTags = roles[i].tags;
+                    var role = roles[i];
+                    document.getElementById('remark-input').value = role.remark || '';
+                    document.getElementById('phone-display').innerText = role.phone || '未设置';
+                    document.getElementById('wechat-display').innerText = role.wechatId || '未设置';
+                    document.getElementById('desc-display').innerText = role.description || '未设置';
+                    if (role.tags) {
+                        selectedTags = role.tags;
                         highlightTags();
                     }
                     break;
@@ -170,33 +223,70 @@
             }
         }
 
-        function updatePhoneDisplay() {
-            var val = document.getElementById('phone-input').value;
-            document.getElementById('phone-display').innerText = val || '未设置';
-            document.getElementById('phone-display').style.color = val ? '#000' : '#8e8e93';
+        function openEditModal(type) {
+            currentEditType = type;
+            var title = document.getElementById('modal-title');
+            var input = document.getElementById('modal-input');
+            
+            if (type === 'phone') {
+                title.innerText = '电话号码';
+                input.placeholder = '输入电话号码';
+                input.value = document.getElementById('phone-display').innerText === '未设置' ? '' : document.getElementById('phone-display').innerText;
+                input.type = 'tel';
+            } else if (type === 'wechat') {
+                title.innerText = '微信号';
+                input.placeholder = '输入微信号';
+                input.value = document.getElementById('wechat-display').innerText === '未设置' ? '' : document.getElementById('wechat-display').innerText;
+                input.type = 'text';
+            } else if (type === 'desc') {
+                title.innerText = '描述';
+                input.placeholder = '添加描述...';
+                input.value = document.getElementById('desc-display').innerText === '未设置' ? '' : document.getElementById('desc-display').innerText;
+                input.type = 'text';
+            }
+            
+            document.getElementById('edit-modal').classList.add('active');
+            setTimeout(function() { input.focus(); }, 300);
         }
 
-        function updateDescDisplay() {
-            var val = document.getElementById('desc-input').value;
-            document.getElementById('desc-display').innerText = val || '未设置';
-            document.getElementById('desc-display').style.color = val ? '#000' : '#8e8e93';
+        function closeModal() {
+            document.getElementById('edit-modal').classList.remove('active');
         }
 
-        function saveRemark() {
+        function saveModal() {
+            var value = document.getElementById('modal-input').value.trim();
+            
+            if (currentEditType === 'phone') {
+                document.getElementById('phone-display').innerText = value || '未设置';
+            } else if (currentEditType === 'wechat') {
+                document.getElementById('wechat-display').innerText = value || '未设置';
+            } else if (currentEditType === 'desc') {
+                document.getElementById('desc-display').innerText = value || '未设置';
+            }
+            
+            closeModal();
+        }
+
+        function saveAll() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             for (var i = 0; i < roles.length; i++) {
                 if (roles[i].id === roleId) {
                     roles[i].remark = document.getElementById('remark-input').value.trim();
-                    roles[i].phone = document.getElementById('phone-input').value.trim();
-                    roles[i].description = document.getElementById('desc-input').value.trim();
                     roles[i].tags = selectedTags;
+                    roles[i].phone = document.getElementById('phone-display').innerText === '未设置' ? '' : document.getElementById('phone-display').innerText;
+                    roles[i].wechatId = document.getElementById('wechat-display').innerText === '未设置' ? '' : document.getElementById('wechat-display').innerText;
+                    roles[i].description = document.getElementById('desc-display').innerText === '未设置' ? '' : document.getElementById('desc-display').innerText;
                     break;
                 }
             }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
-            alert('✅ 备注已保存');
+            alert('✅ 已保存');
             history.back();
         }
+
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
     </script>
 </body>
 </html>
