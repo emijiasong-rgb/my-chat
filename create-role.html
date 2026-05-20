@@ -4,209 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>创建角色</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --card-bg: rgba(255, 255, 255, 0.65);
-            --card-border: rgba(255, 255, 255, 0.7);
-            --blur: blur(24px);
-            --shadow-sm: 0 2px 12px rgba(0,0,0,0.04);
-            --accent: #5b6abf;
-            --text: #1c1c1e;
-            --text-secondary: #636366;
-            --text-tertiary: #8e8e93;
-        }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background:#1a1a1a; height:100dvh; width:100vw;
             display:flex; justify-content:center; align-items:center;
-            font-family:'Noto Sans SC',-apple-system,sans-serif; overflow:hidden;
+            font-family:-apple-system,sans-serif; overflow:hidden;
             padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
         }
         #phone-shell {
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
             background:#f2f2f7; border-radius:0; display:flex; flex-direction:column; overflow:hidden;
         }
-        #viewport { flex:1; overflow-y:auto; padding-top:env(safe-area-inset-top); background:#f2f2f7; }
+        #viewport { flex:1; overflow-y:auto; padding:16px; padding-top:env(safe-area-inset-top); }
         #viewport::-webkit-scrollbar { display:none; }
 
-        .header-bar {
-            display:flex; align-items:center; padding:10px 16px;
-            background:var(--card-bg); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
-            border-bottom:1px solid rgba(0,0,0,0.06); position:sticky; top:0; z-index:10;
+        .header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 0; margin-bottom:16px;
         }
-        .back-btn { color:var(--accent); font-size:16px; cursor:pointer; text-decoration:none; }
-        .header-title { flex:1; text-align:center; font-weight:700; font-size:17px; color:var(--text); margin-right:40px; }
+        .header a { color:#5b6abf; font-size:16px; text-decoration:none; }
+        .header span { font-weight:700; font-size:17px; }
 
-        .form-container { padding:16px; }
-        .section-card {
-            background:var(--card-bg); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
-            border:1px solid var(--card-border); border-radius:18px;
-            padding:20px 16px; margin-bottom:14px; box-shadow:var(--shadow-sm);
+        .card {
+            background:rgba(255,255,255,0.7); backdrop-filter:blur(20px);
+            border-radius:18px; padding:20px 16px; margin-bottom:14px;
+            border:1px solid rgba(255,255,255,0.7);
         }
-        .section-title { font-size:13px; color:var(--text-tertiary); margin-bottom:14px; font-weight:500; }
-        .avatar-upload-area { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
-        .avatar-preview { width:64px; height:64px; border-radius:50%; object-fit:cover; background:#e8e8ed; cursor:pointer; }
-        .avatar-upload-hint { font-size:14px; color:var(--accent); cursor:pointer; font-weight:500; }
+        .card-title { font-size:13px; color:#8e8e93; margin-bottom:14px; }
 
-        .input-group { margin-bottom:14px; }
-        .input-group:last-child { margin-bottom:0; }
-        .input-group label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:5px; }
-        .input-group input, .input-group textarea {
-            width:100%; padding:11px 14px; background:rgba(0,0,0,0.025);
-            border:1px solid rgba(0,0,0,0.08); border-radius:12px;
-            font-size:15px; outline:none; font-family:inherit; color:var(--text);
+        .field { margin-bottom:12px; }
+        .field:last-child { margin-bottom:0; }
+        .field label { display:block; font-size:13px; color:#636366; margin-bottom:4px; }
+        .field input, .field textarea {
+            width:100%; padding:10px 14px; border:1px solid #ddd;
+            border-radius:10px; font-size:15px; outline:none; background:#f9f9f9;
         }
-        .input-group textarea { resize:vertical; min-height:50px; }
-        .input-group input:focus, .input-group textarea:focus { border-color:var(--accent); }
-        .input-group input::placeholder, .input-group textarea::placeholder { color:#c7c7cc; }
+        .field textarea { min-height:60px; resize:vertical; }
 
-        .relation-selector { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
-        .relation-tag {
-            padding:7px 15px; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06);
-            border-radius:20px; font-size:13px; cursor:pointer; color:var(--text-secondary);
+        .tags { display:flex; flex-wrap:wrap; gap:8px; }
+        .tag {
+            padding:7px 14px; border:1px solid #ddd; border-radius:20px;
+            font-size:13px; cursor:pointer; background:#fff;
         }
-        .relation-tag.selected { background:var(--accent); color:white; border-color:var(--accent); }
+        .tag.on { background:#5b6abf; color:#fff; border-color:#5b6abf; }
 
-        .nickname-section { display:none; margin-top:4px; }
-        .nickname-section.show { display:block; }
+        .nickname-box { display:none; margin-top:12px; }
+        .nickname-box.show { display:block; }
 
-        .save-btn-container { padding:8px 16px 30px; }
-        .save-btn {
-            width:100%; padding:14px; background:var(--accent); color:white;
-            border:none; border-radius:14px; font-size:17px; font-weight:600; cursor:pointer;
-            display:block; text-align:center;
+        .save-link {
+            display:block; width:100%; padding:14px; background:#5b6abf;
+            color:#fff; text-align:center; border-radius:14px;
+            font-size:17px; font-weight:600; text-decoration:none; margin-top:8px;
         }
     </style>
 </head>
 <body>
     <div id="phone-shell">
         <div id="viewport">
-            <div class="header-bar">
-                <span class="back-btn" onclick="window.location.href='index.html'">〈 返回</span>
-                <span class="header-title">创建角色</span>
+            <div class="header">
+                <a href="chat.html">〈 返回</a>
+                <span>创建角色</span>
+                <a href="chat.html" style="opacity:0;">完成</a>
             </div>
 
-            <div class="form-container">
-                <div class="section-card">
-                    <div class="avatar-upload-area">
-                        <img class="avatar-preview" id="role-avatar-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23e8e8ed'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='30'%3E🤖%3C/text%3E%3C/svg%3E" onclick="document.getElementById('role-avatar-input').click()">
-                        <div>
-                            <span class="avatar-upload-hint" onclick="document.getElementById('role-avatar-input').click()">点击更换头像</span>
-                        </div>
-                        <input type="file" id="role-avatar-input" accept="image/*" style="display:none" onchange="previewRoleAvatar(event)">
-                    </div>
+            <div class="card">
+                <div class="card-title">基本信息</div>
+                <div class="field">
+                    <label>角色名字 *</label>
+                    <input type="text" id="role-name" placeholder="给角色起个名字">
                 </div>
-
-                <div class="section-card">
-                    <div class="section-title">基本信息</div>
-                    <div class="input-group"><label>角色名字 *</label><input type="text" id="role-name" placeholder="给角色起个名字"></div>
-                    <div class="input-group"><label>性格特点</label><textarea id="role-personality" placeholder="温柔体贴、幽默风趣、有点傲娇..."></textarea></div>
-                    <div class="input-group"><label>角色背景</label><textarea id="role-background" placeholder="角色的背景故事..."></textarea></div>
-                    <div class="input-group"><label>口头禅</label><input type="text" id="role-catchphrase" placeholder="角色常说的话"></div>
+                <div class="field">
+                    <label>性格特点</label>
+                    <textarea id="role-personality" placeholder="温柔体贴、幽默风趣..."></textarea>
                 </div>
-
-                <div class="section-card">
-                    <div class="section-title">关系设置</div>
-                    <div class="input-group"><label>你的名字</label><input type="text" id="user-name-input" placeholder="你的名字"></div>
-                    <div class="input-group"><label>角色所在地区</label><input type="text" id="role-location" placeholder="角色在哪个城市"></div>
-                    <div class="input-group"><label>你的偏好/忌口</label><input type="text" id="user-preference" placeholder="不喜欢什么话题..."></div>
-                    <div class="input-group">
-                        <label>关系 *</label>
-                        <div class="relation-selector" id="relation-selector">
-                            <span class="relation-tag" data-relation="朋友" onclick="selectRelation(this)">朋友</span>
-                            <span class="relation-tag" data-relation="同学" onclick="selectRelation(this)">同学</span>
-                            <span class="relation-tag" data-relation="老师" onclick="selectRelation(this)">老师</span>
-                            <span class="relation-tag" data-relation="哥哥" onclick="selectRelation(this)">哥哥</span>
-                            <span class="relation-tag" data-relation="弟弟" onclick="selectRelation(this)">弟弟</span>
-                            <span class="relation-tag" data-relation="姐姐" onclick="selectRelation(this)">姐姐</span>
-                            <span class="relation-tag" data-relation="暧昧对象" onclick="selectRelation(this)">暧昧对象</span>
-                            <span class="relation-tag" data-relation="crush" onclick="selectRelation(this)">crush</span>
-                            <span class="relation-tag" data-relation="老公" onclick="selectRelation(this)">老公</span>
-                            <span class="relation-tag" data-relation="老婆" onclick="selectRelation(this)">老婆</span>
-                        </div>
-                    </div>
-                    <div class="nickname-section" id="nickname-section">
-                        <div class="input-group"><label>角色对你的称呼 *</label><input type="text" id="user-nickname" placeholder="必填，角色叫你什么"></div>
-                        <div class="input-group"><label>备选称呼 1（选填）</label><input type="text" id="user-nickname2" placeholder="其他称呼方式"></div>
-                        <div class="input-group"><label>备选称呼 2（选填）</label><input type="text" id="user-nickname3" placeholder="其他称呼方式"></div>
-                    </div>
+                <div class="field">
+                    <label>口头禅</label>
+                    <input type="text" id="role-catchphrase" placeholder="角色常说的话">
                 </div>
             </div>
 
-            <div class="save-btn-container">
-                <button style="width:100%;padding:20px;background:red;color:white;font-size:20px;border:none;border-radius:14px;position:relative;z-index:999;" onclick="alert('红了！')">🔴 红色测试</button>
+            <div class="card">
+                <div class="card-title">关系设置</div>
+                <div class="field">
+                    <label>你的名字</label>
+                    <input type="text" id="user-name" placeholder="你的名字">
+                </div>
+                <div class="field">
+                    <label>角色所在地区</label>
+                    <input type="text" id="role-location" placeholder="角色在哪个城市">
+                </div>
+                <div class="field">
+                    <label>关系 *（点击选择）</label>
+                    <div class="tags" id="relation-tags">
+                        <span class="tag" data-r="朋友" onclick="pick(this)">朋友</span>
+                        <span class="tag" data-r="同学" onclick="pick(this)">同学</span>
+                        <span class="tag" data-r="老师" onclick="pick(this)">老师</span>
+                        <span class="tag" data-r="哥哥" onclick="pick(this)">哥哥</span>
+                        <span class="tag" data-r="弟弟" onclick="pick(this)">弟弟</span>
+                        <span class="tag" data-r="姐姐" onclick="pick(this)">姐姐</span>
+                        <span class="tag" data-r="暧昧对象" onclick="pick(this)">暧昧对象</span>
+                        <span class="tag" data-r="crush" onclick="pick(this)">crush</span>
+                        <span class="tag" data-r="老公" onclick="pick(this)">老公</span>
+                        <span class="tag" data-r="老婆" onclick="pick(this)">老婆</span>
+                    </div>
+                </div>
+                <div class="nickname-box" id="nick-box">
+                    <div class="field">
+                        <label>角色对你的称呼 *</label>
+                        <input type="text" id="user-nickname" placeholder="必填，角色叫你什么">
+                    </div>
+                    <div class="field">
+                        <label>备选称呼1（选填）</label>
+                        <input type="text" id="user-nickname2" placeholder="其他称呼">
+                    </div>
+                    <div class="field">
+                        <label>备选称呼2（选填）</label>
+                        <input type="text" id="user-nickname3" placeholder="其他称呼">
+                    </div>
+                </div>
             </div>
+
+            <a href="#" class="save-link" id="save-btn" onclick="save();return false;">💾 保存角色</a>
         </div>
     </div>
 
-        <script>
-        var selectedRelation = '';
-        var roleAvatarData = '';
+    <script>
+        var rel = '';
 
-        function previewRoleAvatar(event) {
-            var file = event.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('role-avatar-preview').src = e.target.result;
-                    roleAvatarData = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+        function pick(tag) {
+            var tags = document.querySelectorAll('#relation-tags .tag');
+            for (var i = 0; i < tags.length; i++) { tags[i].classList.remove('on'); }
+            tag.classList.add('on');
+            rel = tag.getAttribute('data-r');
+            document.getElementById('nick-box').classList.add('show');
         }
 
-        function selectRelation(tag) {
-            var tags = document.querySelectorAll('#relation-selector .relation-tag');
-            for (var i = 0; i < tags.length; i++) { tags[i].classList.remove('selected'); }
-            tag.classList.add('selected');
-            selectedRelation = tag.getAttribute('data-relation');
-            document.getElementById('nickname-section').classList.add('show');
-        }
-
-        function saveRole() {
+        function save() {
             var name = document.getElementById('role-name').value.trim();
             if (!name) return;
-            if (!selectedRelation) return;
-            var nickname = document.getElementById('user-nickname').value.trim();
-            if (!nickname) return;
+            if (!rel) return;
+            var nick = document.getElementById('user-nickname').value.trim();
+            if (!nick) return;
 
-            var randomPhone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
-            var randomWechat = 'wxid_' + Math.random().toString(36).substring(2, 10);
+            var phone = '1' + Math.floor(Math.random() * 9000000000 + 1000000000);
+            var wx = 'wxid_' + Math.random().toString(36).substring(2, 10);
 
             var role = {
                 id: Date.now(),
-                avatar: roleAvatarData,
+                avatar: '',
                 name: name,
                 gender: '',
                 personality: document.getElementById('role-personality').value.trim(),
-                background: document.getElementById('role-background').value.trim(),
+                background: '',
                 catchphrase: document.getElementById('role-catchphrase').value.trim(),
-                userName: document.getElementById('user-name-input').value.trim(),
+                userName: document.getElementById('user-name').value.trim(),
                 userLocation: document.getElementById('role-location').value.trim(),
-                userPreference: document.getElementById('user-preference').value.trim(),
-                relation: selectedRelation,
-                userNickname: nickname,
+                userPreference: '',
+                relation: rel,
+                userNickname: nick,
                 userNickname2: document.getElementById('user-nickname2').value.trim(),
                 userNickname3: document.getElementById('user-nickname3').value.trim(),
-                phone: randomPhone,
-                wechatId: randomWechat,
+                phone: phone,
+                wechatId: wx,
                 messages: []
             };
 
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.push(role);
             localStorage.setItem('chat_roles', JSON.stringify(roles));
+
+            document.getElementById('save-btn').innerText = '✅ 已保存！点击返回';
+            document.getElementById('save-btn').href = 'chat.html';
+            document.getElementById('save-btn').onclick = null;
             
-            // ✅ 终极跳转方案：创建隐藏链接并自动点击
-            var a = document.createElement('a');
-            a.href = 'chat.html';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            setTimeout(function() {
+                window.open('chat.html', '_self');
+            }, 500);
         }
     </script>
 </body>
