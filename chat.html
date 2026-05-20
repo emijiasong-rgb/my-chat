@@ -3,213 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Chat</title>
+    <title>对话</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --card-bg: rgba(255, 255, 255, 0.65);
-            --card-border: rgba(255, 255, 255, 0.7);
-            --blur: blur(24px);
-            --shadow-sm: 0 2px 12px rgba(0,0,0,0.04);
-            --accent: #5b6abf;
-            --accent-soft: rgba(91,106,191,0.08);
-            --text: #1c1c1e;
-            --text-tertiary: #8e8e93;
-            --bubble-user: linear-gradient(135deg, #5b6abf 0%, #8b95d6 100%);
-            --bubble-ai: rgba(255,255,255,0.6);
-            --separator: rgba(0,0,0,0.06);
+            --bg: #f5f5f5;
+            --card-bg: rgba(255,255,255,0.55);
+            --card-border: rgba(255,255,255,0.6);
+            --text: #1a1a1a;
+            --text-secondary: #888;
+            --text-tertiary: #b0b0b0;
+            --accent: #1a1a1a;
+            --separator: rgba(0,0,0,0.05);
+            --shadow: 0 1px 12px rgba(0,0,0,0.03);
+            --glass: blur(28px);
+            --bubble-user: #1a1a1a;
+            --bubble-ai: rgba(255,255,255,0.65);
         }
-
         * { margin:0; padding:0; box-sizing:border-box; }
-
         body {
-            background:#1a1a1a; height:100dvh; width:100vw;
+            background:#e8e8e8; height:100dvh; width:100vw;
             display:flex; justify-content:center; align-items:center;
-            font-family:'Noto Sans SC',-apple-system,sans-serif; overflow:hidden;
+            font-family:'Inter','Noto Sans SC',-apple-system,sans-serif; overflow:hidden;
             padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
         }
-
         #phone-shell {
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
-            background:#f2f2f7; border-radius:0; display:flex; flex-direction:column; overflow:hidden;
+            background:var(--bg); border-radius:0; display:flex; flex-direction:column; overflow:hidden;
+            position:relative;
         }
+        #main-view { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; z-index:1; }
 
-        #main-view {
-            flex:1; display:flex; flex-direction:column; overflow:hidden;
-            padding-top:env(safe-area-inset-top); background:#f2f2f7; position:relative;
+        /* 顶部 */
+        .list-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 20px 8px;
         }
-
-        .bg-ambient {
-            position:absolute; top:-60px; left:-40px; right:-40px; height:280px;
-            background:radial-gradient(ellipse at 30% 20%, rgba(139,149,214,0.1) 0%, transparent 60%),
-                       radial-gradient(ellipse at 70% 40%, rgba(180,180,200,0.06) 0%, transparent 50%);
-            pointer-events:none; z-index:0;
+        .list-header h1 {
+            font-size:32px; font-weight:700; color:var(--text);
+            letter-spacing:-1.5px;
         }
-
-        #role-list-page { position:relative; z-index:1; display:flex; flex-direction:column; height:100%; }
-
-        .chat-header {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:12px 20px; z-index:10;
-        }
-        .chat-header h1 { font-size:30px; font-weight:700; color:var(--text); letter-spacing:-1px; }
         .add-btn {
-            width:40px; height:40px; background:var(--card-bg);
-            backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
-            border:1px solid var(--card-border); color:var(--accent);
-            border-radius:50%; font-size:24px; cursor:pointer;
+            width:38px; height:38px; background:var(--card-bg);
+            backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
+            border:1px solid var(--card-border); border-radius:50%;
             display:flex; align-items:center; justify-content:center;
-            text-decoration:none; box-shadow:var(--shadow-sm);
+            font-size:22px; color:var(--text); text-decoration:none;
+            font-weight:300; box-shadow:var(--shadow); transition:all 0.2s;
         }
+        .add-btn:active { transform:scale(0.92); background:rgba(255,255,255,0.8); }
 
-        .role-list { flex:1; overflow-y:auto; padding:10px 16px; display:flex; flex-direction:column; gap:10px; }
+        /* 列表 */
+        .role-list { flex:1; overflow-y:auto; padding:8px 16px 16px; display:flex; flex-direction:column; gap:6px; }
         .role-list::-webkit-scrollbar { display:none; }
 
         .role-card {
-            background:var(--card-bg); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
-            border:1px solid var(--card-border); border-radius:18px;
-            padding:14px 16px; display:flex; align-items:center; gap:14px;
-            cursor:pointer; box-shadow:var(--shadow-sm); transition:all 0.2s;
+            background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
+            border:1px solid var(--card-border); border-radius:12px;
+            padding:14px; display:flex; align-items:center; gap:12px;
+            cursor:pointer; box-shadow:var(--shadow); transition:all 0.15s;
+            text-decoration:none;
         }
-        .role-card:active { transform:scale(0.98); background:rgba(255,255,255,0.85); }
-        .role-card-avatar { width:54px; height:54px; border-radius:50%; object-fit:cover; background:#e8e8ed; flex-shrink:0; }
-        .role-card-info { flex:1; min-width:0; }
-        .role-card-name { font-weight:600; font-size:16px; color:var(--text); }
-        .role-card-desc { font-size:13px; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .role-card-relation { font-size:11px; color:var(--accent); background:var(--accent-soft); padding:2px 10px; border-radius:10px; display:inline-block; margin-top:4px; }
+        .role-card:active { transform:scale(0.985); background:rgba(255,255,255,0.78); }
+        .role-avatar {
+            width:50px; height:50px; border-radius:50%; object-fit:cover;
+            background:#e0e0e0; flex-shrink:0; border:2px solid rgba(255,255,255,0.7);
+        }
+        .role-info { flex:1; min-width:0; }
+        .role-top { display:flex; align-items:baseline; gap:6px; margin-bottom:2px; }
+        .role-name { font-size:16px; font-weight:500; color:var(--text); letter-spacing:-0.3px; }
+        .role-relation {
+            font-size:11px; color:var(--text-tertiary); font-weight:400;
+            background:rgba(0,0,0,0.03); padding:1px 8px; border-radius:6px;
+        }
+        .role-preview { font-size:13px; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .role-time { font-size:11px; color:var(--text-tertiary); flex-shrink:0; }
 
-        .empty-role { text-align:center; padding:100px 20px; color:var(--text-tertiary); }
-        .empty-role-icon { font-size:56px; margin-bottom:12px; opacity:0.6; }
+        .empty-state { text-align:center; padding:80px 20px; }
+        .empty-icon { font-size:48px; opacity:0.4; margin-bottom:12px; }
+        .empty-text { font-size:14px; color:var(--text-tertiary); }
+        .empty-sub { font-size:12px; color:var(--text-tertiary); margin-top:4px; opacity:0.7; }
 
-        #chat-page { display:none; flex-direction:column; height:100%; z-index:1; }
+        /* ===== 聊天页 ===== */
+        #chat-page { display:none; flex-direction:column; height:100%; }
         #chat-page.active { display:flex; }
 
         .chat-nav {
             display:flex; align-items:center; padding:10px 14px;
-            background:var(--card-bg); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
+            background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
             border-bottom:1px solid var(--separator); gap:10px; z-index:10;
         }
-        .back-btn { color:var(--accent); font-size:16px; cursor:pointer; padding:4px 6px; }
-        .chat-nav-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+        .back-btn { font-size:16px; color:var(--text); cursor:pointer; text-decoration:none; font-weight:400; }
+        .chat-nav-avatar { width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.7); }
         .chat-nav-info { flex:1; }
-        .chat-nav-name { font-weight:600; font-size:15px; color:var(--text); transition:all 0.3s; }
-        .chat-nav-relation { font-size:11px; color:var(--text-tertiary); }
-        
+        .chat-nav-name { font-size:15px; font-weight:500; color:var(--text); transition:all 0.3s; }
+        .chat-nav-name.typing { color:#888; }
         .more-btn {
-            width:32px; height:32px; border:none; background:none;
-            font-size:20px; cursor:pointer; color:var(--text); padding:4px;
-            letter-spacing:1px; line-height:1;
+            width:28px; height:28px; border:none; background:none;
+            font-size:18px; cursor:pointer; color:var(--text); padding:2px;
+            letter-spacing:2px; opacity:0.6;
         }
 
         .messages-container {
             flex:1; overflow-y:auto; padding:20px 16px;
-            display:flex; flex-direction:column; gap:6px; background:transparent;
+            display:flex; flex-direction:column; gap:4px;
         }
         .messages-container::-webkit-scrollbar { display:none; }
 
         .msg-wrapper {
-            display:flex; gap:6px; max-width:80%;
-            animation:msgIn 0.3s ease; margin-bottom:4px;
+            display:flex; gap:6px; max-width:82%;
+            animation:msgIn 0.25s ease; margin-bottom:8px;
         }
-        @keyframes msgIn { from { opacity:0; transform:translateY(12px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes msgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .msg-wrapper.user { align-self:flex-end; flex-direction:row-reverse; }
         .msg-wrapper.ai { align-self:flex-start; }
 
         .msg-avatar {
-            width:28px; height:28px; border-radius:50%; object-fit:cover;
-            flex-shrink:0; margin-top:4px;
+            width:26px; height:26px; border-radius:50%; object-fit:cover;
+            flex-shrink:0; margin-top:2px; opacity:0.8;
         }
 
         .msg-bubble {
-            padding:10px 14px; border-radius:16px; font-size:15px;
-            line-height:1.5; word-break:break-word; position:relative;
+            padding:10px 13px; border-radius:14px; font-size:15px;
+            line-height:1.45; word-break:break-word; font-weight:400;
         }
         .msg-wrapper.ai .msg-bubble {
-            background:var(--bubble-ai); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-            border:1px solid rgba(255,255,255,0.5); border-top-left-radius:4px;
-            color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.04);
+            background:var(--bubble-ai); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.5); border-top-left-radius:3px;
+            color:var(--text); box-shadow:var(--shadow);
         }
         .msg-wrapper.user .msg-bubble {
-            background:var(--bubble-user); color:white;
-            border-top-right-radius:4px; box-shadow:0 2px 8px rgba(91,106,191,0.2);
+            background:var(--bubble-user); color:#fff;
+            border-top-right-radius:3px;
         }
 
-        /* ===== 三个点跳动动画 ===== */
-        .typing-dots {
-            display:inline-flex; gap:4px; padding:4px 0;
-        }
+        /* 三个点 */
+        .typing-dots { display:inline-flex; gap:3px; padding:2px 0; }
         .typing-dots span {
-            width:7px; height:7px; background:#8e8e93;
-            border-radius:50%; animation:bounce 1.4s infinite;
+            width:6px; height:6px; background:#b0b0b0; border-radius:50%;
+            animation:bounce 1.4s infinite;
         }
         .typing-dots span:nth-child(2) { animation-delay:0.2s; }
         .typing-dots span:nth-child(3) { animation-delay:0.4s; }
-
         @keyframes bounce {
-            0%, 60%, 100% { transform:translateY(0); opacity:0.3; }
-            30% { transform:translateY(-8px); opacity:1; }
+            0%,60%,100% { transform:translateY(0); opacity:0.3; }
+            30% { transform:translateY(-6px); opacity:1; }
         }
 
-        /* 导航栏正在输入 */
-        .chat-nav-name.typing-status {
-            color:var(--accent);
-        }
-
+        /* 输入区 */
         .input-area {
-            display:flex; gap:6px; padding:8px 12px 12px; align-items:center; z-index:10;
+            display:flex; gap:6px; padding:8px 12px 12px; align-items:center;
+            background:transparent; z-index:10;
         }
         .input-area input {
-            flex:1; padding:10px 16px;
-            background:var(--card-bg); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
-            border:1px solid var(--card-border); border-radius:24px;
-            font-size:15px; outline:none; color:var(--text);
+            flex:1; padding:10px 15px;
+            background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass);
+            border:1px solid var(--card-border); border-radius:22px;
+            font-size:15px; outline:none; color:var(--text); font-weight:400;
             transition:all 0.2s;
         }
-        .input-area input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,106,191,0.1); }
-        .input-area input::placeholder { color:#c7c7cc; }
-        
+        .input-area input:focus { border-color:rgba(0,0,0,0.25); box-shadow:0 0 0 3px rgba(0,0,0,0.04); }
+        .input-area input::placeholder { color:#c0c0c0; font-weight:300; }
         .send-btn {
-            width:38px; height:38px; background:var(--accent); color:white;
-            border:none; border-radius:50%; font-size:16px; cursor:pointer;
-            flex-shrink:0; transition:all 0.2s; box-shadow:0 2px 8px rgba(91,106,191,0.25);
+            width:36px; height:36px; background:var(--accent); color:#fff;
+            border:none; border-radius:50%; font-size:15px; cursor:pointer;
+            flex-shrink:0; transition:all 0.2s;
         }
-        .send-btn:active { transform:scale(0.9); }
+        .send-btn:active { transform:scale(0.9); opacity:0.8; }
     </style>
 </head>
 <body>
     <div id="phone-shell">
         <div id="main-view">
-            <div class="bg-ambient"></div>
-
+            <!-- 列表页 -->
             <div id="role-list-page">
-                <div class="chat-header">
+                <div class="list-header">
                     <h1>对话</h1>
-                    <a href="create-role.html" class="add-btn">+</a>
+                    <a href="create-role2.html" class="add-btn">+</a>
                 </div>
                 <div class="role-list" id="role-list">
-                    <div class="empty-role">
-                        <div class="empty-role-icon">💬</div>
-                        <p>还没有对话角色</p>
-                        <p style="font-size:13px;margin-top:4px;color:#c7c7cc;">点击右上角 + 创建</p>
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <div class="empty-text">还没有对话</div>
+                        <div class="empty-sub">点击 + 创建角色</div>
                     </div>
                 </div>
             </div>
 
+            <!-- 聊天页 -->
             <div id="chat-page">
                 <div class="chat-nav">
-                    <span class="back-btn" onclick="goBackToList()">〈</span>
+                    <a href="#" class="back-btn" onclick="goBackToList();return false;">←</a>
                     <img class="chat-nav-avatar" id="chat-nav-avatar" src="" alt="">
                     <div class="chat-nav-info">
                         <div class="chat-nav-name" id="chat-nav-name"></div>
-                        <div class="chat-nav-relation" id="chat-nav-relation"></div>
                     </div>
-                    <button class="more-btn" onclick="editCurrentRole()">•••</button>
+                    <button class="more-btn" onclick="editCurrentRole()">···</button>
                 </div>
                 <div class="messages-container" id="messages-container"></div>
                 <div class="input-area">
-                    <input type="text" id="chat-input" placeholder="说点什么..." onkeydown="if(event.key==='Enter')sendMsg()">
+                    <input type="text" id="chat-input" placeholder="消息..." onkeydown="if(event.key==='Enter')sendMsg()">
                     <button class="send-btn" onclick="sendMsg()">↑</button>
                 </div>
             </div>
@@ -220,9 +215,7 @@
         var currentChatRole = null;
         var currentApi = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            renderRoleList();
-        });
+        document.addEventListener('DOMContentLoaded', function() { renderRoleList(); });
 
         function getActiveApi() {
             var apis = JSON.parse(localStorage.getItem('saved_apis') || '[]');
@@ -232,51 +225,40 @@
         function renderRoleList() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             var container = document.getElementById('role-list');
-            
             if (roles.length === 0) {
-                container.innerHTML = '<div class="empty-role"><div class="empty-role-icon">💬</div><p>还没有对话角色</p><p style="font-size:13px;margin-top:4px;color:#c7c7cc;">点击右上角 + 创建</p></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">还没有对话</div><div class="empty-sub">点击 + 创建角色</div></div>';
                 return;
             }
-
             var html = '';
             for (var i = 0; i < roles.length; i++) {
-                var role = roles[i];
-                html += '<div class="role-card" onclick="openChat(' + role.id + ')">' +
-                    '<img class="role-card-avatar" src="' + (role.avatar || '') + '" alt="">' +
-                    '<div class="role-card-info"><div class="role-card-name">' + escapeHtml(role.name) + '</div>' +
-                    '<div class="role-card-desc">' + escapeHtml(role.personality || '暂无描述') + '</div>' +
-                    '<span class="role-card-relation">' + escapeHtml(role.relation) + '</span></div></div>';
+                var r = roles[i];
+                var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1].text : '';
+                html += '<div class="role-card" onclick="openChat(' + r.id + ')">' +
+                    '<img class="role-avatar" src="' + (r.avatar || '') + '" alt="">' +
+                    '<div class="role-info"><div class="role-top"><span class="role-name">' + (r.remark || r.name) + '</span><span class="role-relation">' + (r.relation || '') + '</span></div>' +
+                    '<div class="role-preview">' + (lastMsg || r.personality || '') + '</div></div></div>';
             }
             container.innerHTML = html;
         }
 
         function openChat(roleId) {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            for (var i = 0; i < roles.length; i++) {
-                if (roles[i].id === roleId) { currentChatRole = roles[i]; break; }
-            }
+            for (var i = 0; i < roles.length; i++) { if (roles[i].id === roleId) { currentChatRole = roles[i]; break; } }
             if (!currentChatRole) return;
             currentApi = getActiveApi();
-
             document.getElementById('role-list-page').style.display = 'none';
             document.getElementById('chat-page').classList.add('active');
             document.getElementById('chat-nav-avatar').src = currentChatRole.avatar || '';
-            document.getElementById('chat-nav-name').innerText = currentChatRole.name;
-            document.getElementById('chat-nav-name').classList.remove('typing-status');
-            document.getElementById('chat-nav-relation').innerText = currentChatRole.relation || '';
+            document.getElementById('chat-nav-name').innerText = currentChatRole.remark || currentChatRole.name;
             renderMessages();
         }
 
-function editCurrentRole() {
-    if (!currentChatRole) return;
-    window.location.href = 'contact-detail.html?id=' + currentChatRole.id;
-}
+        function editCurrentRole() { if (currentChatRole) window.location.href = 'contact-detail.html?id=' + currentChatRole.id; }
 
         function goBackToList() {
-            document.getElementById('role-list-page').style.display = 'flex';
+            document.getElementById('role-list-page').style.display = 'block';
             document.getElementById('chat-page').classList.remove('active');
-            currentChatRole = null; currentApi = null;
-            renderRoleList();
+            currentChatRole = null; currentApi = null; renderRoleList();
         }
 
         function renderMessages() {
@@ -299,39 +281,33 @@ function editCurrentRole() {
             var text = input.value.trim();
             if (!text || !currentChatRole) return;
             currentChatRole.messages.push({ type: 'user', text: text });
-            input.value = '';
-            updateRoleMessages();
-            renderMessages();
+            input.value = ''; updateRoleMessages(); renderMessages();
             callApiForReply(text);
         }
 
         function callApiForReply(userMsg) {
             if (!currentApi) {
-                showTypingStatus();
+                showTyping();
                 currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>' });
                 updateRoleMessages(); renderMessages();
                 setTimeout(function() {
                     currentChatRole.messages.pop();
                     var reply = generateLocalReply();
                     currentChatRole.messages.push({ type: 'ai', text: reply });
-                    updateRoleMessages(); renderMessages();
-                    hideTypingStatus();
+                    updateRoleMessages(); renderMessages(); hideTyping();
                 }, 1500);
                 return;
             }
-
-            showTypingStatus();
+            showTyping();
             currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>' });
             updateRoleMessages(); renderMessages();
 
-            var systemPrompt = buildSystemPrompt();
+            var systemPrompt = buildPrompt();
             var messages = [{ role: 'system', content: systemPrompt }];
-            var historyStart = Math.max(0, currentChatRole.messages.length - 12);
-            for (var i = historyStart; i < currentChatRole.messages.length; i++) {
-                var msg = currentChatRole.messages[i];
-                if (msg.text.indexOf('typing-dots') === -1) {
-                    messages.push({ role: msg.type === 'user' ? 'user' : 'assistant', content: msg.text });
-                }
+            var start = Math.max(0, currentChatRole.messages.length - 12);
+            for (var i = start; i < currentChatRole.messages.length; i++) {
+                var m = currentChatRole.messages[i];
+                if (m.text.indexOf('typing-dots') === -1) messages.push({ role: m.type === 'user' ? 'user' : 'assistant', content: m.text });
             }
 
             var xhr = new XMLHttpRequest();
@@ -342,74 +318,47 @@ function editCurrentRole() {
                 currentChatRole.messages.pop();
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
-                    var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '...';
-                    currentChatRole.messages.push({ type: 'ai', text: reply });
-                } else {
-                    currentChatRole.messages.push({ type: 'ai', text: '⚠️ 错误: ' + xhr.status });
-                }
-                updateRoleMessages(); renderMessages();
-                hideTypingStatus();
+                    currentChatRole.messages.push({ type: 'ai', text: data.choices && data.choices[0] ? data.choices[0].message.content : '...' });
+                } else { currentChatRole.messages.push({ type: 'ai', text: '错误 ' + xhr.status }); }
+                updateRoleMessages(); renderMessages(); hideTyping();
             };
-            xhr.onerror = function() {
-                currentChatRole.messages.pop();
-                currentChatRole.messages.push({ type: 'ai', text: '⚠️ 网络错误' });
-                updateRoleMessages(); renderMessages();
-                hideTypingStatus();
-            };
+            xhr.onerror = function() { currentChatRole.messages.pop(); currentChatRole.messages.push({ type: 'ai', text: '网络错误' }); updateRoleMessages(); renderMessages(); hideTyping(); };
             xhr.send(JSON.stringify({ model: currentApi.model, messages: messages, temperature: 0.8, max_tokens: 500 }));
         }
 
-        function showTypingStatus() {
-            var nameEl = document.getElementById('chat-nav-name');
-            if (nameEl && currentChatRole) {
-                nameEl.innerText = currentChatRole.name + ' · 正在输入中...';
-                nameEl.classList.add('typing-status');
-            }
+        function showTyping() {
+            var el = document.getElementById('chat-nav-name');
+            if (el && currentChatRole) { el.innerText = (currentChatRole.remark || currentChatRole.name) + ' · 输入中...'; el.classList.add('typing'); }
+        }
+        function hideTyping() {
+            var el = document.getElementById('chat-nav-name');
+            if (el && currentChatRole) { el.innerText = currentChatRole.remark || currentChatRole.name; el.classList.remove('typing'); }
         }
 
-        function hideTypingStatus() {
-            var nameEl = document.getElementById('chat-nav-name');
-            if (nameEl && currentChatRole) {
-                nameEl.innerText = currentChatRole.name;
-                nameEl.classList.remove('typing-status');
-            }
-        }
-
-        function buildSystemPrompt() {
+        function buildPrompt() {
             var r = currentChatRole;
-            var nickname = r.userNickname || r.userName || '用户';
-            var p = '你正在扮演一个角色。严格按照设定回复：\n\n';
-            p += '【名字】' + r.name + '\n';
-            p += '【性格】' + (r.personality || '无') + '\n';
-            p += '【背景】' + (r.background || '无') + '\n';
-            p += '【口头禅】' + (r.catchphrase || '无') + '\n';
-            p += '【关系】' + r.relation + '\n';
-            p += '【称呼用户】' + nickname + '\n';
-            if (r.userPreference) p += '【用户偏好】' + r.userPreference + '\n';
-            p += '\n要求：保持角色、符合关系、适当用口头禅、简洁自然、称呼用户"' + nickname + '"、不说"作为AI"';
+            var nick = r.userNickname || r.userName || '你';
+            var p = '扮演角色，严格按设定回复：\n';
+            p += '【名字】' + r.name + '\n【性格】' + (r.personality||'') + '\n【背景】' + (r.background||'') + '\n【口头禅】' + (r.catchphrase||'') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n';
+            if (r.userPreference) p += '【偏好】' + r.userPreference + '\n';
+            p += '要求：保持角色、自然、称呼用户"' + nick + '"';
             return p;
         }
 
         function generateLocalReply() {
             var r = currentChatRole;
-            var nickname = r.userNickname || r.userName || '你';
-            var replies = ['嗯嗯~', '哈哈', '🤔', r.catchphrase || '嗯', nickname + '！'];
+            var nick = r.userNickname || r.userName || '你';
+            var replies = ['嗯嗯', '哈哈', r.catchphrase || '嗯', nick + '～'];
             return replies[Math.floor(Math.random() * replies.length)];
         }
 
         function updateRoleMessages() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            for (var i = 0; i < roles.length; i++) {
-                if (roles[i].id === currentChatRole.id) { roles[i] = currentChatRole; break; }
-            }
+            for (var i = 0; i < roles.length; i++) { if (roles[i].id === currentChatRole.id) { roles[i] = currentChatRole; break; } }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
         }
 
-        function escapeHtml(text) {
-            var div = document.createElement('div');
-            div.innerText = text || '';
-            return div.innerHTML;
-        }
+        function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
     </script>
 </body>
 </html>
