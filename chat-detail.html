@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -56,33 +55,42 @@
             display:flex; flex-direction:column; gap:2px; background:var(--bg);
         }
         .messages-container::-webkit-scrollbar { display:none; }
-        .msg-wrapper {
-            display:flex; gap:8px; max-width:75%; margin-bottom:4px;
-            animation:msgIn 0.3s ease;
+
+        /* AI消息行：头像在左边 */
+        .msg-row-ai {
+            display:flex; flex-direction:row; gap:8px; max-width:75%;
+            margin-bottom:4px; animation:msgIn 0.3s ease;
+        }
+        /* 用户消息行：头像在右边 */
+        .msg-row-user {
+            display:flex; flex-direction:row-reverse; gap:8px; max-width:75%;
+            margin-bottom:4px; animation:msgIn 0.3s ease;
+            align-self:flex-end;
         }
         @keyframes msgIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        .msg-wrapper.user { align-self:flex-end; flex-direction:row-reverse; }
-        .msg-wrapper.ai { align-self:flex-start; }
+
         .msg-avatar {
             width:36px; height:36px; border-radius:50%; object-fit:cover;
             flex-shrink:0; background:#e0e0e0;
         }
         .msg-content { display:flex; flex-direction:column; }
-        .msg-content.user-items { align-items:flex-end; }
-        .msg-content.ai-items { align-items:flex-start; }
+        .msg-content.ai { align-items:flex-start; }
+        .msg-content.user { align-items:flex-end; }
+
         .msg-bubble {
             padding:9px 14px; border-radius:18px; font-size:15px;
             line-height:1.45; word-break:break-word;
         }
-        .msg-wrapper.ai .msg-bubble {
+        .msg-content.ai .msg-bubble {
             background:var(--bubble-ai); border:0.5px solid #e0e0e0; color:#000;
             border-top-left-radius:4px;
         }
-        .msg-wrapper.user .msg-bubble {
+        .msg-content.user .msg-bubble {
             background:var(--bubble-user); color:#000;
             border-top-right-radius:4px;
         }
         .msg-time { font-size:11px; color:var(--time-grey); margin-top:2px; padding:0 4px; }
+
         .typing-dots { display:inline-flex; gap:3px; padding:3px 0; }
         .typing-dots span {
             width:6px; height:6px; background:#b0b0b0; border-radius:50%;
@@ -160,9 +168,6 @@
         var roleId = null;
         var isOnChatPage = false;
 
-        // ✅ 用户头像：用蓝色圆圈+“我”字，和角色头像明显区分
-        var MY_AVATAR = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36"%3E%3Ccircle cx="18" cy="18" r="18" fill="%23007aff"/%3E%3Ctext x="18" y="24" text-anchor="middle" font-size="18" fill="white" font-family="sans-serif"%3E我%3C/text%3E%3C/svg%3E';
-
         function updateClock() {
             var now = new Date();
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -196,10 +201,7 @@
             document.getElementById('back-link').addEventListener('click', function(e) {
                 e.preventDefault();
                 isOnChatPage = false;
-                if (currentChatRole) {
-                    currentChatRole.unread = 0;
-                    saveRoleToStorage();
-                }
+                if (currentChatRole) { currentChatRole.unread = 0; saveRoleToStorage(); }
                 window.location.href = 'chat.html';
             });
         });
@@ -217,7 +219,7 @@
             renderMessages();
         }
 
-        function openMore() { alert('更多选项'); }
+        function openMore() { }
 
         function formatTime(ts) {
             var d = new Date(ts);
@@ -231,31 +233,30 @@
             var html = '';
             for (var i = 0; i < msgs.length; i++) {
                 var msg = msgs[i];
-                // ✅ 角色头像：用角色保存的avatar
-                var roleAvatar = msg.type === 'ai' ? (currentChatRole.avatar || '') : '';
-                // ✅ 用户头像：用蓝色“我”圆圈，和角色明显区分
-                var userAvatar = MY_AVATAR;
                 var isTyping = msg.text.indexOf('typing-dots') !== -1;
-                var content = isTyping ? msg.text : escapeHtml(msg.text);
+                var text = isTyping ? msg.text : escapeHtml(msg.text);
                 var timeStr = msg.time ? formatTime(msg.time) : '';
 
                 if (msg.type === 'ai') {
-                    // AI消息：角色头像在左
-                    html += '<div class="msg-wrapper ai">' +
-                        '<img class="msg-avatar" src="' + roleAvatar + '" alt="">' +
-                        '<div class="msg-content ai-items">' +
-                        '<div class="msg-bubble">' + content + '</div>' +
-                        (timeStr && !isTyping ? '<div class="msg-time">' + timeStr + '</div>' : '') +
-                        '</div></div>';
+                    // ===== AI消息：头像在左边 =====
+                    var roleImg = currentChatRole.avatar || '';
+                    html += '<div class="msg-row-ai">';
+                    html += '<img class="msg-avatar" src="' + roleImg + '" alt="">';
+                    html += '<div class="msg-content ai">';
+                    html += '<div class="msg-bubble">' + text + '</div>';
+                    if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
+                    html += '</div>';
+                    html += '</div>';
                 } else {
-                    // 用户消息：你的头像在右
-                    html += '<div class="msg-wrapper user">' +
-                        '<div class="msg-content user-items">' +
-                        '<div class="msg-bubble">' + content + '</div>' +
-                        (timeStr && !isTyping ? '<div class="msg-time">' + timeStr + '</div>' : '') +
-                        '</div>' +
-                        '<img class="msg-avatar" src="' + userAvatar + '" alt="">' +
-                        '</div>';
+                    // ===== 用户消息：头像在右边 =====
+                    var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
+                    html += '<div class="msg-row-user">';
+                    html += '<img class="msg-avatar" src="' + userImg + '" alt="">';
+                    html += '<div class="msg-content user">';
+                    html += '<div class="msg-bubble">' + text + '</div>';
+                    if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
+                    html += '</div>';
+                    html += '</div>';
                 }
             }
             container.innerHTML = html;
@@ -266,7 +267,6 @@
             var input = document.getElementById('chat-input');
             var text = input.value.trim();
             if (!text) return;
-
             currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
             input.value = '';
             saveRoleToStorage();
@@ -279,29 +279,21 @@
             currentChatRole.messages.push({ type: 'ai', text: '<span class="typing-dots"><span></span><span></span><span></span></span>', time: Date.now() });
             saveRoleToStorage();
             renderMessages();
-
             if (!currentApi) {
                 setTimeout(function() {
                     currentChatRole.messages.pop();
-                    var reply = generateLocalReply();
-                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
-                    if (!isOnChatPage) { currentChatRole.unread = (currentChatRole.unread || 0) + 1; }
-                    saveRoleToStorage();
-                    renderMessages();
-                    hideTyping();
+                    currentChatRole.messages.push({ type: 'ai', text: generateLocalReply(), time: Date.now() });
+                    if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                    saveRoleToStorage(); renderMessages(); hideTyping();
                 }, 1500);
                 return;
             }
-
             var apiMessages = [{ role: 'system', content: buildPrompt() }];
             var start = Math.max(0, currentChatRole.messages.length - 12);
             for (var i = start; i < currentChatRole.messages.length; i++) {
                 var m = currentChatRole.messages[i];
-                if (m.text.indexOf('typing-dots') === -1) {
-                    apiMessages.push({ role: m.type === 'user' ? 'user' : 'assistant', content: m.text });
-                }
+                if (m.text.indexOf('typing-dots') === -1) apiMessages.push({ role: m.type === 'user' ? 'user' : 'assistant', content: m.text });
             }
-
             var xhr = new XMLHttpRequest();
             xhr.open('POST', currentApi.url + '/v1/chat/completions', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
@@ -312,32 +304,22 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     reply = data.choices && data.choices[0] ? data.choices[0].message.content : '...';
-                } else { reply = '错误 ' + xhr.status; }
+                } else reply = '错误 ' + xhr.status;
                 currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
-                if (!isOnChatPage) { currentChatRole.unread = (currentChatRole.unread || 0) + 1; }
-                saveRoleToStorage();
-                renderMessages();
-                hideTyping();
+                if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                saveRoleToStorage(); renderMessages(); hideTyping();
             };
             xhr.onerror = function() {
                 currentChatRole.messages.pop();
                 currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() });
-                if (!isOnChatPage) { currentChatRole.unread = (currentChatRole.unread || 0) + 1; }
-                saveRoleToStorage();
-                renderMessages();
-                hideTyping();
+                if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                saveRoleToStorage(); renderMessages(); hideTyping();
             };
             xhr.send(JSON.stringify({ model: currentApi.model, messages: apiMessages, temperature: 0.8, max_tokens: 500 }));
         }
 
-        function showTyping() {
-            var el = document.getElementById('chat-nav-name');
-            if (el) { el.innerText = '正在输入中...'; }
-        }
-        function hideTyping() {
-            var el = document.getElementById('chat-nav-name');
-            if (el && currentChatRole) { el.innerText = currentChatRole.remark || currentChatRole.name; }
-        }
+        function showTyping() { var el = document.getElementById('chat-nav-name'); if (el) el.innerText = '正在输入中...'; }
+        function hideTyping() { var el = document.getElementById('chat-nav-name'); if (el && currentChatRole) el.innerText = currentChatRole.remark || currentChatRole.name; }
 
         function buildPrompt() {
             var r = currentChatRole;
@@ -345,27 +327,16 @@
             return '你是一个角色：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n【口头禅】' + (r.catchphrase||'无') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n' + (r.userPreference ? '【偏好】' + r.userPreference + '\n' : '') + '要求：保持角色、称呼用户"' + nick + '"';
         }
 
-        function generateLocalReply() {
-            var r = currentChatRole;
-            var nick = r.userNickname || r.userName || '你';
-            var replies = ['嗯嗯～', '哈哈', r.catchphrase || '嗯', nick + '！'];
-            return replies[Math.floor(Math.random() * replies.length)];
-        }
+        function generateLocalReply() { var r = currentChatRole; var nick = r.userNickname || r.userName || '你'; var replies = ['嗯嗯～', '哈哈', r.catchphrase || '嗯', nick + '！']; return replies[Math.floor(Math.random() * replies.length)]; }
 
         function saveRoleToStorage() {
             if (!currentChatRole) return;
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            for (var i = 0; i < roles.length; i++) {
-                if (roles[i].id === currentChatRole.id) { roles[i] = currentChatRole; break; }
-            }
+            for (var i = 0; i < roles.length; i++) { if (roles[i].id === currentChatRole.id) { roles[i] = currentChatRole; break; } }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
         }
 
-        function escapeHtml(text) {
-            var d = document.createElement('div');
-            d.innerText = text || '';
-            return d.innerHTML;
-        }
+        function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
     </script>
 </body>
 </html>
