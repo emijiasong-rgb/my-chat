@@ -28,7 +28,7 @@
         }
         #phone-shell {
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
-            background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
+            background:var(--bg); display:flex; flex-direction:column; overflow:hidden; position:relative;
         }
 
         .status-bar {
@@ -40,7 +40,6 @@
         #battery-container { display:flex; align-items:center; gap:2px; }
         #battery-percent { font-size:12px; }
 
-        /* 顶部导航 */
         .top-nav {
             display:flex; align-items:center; justify-content:center;
             padding:10px 16px; background:var(--white); position:relative;
@@ -56,8 +55,33 @@
         .top-nav .add-circle {
             position:absolute; right:16px; width:28px; height:28px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
+            z-index:100;
         }
         .top-nav .add-circle svg { width:22px; height:22px; stroke:#000; }
+
+        /* 弹出菜单 */
+        .popup-menu {
+            display:none; position:absolute; top:90px; right:10px;
+            background:var(--white); border-radius:8px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.15); z-index:200;
+            min-width:140px; overflow:hidden;
+        }
+        .popup-menu.show { display:block; }
+        .popup-menu .menu-item {
+            display:flex; align-items:center; gap:10px; padding:13px 16px;
+            font-size:15px; color:var(--text); cursor:pointer;
+            border-bottom:0.5px solid var(--separator); text-decoration:none;
+        }
+        .popup-menu .menu-item:last-child { border-bottom:none; }
+        .popup-menu .menu-item:active { background:#ececec; }
+        .popup-menu .menu-icon { font-size:16px; width:20px; text-align:center; }
+
+        /* 遮罩 */
+        .overlay {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            z-index:150;
+        }
+        .overlay.show { display:block; }
 
         /* 列表 */
         .role-list { flex:1; overflow-y:auto; background:var(--white); }
@@ -140,16 +164,29 @@
         <div class="top-nav">
             <a href="index.html" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
-            <a href="create-role2.html" class="add-circle">
+            <div class="add-circle" onclick="toggleMenu()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+        </div>
+
+        <!-- 弹出菜单 -->
+        <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+        <div class="popup-menu" id="popup-menu">
+            <a href="create-role2.html" class="menu-item">
+                <span class="menu-icon">👤</span>
+                <span>添加好友</span>
             </a>
+            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')">
+                <span class="menu-icon">👥</span>
+                <span>发起群聊</span>
+            </div>
         </div>
 
         <div class="role-list" id="role-list">
             <div class="empty-state">
                 <div class="empty-icon">💬</div>
                 <div class="empty-text">暂无消息</div>
-                <div class="empty-sub">点击右上角 + 创建角色</div>
+                <div class="empty-sub">点击右上角 + 添加好友</div>
             </div>
         </div>
 
@@ -185,6 +222,15 @@
     </div>
 
     <script>
+        function toggleMenu() {
+            document.getElementById('popup-menu').classList.toggle('show');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+        function closeMenu() {
+            document.getElementById('popup-menu').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
         function updateClock() {
             var now = new Date();
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -195,9 +241,8 @@
             if ('getBattery' in navigator) {
                 navigator.getBattery().then(function(b) {
                     var lvl = Math.round(b.level * 100);
-                    var pel = document.getElementById('battery-percent');
+                    document.getElementById('battery-percent').textContent = lvl + '%';
                     var lel = document.getElementById('battery-level');
-                    if (pel) pel.textContent = lvl + '%';
                     if (lel) { lel.setAttribute('width', Math.round((lvl/100)*18)); lel.setAttribute('fill', lvl <= 20 ? '#ff3b30' : 'currentColor'); }
                 });
             }
@@ -207,7 +252,7 @@
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             var container = document.getElementById('role-list');
             if (roles.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 创建角色</div></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>';
                 return;
             }
             var html = '';
