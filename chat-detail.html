@@ -55,20 +55,16 @@
             display:flex; flex-direction:column; gap:2px; background:var(--bg);
         }
         .messages-container::-webkit-scrollbar { display:none; }
-
-        /* AI消息行：头像在左边 */
         .msg-row-ai {
             display:flex; flex-direction:row; gap:8px; max-width:75%;
             margin-bottom:4px; animation:msgIn 0.3s ease;
         }
-        /* 用户消息行：头像在右边 */
         .msg-row-user {
             display:flex; flex-direction:row-reverse; gap:8px; max-width:75%;
             margin-bottom:4px; animation:msgIn 0.3s ease;
             align-self:flex-end;
         }
         @keyframes msgIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-
         .msg-avatar {
             width:36px; height:36px; border-radius:50%; object-fit:cover;
             flex-shrink:0; background:#e0e0e0;
@@ -76,7 +72,6 @@
         .msg-content { display:flex; flex-direction:column; }
         .msg-content.ai { align-items:flex-start; }
         .msg-content.user { align-items:flex-end; }
-
         .msg-bubble {
             padding:9px 14px; border-radius:18px; font-size:15px;
             line-height:1.45; word-break:break-word;
@@ -90,7 +85,6 @@
             border-top-right-radius:4px;
         }
         .msg-time { font-size:11px; color:var(--time-grey); margin-top:2px; padding:0 4px; }
-
         .typing-dots { display:inline-flex; gap:3px; padding:3px 0; }
         .typing-dots span {
             width:6px; height:6px; background:#b0b0b0; border-radius:50%;
@@ -238,25 +232,21 @@
                 var timeStr = msg.time ? formatTime(msg.time) : '';
 
                 if (msg.type === 'ai') {
-                    // ===== AI消息：头像在左边 =====
                     var roleImg = currentChatRole.avatar || '';
                     html += '<div class="msg-row-ai">';
                     html += '<img class="msg-avatar" src="' + roleImg + '" alt="">';
                     html += '<div class="msg-content ai">';
                     html += '<div class="msg-bubble">' + text + '</div>';
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
-                    html += '</div>';
-                    html += '</div>';
+                    html += '</div></div>';
                 } else {
-                    // ===== 用户消息：头像在右边 =====
                     var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
                     html += '<div class="msg-row-user">';
                     html += '<img class="msg-avatar" src="' + userImg + '" alt="">';
                     html += '<div class="msg-content user">';
                     html += '<div class="msg-bubble">' + text + '</div>';
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
-                    html += '</div>';
-                    html += '</div>';
+                    html += '</div></div>';
                 }
             }
             container.innerHTML = html;
@@ -300,12 +290,18 @@
             xhr.setRequestHeader('Authorization', 'Bearer ' + currentApi.key);
             xhr.onload = function() {
                 currentChatRole.messages.pop();
-                var reply = '...';
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
-                    reply = data.choices && data.choices[0] ? data.choices[0].message.content : '...';
-                } else reply = '错误 ' + xhr.status;
-                currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                    var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '无回复';
+                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                } else {
+                    var errMsg = '错误 ' + xhr.status;
+                    try {
+                        var errData = JSON.parse(xhr.responseText);
+                        if (errData.error && errData.error.message) errMsg = errData.error.message;
+                    } catch(e) {}
+                    currentChatRole.messages.push({ type: 'ai', text: errMsg, time: Date.now() });
+                }
                 if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                 saveRoleToStorage(); renderMessages(); hideTyping();
             };
