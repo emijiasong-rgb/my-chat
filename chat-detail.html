@@ -278,22 +278,38 @@
                 }, 1500);
                 return;
             }
+
+            // ✅ 尝试多个路径
+            var apiUrl = currentApi.url + '/v1/chat/completions';
+            
             var apiMessages = [{ role: 'system', content: buildPrompt() }];
             var start = Math.max(0, currentChatRole.messages.length - 12);
             for (var i = start; i < currentChatRole.messages.length; i++) {
                 var m = currentChatRole.messages[i];
                 if (m.text.indexOf('typing-dots') === -1) apiMessages.push({ role: m.type === 'user' ? 'user' : 'assistant', content: m.text });
             }
+
+            // 先试 v1 路径
+            tryRequest(apiUrl, apiMessages, 0);
+        }
+
+        function tryRequest(url, messages, retryCount) {
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', currentApi.url + '/v1/chat/completions', true);
+            xhr.open('POST', url, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader('Authorization', 'Bearer ' + currentApi.key);
+            
             xhr.onload = function() {
                 currentChatRole.messages.pop();
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '无回复';
                     currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                } else if (retryCount === 0) {
+                    // 第一次失败，尝试不带 /v1 的路径
+                    var altUrl = currentApi.url + '/chat/completions';
+                    tryRequest(altUrl, messages, 1);
+                    return;
                 } else {
                     var errMsg = '错误 ' + xhr.status;
                     try {
@@ -305,13 +321,21 @@
                 if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                 saveRoleToStorage(); renderMessages(); hideTyping();
             };
+            
             xhr.onerror = function() {
-                currentChatRole.messages.pop();
-                currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() });
-                if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
-                saveRoleToStorage(); renderMessages(); hideTyping();
+                if (retryCount === 0) {
+                    // 网络错误，尝试不带 /v1 的路径
+                    var altUrl = currentApi.url + '/chat/completions';
+                    tryRequest(altUrl, messages, 1);
+                } else {
+                    currentChatRole.messages.pop();
+                    currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() });
+                    if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                    saveRoleToStorage(); renderMessages(); hideTyping();
+                }
             };
-            xhr.send(JSON.stringify({ model: currentApi.model, messages: apiMessages, temperature: 0.8, max_tokens: 500 }));
+            
+            xhr.send(JSON.stringify({ model: currentApi.model, messages: messages, temperature: 0.8, max_tokens: 500 }));
         }
 
         function showTyping() { var el = document.getElementById('chat-nav-name'); if (el) el.innerText = '正在输入中...'; }
