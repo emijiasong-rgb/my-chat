@@ -84,6 +84,22 @@
             background:var(--bubble-user); color:#000;
             border-top-right-radius:4px;
         }
+        .msg-content.user.blocked .msg-bubble {
+            position:relative;
+        }
+        .msg-content.user.blocked .msg-bubble::after {
+            content:"!"; position:absolute; right:-8px; top:-8px;
+            width:18px; height:18px; background:#ff3b30; color:#fff;
+            border-radius:50%; font-size:11px; font-weight:700;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .blocked-notice {
+            font-size:11px; color:#ff3b30; text-align:right; margin-top:2px;
+        }
+        .msg-translation {
+            font-size:12px; color:#888; margin-top:4px; padding:6px 10px;
+            background:rgba(0,0,0,0.03); border-radius:8px; font-style:italic;
+        }
         .msg-time { font-size:11px; color:var(--time-grey); margin-top:2px; padding:0 4px; }
         .typing-dots { display:inline-flex; gap:3px; padding:3px 0; }
         .typing-dots span {
@@ -213,7 +229,11 @@
             renderMessages();
         }
 
-        function openMore() { }
+        function openMore() {
+            if (currentChatRole) {
+                window.location.href = 'chat-settings.html?id=' + currentChatRole.id;
+            }
+        }
 
         function formatTime(ts) {
             var d = new Date(ts);
@@ -225,6 +245,10 @@
             var msgs = currentChatRole.messages || [];
             if (msgs.length === 0) { container.innerHTML = ''; return; }
             var html = '';
+            var isBlocked = currentChatRole.blocked;
+            var lang = currentChatRole.language || '中文';
+            var translate = currentChatRole.translate;
+
             for (var i = 0; i < msgs.length; i++) {
                 var msg = msgs[i];
                 var isTyping = msg.text.indexOf('typing-dots') !== -1;
@@ -237,14 +261,22 @@
                     html += '<img class="msg-avatar" src="' + roleImg + '" alt="">';
                     html += '<div class="msg-content ai">';
                     html += '<div class="msg-bubble">' + text + '</div>';
+                    // 翻译
+                    if (lang !== '中文' && translate && !isTyping && msg.originalText) {
+                        html += '<div class="msg-translation">' + escapeHtml(msg.originalText) + '</div>';
+                    }
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 } else {
                     var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
+                    var blockedClass = isBlocked ? ' blocked' : '';
                     html += '<div class="msg-row-user">';
                     html += '<img class="msg-avatar" src="' + userImg + '" alt="">';
-                    html += '<div class="msg-content user">';
+                    html += '<div class="msg-content user' + blockedClass + '">';
                     html += '<div class="msg-bubble">' + text + '</div>';
+                    if (isBlocked) {
+                        html += '<div class="blocked-notice">已被对方拉黑，无法发送消息</div>';
+                    }
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 }
@@ -254,6 +286,10 @@
         }
 
         function sendMsg() {
+            if (currentChatRole.blocked) {
+                alert('你已被对方拉黑，无法发送消息');
+                return;
+            }
             var input = document.getElementById('chat-input');
             var text = input.value.trim();
             if (!text) return;
@@ -272,24 +308,23 @@
             if (!currentApi) {
                 setTimeout(function() {
                     currentChatRole.messages.pop();
-                    currentChatRole.messages.push({ type: 'ai', text: generateLocalReply(), time: Date.now() });
-                    if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                    var reply = generateLocalReply();
+                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                    if (!isOnChatPage && !currentChatRole.muted) {
+                        currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                    }
                     saveRoleToStorage(); renderMessages(); hideTyping();
                 }, 1500);
                 return;
             }
 
-            // ✅ 尝试多个路径
             var apiUrl = currentApi.url + '/v1/chat/completions';
-            
             var apiMessages = [{ role: 'system', content: buildPrompt() }];
             var start = Math.max(0, currentChatRole.messages.length - 12);
             for (var i = start; i < currentChatRole.messages.length; i++) {
                 var m = currentChatRole.messages[i];
                 if (m.text.indexOf('typing-dots') === -1) apiMessages.push({ role: m.type === 'user' ? 'user' : 'assistant', content: m.text });
             }
-
-            // 先试 v1 路径
             tryRequest(apiUrl, apiMessages, 0);
         }
 
@@ -298,44 +333,55 @@
             xhr.open('POST', url, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader('Authorization', 'Bearer ' + currentApi.key);
-            
             xhr.onload = function() {
                 currentChatRole.messages.pop();
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '无回复';
-                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                    // 翻译处理
+                    var lang = currentChatRole.language || '中文';
+                    if (lang !== '中文' && currentChatRole.translate) {
+                        currentChatRole.messages.push({ type: 'ai', text: reply, originalText: reply, time: Date.now() });
+                    } else {
+                        currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                    }
                 } else if (retryCount === 0) {
-                    // 第一次失败，尝试不带 /v1 的路径
-                    var altUrl = currentApi.url + '/chat/completions';
-                    tryRequest(altUrl, messages, 1);
+                    tryRequest(currentApi.url + '/chat/completions', messages, 1);
                     return;
                 } else {
-                    var errMsg = '错误 ' + xhr.status;
-                    try {
-                        var errData = JSON.parse(xhr.responseText);
-                        if (errData.error && errData.error.message) errMsg = errData.error.message;
-                    } catch(e) {}
-                    currentChatRole.messages.push({ type: 'ai', text: errMsg, time: Date.now() });
+                    currentChatRole.messages.push({ type: 'ai', text: '错误 ' + xhr.status, time: Date.now() });
                 }
-                if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                if (!isOnChatPage && !currentChatRole.muted) {
+                    currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                    showNotification();
+                }
                 saveRoleToStorage(); renderMessages(); hideTyping();
             };
-            
             xhr.onerror = function() {
-                if (retryCount === 0) {
-                    // 网络错误，尝试不带 /v1 的路径
-                    var altUrl = currentApi.url + '/chat/completions';
-                    tryRequest(altUrl, messages, 1);
-                } else {
-                    currentChatRole.messages.pop();
-                    currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() });
-                    if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
-                    saveRoleToStorage(); renderMessages(); hideTyping();
+                if (retryCount === 0) { tryRequest(currentApi.url + '/chat/completions', messages, 1); return; }
+                currentChatRole.messages.pop();
+                currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() });
+                if (!isOnChatPage && !currentChatRole.muted) {
+                    currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                 }
+                saveRoleToStorage(); renderMessages(); hideTyping();
             };
-            
             xhr.send(JSON.stringify({ model: currentApi.model, messages: messages, temperature: 0.8, max_tokens: 500 }));
+        }
+
+        function showNotification() {
+            if (!currentChatRole || currentChatRole.muted) return;
+            if ('Notification' in window && Notification.permission === 'granted') {
+                var lastMsg = currentChatRole.messages[currentChatRole.messages.length - 1];
+                new Notification(currentChatRole.remark || currentChatRole.name, {
+                    body: lastMsg.text,
+                    icon: currentChatRole.avatar || ''
+                });
+            }
+        }
+
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
 
         function showTyping() { var el = document.getElementById('chat-nav-name'); if (el) el.innerText = '正在输入中...'; }
@@ -344,7 +390,12 @@
         function buildPrompt() {
             var r = currentChatRole;
             var nick = r.userNickname || r.userName || '你';
-            return '你是一个角色：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n【口头禅】' + (r.catchphrase||'无') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n' + (r.userPreference ? '【偏好】' + r.userPreference + '\n' : '') + '要求：保持角色、称呼用户"' + nick + '"';
+            var lang = r.language || '中文';
+            var p = '你是一个角色：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n【口头禅】' + (r.catchphrase||'无') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n';
+            if (r.userPreference) p += '【偏好】' + r.userPreference + '\n';
+            if (lang !== '中文') p += '【回复语言】请用' + lang + '回复\n';
+            p += '要求：保持角色、称呼用户"' + nick + '"';
+            return p;
         }
 
         function generateLocalReply() { var r = currentChatRole; var nick = r.userNickname || r.userName || '你'; var replies = ['嗯嗯～', '哈哈', r.catchphrase || '嗯', nick + '！']; return replies[Math.floor(Math.random() * replies.length)]; }
