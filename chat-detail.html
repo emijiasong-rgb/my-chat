@@ -32,24 +32,26 @@
         .status-icons { display:flex; align-items:center; gap:5px; }
         #battery-container { display:flex; align-items:center; gap:2px; }
         #battery-percent { font-size:12px; }
-        .chat-nav {
-            display:flex; align-items:center; padding:8px 12px;
-            background:var(--bg); border-bottom:0.5px solid var(--separator);
-            position:relative; height:44px;
+
+        /* 顶部导航 - 和联系人列表统一 */
+        .top-nav {
+            display:flex; align-items:center; justify-content:center;
+            padding:10px 16px; background:var(--bg); position:relative;
+            border-bottom:0.5px solid var(--separator);
         }
-        .back-arrow {
-            font-size:18px; color:#000; cursor:pointer; text-decoration:none;
-            padding:6px 4px; font-weight:400; z-index:1;
+        .top-nav .back-arrow {
+            position:absolute; left:16px; font-size:18px; color:#000;
+            cursor:pointer; text-decoration:none; padding:4px; z-index:1;
         }
-        .chat-nav-name {
-            font-size:17px; font-weight:600; color:#000;
-            position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap;
+        .nav-title {
+            font-size:17px; font-weight:700; color:#000;
         }
         .three-dots {
-            width:28px; height:28px; border:none; background:none;
-            font-size:18px; cursor:pointer; opacity:0.6; padding:0;
-            letter-spacing:2px; color:#000; margin-left:auto; z-index:1;
+            position:absolute; right:16px; width:28px; height:28px;
+            border:none; background:none; font-size:18px; cursor:pointer;
+            opacity:0.6; padding:4px; letter-spacing:2px; color:#000; z-index:1;
         }
+
         .messages-container {
             flex:1; overflow-y:auto; padding:12px 12px;
             display:flex; flex-direction:column; gap:2px; background:var(--bg);
@@ -84,14 +86,6 @@
             background:var(--bubble-user); color:#000;
             border-top-right-radius:4px;
         }
-        .msg-content.user.blocked .msg-bubble::after {
-            content:"!"; position:absolute; right:-8px; top:-8px;
-            width:18px; height:18px; background:#ff3b30; color:#fff;
-            border-radius:50%; font-size:11px; font-weight:700;
-            display:flex; align-items:center; justify-content:center;
-        }
-        .blocked-notice { font-size:11px; color:#ff3b30; text-align:right; margin-top:2px; }
-        .msg-translation { font-size:12px; color:#888; margin-top:4px; padding:6px 10px; background:rgba(0,0,0,0.03); border-radius:8px; font-style:italic; }
         .msg-time { font-size:11px; color:var(--time-grey); margin-top:2px; padding:0 4px; }
         .typing-dots { display:inline-flex; gap:3px; padding:3px 0; }
         .typing-dots span { width:6px; height:6px; background:#b0b0b0; border-radius:50%; animation:bounce 1.2s infinite; }
@@ -105,21 +99,6 @@
         .input-area input:focus { border-color:var(--green); }
         .input-area input::placeholder { color:#b0b0b0; }
         .plus-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; color:#000; opacity:0.6; }
-
-        .in-app-notification {
-            position:fixed; top:-80px; left:50%; transform:translateX(-50%);
-            width:90%; max-width:400px; background:rgba(255,255,255,0.95);
-            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-            border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:12px;
-            box-shadow:0 8px 32px rgba(0,0,0,0.2); z-index:3000;
-            transition:top 0.4s cubic-bezier(0.16,1,0.3,1); cursor:pointer;
-        }
-        .in-app-notification.show { top:20px; }
-        .in-app-notification .notif-avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#e0e0e0; }
-        .in-app-notification .notif-info { flex:1; min-width:0; }
-        .in-app-notification .notif-name { font-size:15px; font-weight:600; color:#000; }
-        .in-app-notification .notif-preview { font-size:13px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
-        .notif-badge { position:absolute; top:-6px; left:-6px; min-width:20px; height:20px; background:#ff3b30; color:#fff; border-radius:10px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 5px; border:2px solid #fff; }
     </style>
 </head>
 <body>
@@ -144,9 +123,9 @@
             </div>
         </div>
 
-        <div class="chat-nav">
+        <div class="top-nav">
             <a href="chat.html" class="back-arrow" id="back-link">←</a>
-            <span class="chat-nav-name" id="chat-nav-name"></span>
+            <span class="nav-title" id="chat-nav-name"></span>
             <button class="three-dots" onclick="openMore()">···</button>
         </div>
 
@@ -171,7 +150,6 @@
         var currentApi = null;
         var roleId = null;
         var isOnChatPage = false;
-        var notificationTimer = null;
 
         function updateClock() {
             var now = new Date();
@@ -199,7 +177,7 @@
             updateClock(); updateBattery();
             var params = new URLSearchParams(window.location.search);
             roleId = parseInt(params.get('id'));
-            if (!roleId) { setTimeout(function() { window.location.href = 'chat.html'; }, 300); return; }
+            if (!roleId) { window.location.href = 'chat.html'; return; }
             loadRole();
             isOnChatPage = true;
 
@@ -216,7 +194,7 @@
             for (var i = 0; i < roles.length; i++) {
                 if (roles[i].id === roleId) { currentChatRole = roles[i]; break; }
             }
-            if (!currentChatRole) { setTimeout(function() { window.location.href = 'chat.html'; }, 300); return; }
+            if (!currentChatRole) { window.location.href = 'chat.html'; return; }
             currentChatRole.unread = 0;
             saveRoleToStorage();
             currentApi = getActiveApi();
@@ -238,10 +216,6 @@
             var msgs = currentChatRole ? (currentChatRole.messages || []) : [];
             if (msgs.length === 0) { container.innerHTML = ''; return; }
             var html = '';
-            var isBlocked = currentChatRole.blocked;
-            var lang = currentChatRole.language || '中文';
-            var translate = currentChatRole.translate;
-
             for (var i = 0; i < msgs.length; i++) {
                 var msg = msgs[i];
                 var isTyping = msg.text.indexOf('typing-dots') !== -1;
@@ -251,14 +225,11 @@
                 if (msg.type === 'ai') {
                     var roleImg = currentChatRole.avatar || '';
                     html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble">' + text + '</div>';
-                    if (lang !== '中文' && translate && !isTyping && msg.originalText) html += '<div class="msg-translation">' + escapeHtml(msg.originalText) + '</div>';
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 } else {
                     var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
-                    var blockedClass = isBlocked ? ' blocked' : '';
-                    html += '<div class="msg-row-user"><img class="msg-avatar" src="' + userImg + '" alt=""><div class="msg-content user' + blockedClass + '"><div class="msg-bubble">' + text + '</div>';
-                    if (isBlocked) html += '<div class="blocked-notice">已被对方拉黑，无法发送消息</div>';
+                    html += '<div class="msg-row-user"><img class="msg-avatar" src="' + userImg + '" alt=""><div class="msg-content user"><div class="msg-bubble">' + text + '</div>';
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 }
@@ -269,7 +240,6 @@
 
         function sendMsg() {
             if (!currentChatRole) return;
-            if (currentChatRole.blocked) { alert('你已被对方拉黑，无法发送消息'); return; }
             var input = document.getElementById('chat-input');
             var text = input.value.trim();
             if (!text) return;
@@ -288,7 +258,7 @@
                 setTimeout(function() {
                     currentChatRole.messages.pop();
                     currentChatRole.messages.push({ type: 'ai', text: generateLocalReply(), time: Date.now() });
-                    if (!isOnChatPage && !currentChatRole.muted) { currentChatRole.unread = (currentChatRole.unread || 0) + 1; showInAppNotification(); }
+                    if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                     saveRoleToStorage(); renderMessages(); hideTyping();
                 }, 1500);
                 return;
@@ -313,17 +283,13 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '无回复';
-                    if (currentChatRole.language !== '中文' && currentChatRole.translate) {
-                        currentChatRole.messages.push({ type: 'ai', text: reply, originalText: reply, time: Date.now() });
-                    } else {
-                        currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
-                    }
+                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
                 } else if (retryCount === 0) {
                     tryRequest(currentApi.url + '/chat/completions', messages, 1); return;
                 } else {
                     currentChatRole.messages.push({ type: 'ai', text: '错误 ' + xhr.status, time: Date.now() });
                 }
-                if (!isOnChatPage && !currentChatRole.muted) { currentChatRole.unread = (currentChatRole.unread || 0) + 1; showInAppNotification(); }
+                if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                 saveRoleToStorage(); renderMessages(); hideTyping();
             };
             xhr.onerror = function() {
@@ -331,27 +297,10 @@
                 if (retryCount === 0) { tryRequest(currentApi.url + '/chat/completions', messages, 1); return; }
                 currentChatRole.messages.pop();
                 currentChatRole.messages.push({ type: 'ai', text: '网络错误', time: Date.now() });
-                if (!isOnChatPage && !currentChatRole.muted) { currentChatRole.unread = (currentChatRole.unread || 0) + 1; showInAppNotification(); }
+                if (!isOnChatPage) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                 saveRoleToStorage(); renderMessages(); hideTyping();
             };
             xhr.send(JSON.stringify({ model: currentApi.model, messages: messages, temperature: 0.8, max_tokens: 500 }));
-        }
-
-        function showInAppNotification() {
-            if (!currentChatRole || currentChatRole.muted) return;
-            var existing = document.getElementById('in-app-notif');
-            if (existing) existing.remove();
-            if (notificationTimer) clearTimeout(notificationTimer);
-            var lastMsg = currentChatRole.messages[currentChatRole.messages.length - 1];
-            var unread = currentChatRole.unread || 1;
-            var notif = document.createElement('div');
-            notif.id = 'in-app-notif';
-            notif.className = 'in-app-notification';
-            notif.innerHTML = '<div style="position:relative;flex-shrink:0;"><img class="notif-avatar" src="' + (currentChatRole.avatar || '') + '" alt="">' + (unread > 1 ? '<div class="notif-badge">' + unread + '</div>' : '') + '</div><div class="notif-info"><div class="notif-name">' + escapeHtml(currentChatRole.remark || currentChatRole.name) + '</div><div class="notif-preview">' + escapeHtml(lastMsg ? lastMsg.text : '') + '</div></div>';
-            notif.onclick = function() { notif.classList.remove('show'); setTimeout(function() { notif.remove(); }, 400); window.location.href = 'chat-detail.html?id=' + currentChatRole.id; };
-            document.body.appendChild(notif);
-            setTimeout(function() { notif.classList.add('show'); }, 50);
-            notificationTimer = setTimeout(function() { notif.classList.remove('show'); setTimeout(function() { if (notif.parentNode) notif.remove(); }, 400); }, 4000);
         }
 
         function showTyping() { var el = document.getElementById('chat-nav-name'); if (el) el.innerText = '正在输入中...'; }
@@ -360,11 +309,7 @@
         function buildPrompt() {
             var r = currentChatRole;
             var nick = r.userNickname || r.userName || '你';
-            var lang = r.language || '中文';
-            var p = '你是一个角色：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n【口头禅】' + (r.catchphrase||'无') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n';
-            if (r.userPreference) p += '【偏好】' + r.userPreference + '\n';
-            if (lang !== '中文') p += '【回复语言】请用' + lang + '回复\n';
-            return p + '要求：保持角色、称呼用户"' + nick + '"';
+            return '你是一个角色：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n【口头禅】' + (r.catchphrase||'无') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n' + (r.userPreference ? '【偏好】' + r.userPreference + '\n' : '') + '要求：保持角色、称呼用户"' + nick + '"';
         }
 
         function generateLocalReply() { var r = currentChatRole; var nick = r.userNickname || r.userName || '你'; var replies = ['嗯嗯～', '哈哈', r.catchphrase || '嗯', nick + '！']; return replies[Math.floor(Math.random() * replies.length)]; }
