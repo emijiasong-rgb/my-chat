@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>锁屏</title>
+    <style>
+        :root {
+            --cream: #FDF8F2;
+            --card-bg: rgba(255,255,255,0.85);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            background:#1a1a1a; height:100dvh; width:100vw;
+            display:flex; justify-content:center; align-items:center;
+            font-family:-apple-system,sans-serif; overflow:hidden;
+            padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+        }
+        #phone-shell {
+            width:100vw; max-width:430px; height:100dvh; max-height:932px;
+            background:linear-gradient(145deg, #FDF8F2, #F5E6D3);
+            display:flex; flex-direction:column; overflow:hidden; position:relative;
+            transition:transform 0.4s, opacity 0.4s;
+        }
+
+        .lock-time { font-size:56px; font-weight:300; text-align:center; margin-top:80px; color:#000; }
+        .lock-date { font-size:16px; text-align:center; color:#666; margin-top:4px; }
+
+        .lock-messages { flex:1; margin-top:40px; padding:0 16px; overflow-y:auto; }
+        .lock-messages::-webkit-scrollbar { display:none; }
+
+        .lock-msg-card {
+            background:var(--card-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border-radius:16px; padding:12px 14px; margin-bottom:8px;
+            display:flex; align-items:center; gap:12px; cursor:pointer;
+            transition:transform 0.15s;
+        }
+        .lock-msg-card:active { transform:scale(0.98); }
+        .lock-msg-icon {
+            width:40px; height:40px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:18px;
+        }
+        .lock-msg-icon.chat { background:#E8F5E9; }
+        .lock-msg-icon.daily { background:#F3E5F5; }
+        .lock-msg-info { flex:1; }
+        .lock-msg-name { font-size:14px; font-weight:600; }
+        .lock-msg-preview { font-size:12px; color:#888; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .lock-msg-time { font-size:11px; color:#b0b0b0; flex-shrink:0; }
+
+        .swipe-hint {
+            position:absolute; bottom:100px; left:50%; transform:translateX(-50%);
+            color:#999; font-size:13px; text-align:center; animation:floatUp 2s infinite;
+        }
+        @keyframes floatUp {
+            0%,100% { opacity:0.5; transform:translateX(-50%) translateY(0); }
+            50% { opacity:1; transform:translateX(-50%) translateY(-8px); }
+        }
+
+        .lock-settings-btn {
+            position:absolute; bottom:40px; right:20px;
+            width:44px; height:44px; border-radius:50%;
+            background:rgba(255,255,255,0.7); backdrop-filter:blur(10px);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:20px; border:1px solid rgba(0,0,0,0.08);
+        }
+
+        /* 壁纸弹窗 */
+        .modal-overlay {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-card {
+            background:#fff; border-radius:20px; padding:20px; width:85%; max-width:340px;
+        }
+        .modal-card h3 { text-align:center; margin-bottom:16px; font-size:17px; }
+        .wall-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+        .wall-item {
+            height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent; transition:all 0.2s;
+        }
+        .wall-item.selected { border-color:#000; }
+        .modal-close-btn {
+            width:100%; margin-top:16px; padding:12px; border-radius:12px;
+            border:none; background:#eee; font-size:15px; cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="phone-shell" id="lock-screen">
+        <div class="lock-time" id="lock-time">09:41</div>
+        <div class="lock-date" id="lock-date">6月10日 星期二</div>
+        <div class="lock-messages" id="lock-messages"></div>
+        <div class="swipe-hint" onclick="goToHome()">从下往上滑</div>
+        <div class="lock-settings-btn" onclick="openWallpaperModal()">🎨</div>
+    </div>
+
+    <div class="modal-overlay" id="wallpaper-modal">
+        <div class="modal-card">
+            <h3>选择壁纸</h3>
+            <div class="wall-grid" id="wall-grid"></div>
+            <button class="modal-close-btn" onclick="closeWallpaperModal()">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        var wallpapers = [
+            { name:'奶油渐变', css:'linear-gradient(145deg, #FDF8F2, #F5E6D3)' },
+            { name:'淡紫梦境', css:'linear-gradient(135deg, #E8DFF5, #D4C5F0)' },
+            { name:'粉红泡泡', css:'linear-gradient(135deg, #FFE4E6, #FCCCD2)' },
+            { name:'森林浴', css:'linear-gradient(135deg, #D8E8D8, #B5D1B5)' },
+            { name:'海盐芝士', css:'linear-gradient(135deg, #E0EAF5, #C5D5E8)' },
+            { name:'落日余晖', css:'linear-gradient(135deg, #FFE0C0, #FFCCA0)' }
+        ];
+
+        function updateClock() {
+            var now = new Date();
+            document.getElementById('lock-time').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+            var weekDays = ['日','一','二','三','四','五','六'];
+            document.getElementById('lock-date').innerText = (now.getMonth()+1) + '月' + now.getDate() + '日 星期' + weekDays[now.getDay()];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function loadLockMessages() {
+            var container = document.getElementById('lock-messages');
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            var html = '';
+            for (var i = 0; i < Math.min(roles.length, 5); i++) {
+                var r = roles[i];
+                if (r.muted) continue;
+                var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1] : null;
+                if (!lastMsg || lastMsg.type !== 'ai') continue;
+                html += '<div class="lock-msg-card" onclick="goToChat(' + r.id + ')">' +
+                    '<div class="lock-msg-icon chat">💬</div>' +
+                    '<div class="lock-msg-info"><div class="lock-msg-name">' + escapeHtml(r.remark || r.name) + '</div>' +
+                    '<div class="lock-msg-preview">' + escapeHtml(lastMsg.text.substring(0,30)) + '</div></div>' +
+                    '<div class="lock-msg-time">' + formatTime(lastMsg.time || r.id) + '</div></div>';
+            }
+            container.innerHTML = html || '<div style="text-align:center;color:#999;margin-top:40px;">暂无新消息</div>';
+        }
+
+        function goToChat(id) {
+            window.location.href = 'chat-detail.html?id=' + id;
+        }
+
+        var startY = 0;
+        document.getElementById('phone-shell').addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; });
+        document.getElementById('phone-shell').addEventListener('touchend', function(e) {
+            if (startY - e.changedTouches[0].clientY > 80) goToHome();
+        });
+
+        function goToHome() {
+            document.getElementById('phone-shell').style.transform = 'translateY(-100%)';
+            document.getElementById('phone-shell').style.opacity = '0';
+            setTimeout(function() { window.location.href = 'index.html'; }, 400);
+        }
+
+        function openWallpaperModal() {
+            var grid = document.getElementById('wall-grid');
+            var currentBg = localStorage.getItem('lockWallpaper') || wallpapers[0].css;
+            var html = '';
+            for (var i = 0; i < wallpapers.length; i++) {
+                html += '<div class="wall-item' + (wallpapers[i].css === currentBg ? ' selected' : '') + '" style="background:' + wallpapers[i].css + '" onclick="setWallpaper(\'' + wallpapers[i].css + '\')"></div>';
+            }
+            grid.innerHTML = html;
+            document.getElementById('wallpaper-modal').classList.add('active');
+        }
+
+        function setWallpaper(css) {
+            localStorage.setItem('lockWallpaper', css);
+            document.getElementById('phone-shell').style.background = css;
+            closeWallpaperModal();
+        }
+
+        function closeWallpaperModal() {
+            document.getElementById('wallpaper-modal').classList.remove('active');
+        }
+
+        (function() {
+            var saved = localStorage.getItem('lockWallpaper');
+            if (saved) document.getElementById('phone-shell').style.background = saved;
+            loadLockMessages();
+        })();
+
+        function formatTime(ts) {
+            var d = new Date(ts), now = new Date();
+            var h = String(d.getHours()).padStart(2,'0'), m = String(d.getMinutes()).padStart(2,'0');
+            if (d.toDateString() === now.toDateString()) return h + ':' + m;
+            return String(d.getMonth()+1) + '/' + String(d.getDate());
+        }
+
+        function escapeHtml(text) {
+            var d = document.createElement('div');
+            d.innerText = text || '';
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>
