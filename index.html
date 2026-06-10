@@ -208,8 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var urlParams = new URLSearchParams(window.location.search);
     var isFromSettings = urlParams.get('from') === 'settings';
+    var isFromLockscreen = urlParams.get('from') === 'lockscreen';
 
-    if (isFromSettings) {
+    if (isFromSettings || isFromLockscreen) {
         document.getElementById('welcome-container').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
     } else {
@@ -221,7 +222,6 @@ function startLoading() {
     var fill = document.querySelector('.progress-fill');
     var percentText = document.querySelector('.progress-percentage');
     var welcome = document.getElementById('welcome-container');
-    var mainApp = document.getElementById('main-app');
     var progress = 0;
 
     var interval = setInterval(function() {
@@ -231,7 +231,6 @@ function startLoading() {
             clearInterval(interval);
             setTimeout(function() {
                 welcome.style.display = 'none';
-                // ✅ 欢迎页结束后跳转锁屏
                 window.location.href = 'lockscreen.html';
             }, 500);
         }
