@@ -6,7 +6,6 @@
     <title>锁屏</title>
     <style>
         :root {
-            --cream: #FDF8F2;
             --card-bg: rgba(255,255,255,0.85);
         }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -33,23 +32,31 @@
             background:var(--card-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
             border-radius:16px; padding:12px 14px; margin-bottom:8px;
             display:flex; align-items:center; gap:12px; cursor:pointer;
-            transition:transform 0.15s;
+            transition:transform 0.15s; text-decoration:none; color:inherit;
         }
         .lock-msg-card:active { transform:scale(0.98); }
         .lock-msg-icon {
             width:40px; height:40px; border-radius:50%;
             display:flex; align-items:center; justify-content:center; font-size:18px;
+            position:relative; flex-shrink:0;
         }
         .lock-msg-icon.chat { background:#E8F5E9; }
         .lock-msg-icon.daily { background:#F3E5F5; }
-        .lock-msg-info { flex:1; }
+        .unread-badge {
+            position:absolute; top:-4px; right:-4px;
+            min-width:18px; height:18px; background:#ff3b30; color:#fff;
+            border-radius:9px; font-size:10px; font-weight:700;
+            display:flex; align-items:center; justify-content:center;
+            padding:0 4px; border:2px solid #fff;
+        }
+        .lock-msg-info { flex:1; min-width:0; }
         .lock-msg-name { font-size:14px; font-weight:600; }
         .lock-msg-preview { font-size:12px; color:#888; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .lock-msg-time { font-size:11px; color:#b0b0b0; flex-shrink:0; }
 
         .swipe-hint {
             position:absolute; bottom:100px; left:50%; transform:translateX(-50%);
-            color:#999; font-size:13px; text-align:center; animation:floatUp 2s infinite;
+            color:#999; font-size:13px; text-align:center; animation:floatUp 2s infinite; cursor:pointer;
         }
         @keyframes floatUp {
             0%,100% { opacity:0.5; transform:translateX(-50%) translateY(0); }
@@ -62,6 +69,7 @@
             background:rgba(255,255,255,0.7); backdrop-filter:blur(10px);
             display:flex; align-items:center; justify-content:center;
             cursor:pointer; font-size:20px; border:1px solid rgba(0,0,0,0.08);
+            z-index:10;
         }
 
         /* 壁纸弹窗 */
@@ -79,14 +87,19 @@
             height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent; transition:all 0.2s;
         }
         .wall-item.selected { border-color:#000; }
+        .upload-btn {
+            width:100%; margin-top:12px; padding:12px; border-radius:12px;
+            border:1px dashed #ccc; background:#f9f9f9; font-size:14px; cursor:pointer;
+            text-align:center; color:#666;
+        }
         .modal-close-btn {
-            width:100%; margin-top:16px; padding:12px; border-radius:12px;
+            width:100%; margin-top:8px; padding:12px; border-radius:12px;
             border:none; background:#eee; font-size:15px; cursor:pointer;
         }
     </style>
 </head>
 <body>
-    <div id="phone-shell" id="lock-screen">
+    <div id="phone-shell">
         <div class="lock-time" id="lock-time">09:41</div>
         <div class="lock-date" id="lock-date">6月10日 星期二</div>
         <div class="lock-messages" id="lock-messages"></div>
@@ -96,8 +109,10 @@
 
     <div class="modal-overlay" id="wallpaper-modal">
         <div class="modal-card">
-            <h3>选择壁纸</h3>
+            <h3>更换壁纸</h3>
             <div class="wall-grid" id="wall-grid"></div>
+            <button class="upload-btn" onclick="document.getElementById('wallpaper-file').click()">📷 从相册上传</button>
+            <input type="file" id="wallpaper-file" accept="image/*" style="display:none" onchange="uploadWallpaper(event)">
             <button class="modal-close-btn" onclick="closeWallpaperModal()">关闭</button>
         </div>
     </div>
@@ -121,28 +136,70 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // ✅ 只显示未读消息，且过滤免打扰
         function loadLockMessages() {
             var container = document.getElementById('lock-messages');
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            var html = '';
-            for (var i = 0; i < Math.min(roles.length, 5); i++) {
+            var notifications = [];
+
+            for (var i = 0; i < roles.length; i++) {
                 var r = roles[i];
+                // ✅ 过滤：免打扰开启的不显示
                 if (r.muted) continue;
-                var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1] : null;
-                if (!lastMsg || lastMsg.type !== 'ai') continue;
-                html += '<div class="lock-msg-card" onclick="goToChat(' + r.id + ')">' +
-                    '<div class="lock-msg-icon chat">💬</div>' +
-                    '<div class="lock-msg-info"><div class="lock-msg-name">' + escapeHtml(r.remark || r.name) + '</div>' +
-                    '<div class="lock-msg-preview">' + escapeHtml(lastMsg.text.substring(0,30)) + '</div></div>' +
-                    '<div class="lock-msg-time">' + formatTime(lastMsg.time || r.id) + '</div></div>';
+                // ✅ 过滤：被角色拉黑的不显示
+                if (r.blocked) continue;
+                // ✅ 只显示有未读消息的
+                if (!r.unread || r.unread <= 0) continue;
+
+                var lastMsg = null;
+                if (r.messages && r.messages.length > 0) {
+                    for (var j = r.messages.length - 1; j >= 0; j--) {
+                        if (r.messages[j].type === 'ai') {
+                            lastMsg = r.messages[j];
+                            break;
+                        }
+                    }
+                }
+                if (!lastMsg) continue;
+
+                notifications.push({
+                    id: r.id,
+                    name: r.remark || r.name,
+                    avatar: r.avatar || '',
+                    preview: lastMsg.text.substring(0, 40),
+                    time: lastMsg.time || r.id,
+                    unread: r.unread
+                });
             }
-            container.innerHTML = html || '<div style="text-align:center;color:#999;margin-top:40px;">暂无新消息</div>';
+
+            // 按时间倒序
+            notifications.sort(function(a, b) { return b.time - a.time; });
+
+            if (notifications.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#999;margin-top:40px;">暂无新消息</div>';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < notifications.length; i++) {
+                var n = notifications[i];
+                html += '<div class="lock-msg-card" onclick="goToChat(' + n.id + ')">' +
+                    '<div class="lock-msg-icon chat">' +
+                    '<img src="' + n.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' +
+                    (n.unread > 1 ? '<div class="unread-badge">' + n.unread + '</div>' : '') +
+                    '</div>' +
+                    '<div class="lock-msg-info"><div class="lock-msg-name">' + escapeHtml(n.name) + '</div>' +
+                    '<div class="lock-msg-preview">' + escapeHtml(n.preview) + '</div></div>' +
+                    '<div class="lock-msg-time">' + formatTime(n.time) + '</div></div>';
+            }
+            container.innerHTML = html;
         }
 
         function goToChat(id) {
             window.location.href = 'chat-detail.html?id=' + id;
         }
 
+        // ✅ 上滑手势
         var startY = 0;
         document.getElementById('phone-shell').addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; });
         document.getElementById('phone-shell').addEventListener('touchend', function(e) {
@@ -150,11 +207,14 @@
         });
 
         function goToHome() {
-            document.getElementById('phone-shell').style.transform = 'translateY(-100%)';
-            document.getElementById('phone-shell').style.opacity = '0';
-            setTimeout(function() { window.location.href = 'index.html'; }, 400);
+            var shell = document.getElementById('phone-shell');
+            shell.style.transform = 'translateY(-100%)';
+            shell.style.opacity = '0';
+            // ✅ 跳转 index.html 时带参数，跳过锁屏
+            setTimeout(function() { window.location.href = 'index.html?from=lockscreen'; }, 400);
         }
 
+        // ✅ 壁纸功能
         function openWallpaperModal() {
             var grid = document.getElementById('wall-grid');
             var currentBg = localStorage.getItem('lockWallpaper') || wallpapers[0].css;
@@ -172,13 +232,36 @@
             closeWallpaperModal();
         }
 
+        // ✅ 上传本地壁纸
+        function uploadWallpaper(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var imgUrl = e.target.result;
+                localStorage.setItem('lockWallpaper', imgUrl);
+                document.getElementById('phone-shell').style.background = 'url(' + imgUrl + ') center/cover no-repeat';
+                closeWallpaperModal();
+            };
+            reader.readAsDataURL(file);
+        }
+
         function closeWallpaperModal() {
             document.getElementById('wallpaper-modal').classList.remove('active');
         }
 
+        // ✅ 初始化壁纸
         (function() {
             var saved = localStorage.getItem('lockWallpaper');
-            if (saved) document.getElementById('phone-shell').style.background = saved;
+            if (saved) {
+                if (saved.indexOf('linear-gradient') === 0 || saved.indexOf('url(') === 0) {
+                    document.getElementById('phone-shell').style.background = saved;
+                } else if (saved.indexOf('data:image') === 0) {
+                    document.getElementById('phone-shell').style.background = 'url(' + saved + ') center/cover no-repeat';
+                } else {
+                    document.getElementById('phone-shell').style.background = saved;
+                }
+            }
             loadLockMessages();
         })();
 
