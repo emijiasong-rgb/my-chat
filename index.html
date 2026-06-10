@@ -231,7 +231,8 @@ function startLoading() {
             clearInterval(interval);
             setTimeout(function() {
                 welcome.style.display = 'none';
-                mainApp.style.display = 'flex';
+                // ✅ 欢迎页结束后跳转锁屏
+                window.location.href = 'lockscreen.html';
             }, 500);
         }
         if(fill) fill.style.width = progress + '%';
