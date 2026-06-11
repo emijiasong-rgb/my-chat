@@ -7,6 +7,9 @@
     <style>
         :root {
             --card-bg: rgba(255,255,255,0.85);
+            --time-color: #000;
+            --time-font: -apple-system, 'Inter', 'Noto Sans SC', sans-serif;
+            --time-weight: 300;
         }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body {
@@ -22,10 +25,27 @@
             transition:transform 0.4s, opacity 0.4s;
         }
 
-        .lock-time { font-size:56px; font-weight:300; text-align:center; margin-top:80px; color:#000; }
-        .lock-date { font-size:16px; text-align:center; color:#666; margin-top:4px; }
+        .lock-time {
+            font-size:72px;
+            font-weight:var(--time-weight);
+            text-align:center;
+            margin-top:100px;
+            color:var(--time-color);
+            font-family:var(--time-font);
+            letter-spacing:-1px;
+            line-height:1;
+        }
+        .lock-date {
+            font-size:20px;
+            text-align:center;
+            color:var(--time-color);
+            margin-top:6px;
+            font-family:var(--time-font);
+            font-weight:400;
+            opacity:0.8;
+        }
 
-        .lock-messages { flex:1; margin-top:40px; padding:0 16px; overflow-y:auto; }
+        .lock-messages { flex:1; margin-top:50px; padding:0 16px; overflow-y:auto; }
         .lock-messages::-webkit-scrollbar { display:none; }
 
         .lock-msg-card {
@@ -38,7 +58,7 @@
         .lock-msg-icon {
             width:40px; height:40px; border-radius:50%;
             display:flex; align-items:center; justify-content:center; font-size:18px;
-            position:relative; flex-shrink:0;
+            position:relative; flex-shrink:0; overflow:hidden;
         }
         .lock-msg-icon.chat { background:#E8F5E9; }
         .lock-msg-icon.daily { background:#F3E5F5; }
@@ -50,52 +70,99 @@
             padding:0 4px; border:2px solid #fff;
         }
         .lock-msg-info { flex:1; min-width:0; }
-        .lock-msg-name { font-size:14px; font-weight:600; }
+        .lock-msg-name { font-size:14px; font-weight:600; color:#000; }
         .lock-msg-preview { font-size:12px; color:#888; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .lock-msg-time { font-size:11px; color:#b0b0b0; flex-shrink:0; }
 
         .swipe-hint {
             position:absolute; bottom:100px; left:50%; transform:translateX(-50%);
-            color:#999; font-size:13px; text-align:center; animation:floatUp 2s infinite; cursor:pointer;
+            color:var(--time-color); font-size:13px; text-align:center;
+            animation:floatUp 2s infinite; cursor:pointer; opacity:0.6;
         }
         @keyframes floatUp {
-            0%,100% { opacity:0.5; transform:translateX(-50%) translateY(0); }
-            50% { opacity:1; transform:translateX(-50%) translateY(-8px); }
+            0%,100% { opacity:0.3; transform:translateX(-50%) translateY(0); }
+            50% { opacity:0.7; transform:translateX(-50%) translateY(-8px); }
         }
 
         .lock-settings-btn {
             position:absolute; bottom:40px; right:20px;
             width:44px; height:44px; border-radius:50%;
-            background:rgba(255,255,255,0.7); backdrop-filter:blur(10px);
+            background:rgba(255,255,255,0.5); backdrop-filter:blur(10px);
             display:flex; align-items:center; justify-content:center;
-            cursor:pointer; font-size:20px; border:1px solid rgba(0,0,0,0.08);
-            z-index:10;
+            cursor:pointer; font-size:20px; border:1px solid rgba(255,255,255,0.3);
+            z-index:10; transition:all 0.2s;
         }
+        .lock-settings-btn:active { transform:scale(0.9); background:rgba(255,255,255,0.7); }
 
         /* 壁纸弹窗 */
         .modal-overlay {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
+            background:rgba(0,0,0,0.5); z-index:2000;
+            justify-content:center; align-items:flex-end;
         }
         .modal-overlay.active { display:flex; }
         .modal-card {
-            background:#fff; border-radius:20px; padding:20px; width:85%; max-width:340px;
+            background:rgba(255,255,255,0.95); backdrop-filter:blur(30px);
+            border-radius:24px 24px 0 0; padding:24px 20px 40px;
+            width:100%; max-width:430px;
+            box-shadow:0 -10px 40px rgba(0,0,0,0.15);
+            animation:slideUp 0.3s ease;
         }
-        .modal-card h3 { text-align:center; margin-bottom:16px; font-size:17px; }
+        @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+
+        .modal-card h3 { text-align:center; margin-bottom:20px; font-size:18px; font-weight:600; }
+
+        .section-label {
+            font-size:13px; color:#888; text-transform:uppercase;
+            letter-spacing:1px; margin:16px 0 8px; font-weight:600;
+        }
+
         .wall-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
         .wall-item {
-            height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent; transition:all 0.2s;
+            height:64px; border-radius:14px; cursor:pointer;
+            border:2.5px solid transparent; transition:all 0.2s;
+            position:relative; overflow:hidden;
         }
         .wall-item.selected { border-color:#000; }
+        .wall-item.selected::after {
+            content:"✓"; position:absolute; top:4px; right:6px;
+            color:#fff; font-size:14px; font-weight:700;
+            text-shadow:0 1px 2px rgba(0,0,0,0.3);
+        }
+        .wall-item:active { transform:scale(0.95); }
+
         .upload-btn {
-            width:100%; margin-top:12px; padding:12px; border-radius:12px;
-            border:1px dashed #ccc; background:#f9f9f9; font-size:14px; cursor:pointer;
-            text-align:center; color:#666;
+            width:100%; margin-top:10px; padding:14px; border-radius:14px;
+            border:1.5px dashed #d0d0d0; background:#f9f9f9;
+            font-size:15px; cursor:pointer; text-align:center; color:#555;
+            transition:all 0.2s;
         }
+        .upload-btn:active { background:#f0f0f0; }
+
+        /* 字体设置 */
+        .font-options { display:flex; gap:8px; flex-wrap:wrap; }
+        .font-opt {
+            padding:10px 16px; border-radius:12px; border:1.5px solid #e0e0e0;
+            font-size:14px; cursor:pointer; background:#fff; transition:all 0.2s;
+            font-family:inherit;
+        }
+        .font-opt.selected { border-color:#000; background:#f5f5f5; }
+        .font-opt:active { transform:scale(0.95); }
+
+        .color-options { display:flex; gap:10px; }
+        .color-dot {
+            width:36px; height:36px; border-radius:50%; cursor:pointer;
+            border:2.5px solid transparent; transition:all 0.2s;
+        }
+        .color-dot.selected { border-color:#000; }
+        .color-dot:active { transform:scale(0.9); }
+
         .modal-close-btn {
-            width:100%; margin-top:8px; padding:12px; border-radius:12px;
-            border:none; background:#eee; font-size:15px; cursor:pointer;
+            width:100%; margin-top:20px; padding:14px; border-radius:14px;
+            border:none; background:#f0f0f0; font-size:16px; cursor:pointer;
+            font-weight:500; transition:all 0.2s;
         }
+        .modal-close-btn:active { background:#e0e0e0; }
     </style>
 </head>
 <body>
@@ -109,11 +176,32 @@
 
     <div class="modal-overlay" id="wallpaper-modal">
         <div class="modal-card">
-            <h3>更换壁纸</h3>
+            <h3>自定义锁屏</h3>
+
+            <div class="section-label">壁纸</div>
             <div class="wall-grid" id="wall-grid"></div>
             <button class="upload-btn" onclick="document.getElementById('wallpaper-file').click()">📷 从相册上传</button>
             <input type="file" id="wallpaper-file" accept="image/*" style="display:none" onchange="uploadWallpaper(event)">
-            <button class="modal-close-btn" onclick="closeWallpaperModal()">关闭</button>
+
+            <div class="section-label">字体样式</div>
+            <div class="font-options" id="font-options">
+                <span class="font-opt" data-font="-apple-system, 'Inter', 'Noto Sans SC', sans-serif" data-weight="300" onclick="selectFont(this)">默认 · 细体</span>
+                <span class="font-opt" data-font="'Inter', 'Noto Sans SC', -apple-system, sans-serif" data-weight="400" onclick="selectFont(this)">Inter · 标准</span>
+                <span class="font-opt" data-font="'Noto Serif SC', 'Georgia', serif" data-weight="400" onclick="selectFont(this)">衬线 · 优雅</span>
+                <span class="font-opt" data-font="'ZCOOL KuaiLe', 'Comic Sans MS', cursive" data-weight="400" onclick="selectFont(this)">圆体 · 可爱</span>
+            </div>
+
+            <div class="section-label">字体颜色</div>
+            <div class="color-options" id="color-options">
+                <span class="color-dot" style="background:#000;" data-color="#000" onclick="selectColor(this)"></span>
+                <span class="color-dot" style="background:#fff;border:1.5px solid #ddd;" data-color="#fff" onclick="selectColor(this)"></span>
+                <span class="color-dot" style="background:#555;" data-color="#555" onclick="selectColor(this)"></span>
+                <span class="color-dot" style="background:#C5A3D4;" data-color="#C5A3D4" onclick="selectColor(this)"></span>
+                <span class="color-dot" style="background:#F7A1C4;" data-color="#F7A1C4" onclick="selectColor(this)"></span>
+                <span class="color-dot" style="background:#A8D8B9;" data-color="#A8D8B9" onclick="selectColor(this)"></span>
+            </div>
+
+            <button class="modal-close-btn" onclick="closeWallpaperModal()">完成</button>
         </div>
     </div>
 
@@ -136,7 +224,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ✅ 只显示未读消息，且过滤免打扰
         function loadLockMessages() {
             var container = document.getElementById('lock-messages');
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
@@ -144,35 +231,24 @@
 
             for (var i = 0; i < roles.length; i++) {
                 var r = roles[i];
-                // ✅ 过滤：免打扰开启的不显示
                 if (r.muted) continue;
-                // ✅ 过滤：被角色拉黑的不显示
                 if (r.blocked) continue;
-                // ✅ 只显示有未读消息的
                 if (!r.unread || r.unread <= 0) continue;
 
                 var lastMsg = null;
                 if (r.messages && r.messages.length > 0) {
                     for (var j = r.messages.length - 1; j >= 0; j--) {
-                        if (r.messages[j].type === 'ai') {
-                            lastMsg = r.messages[j];
-                            break;
-                        }
+                        if (r.messages[j].type === 'ai') { lastMsg = r.messages[j]; break; }
                     }
                 }
                 if (!lastMsg) continue;
 
                 notifications.push({
-                    id: r.id,
-                    name: r.remark || r.name,
-                    avatar: r.avatar || '',
-                    preview: lastMsg.text.substring(0, 40),
-                    time: lastMsg.time || r.id,
-                    unread: r.unread
+                    id: r.id, name: r.remark || r.name, avatar: r.avatar || '',
+                    preview: lastMsg.text.substring(0, 40), time: lastMsg.time || r.id, unread: r.unread
                 });
             }
 
-            // 按时间倒序
             notifications.sort(function(a, b) { return b.time - a.time; });
 
             if (notifications.length === 0) {
@@ -184,10 +260,8 @@
             for (var i = 0; i < notifications.length; i++) {
                 var n = notifications[i];
                 html += '<div class="lock-msg-card" onclick="goToChat(' + n.id + ')">' +
-                    '<div class="lock-msg-icon chat">' +
-                    '<img src="' + n.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' +
-                    (n.unread > 1 ? '<div class="unread-badge">' + n.unread + '</div>' : '') +
-                    '</div>' +
+                    '<div class="lock-msg-icon chat"><img src="' + n.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' +
+                    (n.unread > 1 ? '<div class="unread-badge">' + n.unread + '</div>' : '') + '</div>' +
                     '<div class="lock-msg-info"><div class="lock-msg-name">' + escapeHtml(n.name) + '</div>' +
                     '<div class="lock-msg-preview">' + escapeHtml(n.preview) + '</div></div>' +
                     '<div class="lock-msg-time">' + formatTime(n.time) + '</div></div>';
@@ -195,11 +269,8 @@
             container.innerHTML = html;
         }
 
-        function goToChat(id) {
-            window.location.href = 'chat-detail.html?id=' + id;
-        }
+        function goToChat(id) { window.location.href = 'chat-detail.html?id=' + id; }
 
-        // ✅ 上滑手势
         var startY = 0;
         document.getElementById('phone-shell').addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; });
         document.getElementById('phone-shell').addEventListener('touchend', function(e) {
@@ -210,11 +281,10 @@
             var shell = document.getElementById('phone-shell');
             shell.style.transform = 'translateY(-100%)';
             shell.style.opacity = '0';
-            // ✅ 跳转 index.html 时带参数，跳过锁屏
             setTimeout(function() { window.location.href = 'index.html?from=lockscreen'; }, 400);
         }
 
-        // ✅ 壁纸功能
+        // ✅ 壁纸弹窗
         function openWallpaperModal() {
             var grid = document.getElementById('wall-grid');
             var currentBg = localStorage.getItem('lockWallpaper') || wallpapers[0].css;
@@ -223,6 +293,9 @@
                 html += '<div class="wall-item' + (wallpapers[i].css === currentBg ? ' selected' : '') + '" style="background:' + wallpapers[i].css + '" onclick="setWallpaper(\'' + wallpapers[i].css + '\')"></div>';
             }
             grid.innerHTML = html;
+            // ✅ 高亮当前字体和颜色
+            highlightCurrentFont();
+            highlightCurrentColor();
             document.getElementById('wallpaper-modal').classList.add('active');
         }
 
@@ -232,7 +305,6 @@
             closeWallpaperModal();
         }
 
-        // ✅ 上传本地壁纸
         function uploadWallpaper(event) {
             var file = event.target.files[0];
             if (!file) return;
@@ -250,18 +322,88 @@
             document.getElementById('wallpaper-modal').classList.remove('active');
         }
 
-        // ✅ 初始化壁纸
-        (function() {
-            var saved = localStorage.getItem('lockWallpaper');
-            if (saved) {
-                if (saved.indexOf('linear-gradient') === 0 || saved.indexOf('url(') === 0) {
-                    document.getElementById('phone-shell').style.background = saved;
-                } else if (saved.indexOf('data:image') === 0) {
-                    document.getElementById('phone-shell').style.background = 'url(' + saved + ') center/cover no-repeat';
-                } else {
-                    document.getElementById('phone-shell').style.background = saved;
+        // ✅ 字体选择
+        function selectFont(el) {
+            var opts = document.querySelectorAll('.font-opt');
+            for (var i = 0; i < opts.length; i++) opts[i].classList.remove('selected');
+            el.classList.add('selected');
+            var fontFamily = el.getAttribute('data-font');
+            var fontWeight = el.getAttribute('data-weight');
+            localStorage.setItem('lockFontFamily', fontFamily);
+            localStorage.setItem('lockFontWeight', fontWeight);
+            applyFontStyle(fontFamily, fontWeight);
+        }
+
+        function highlightCurrentFont() {
+            var savedFont = localStorage.getItem('lockFontFamily');
+            var savedWeight = localStorage.getItem('lockFontWeight');
+            var opts = document.querySelectorAll('.font-opt');
+            for (var i = 0; i < opts.length; i++) {
+                opts[i].classList.remove('selected');
+                if (opts[i].getAttribute('data-font') === savedFont && opts[i].getAttribute('data-weight') === savedWeight) {
+                    opts[i].classList.add('selected');
                 }
             }
+            // 默认选中第一个
+            if (!savedFont) opts[0].classList.add('selected');
+        }
+
+        function applyFontStyle(fontFamily, fontWeight) {
+            var timeEl = document.getElementById('lock-time');
+            var dateEl = document.getElementById('lock-date');
+            timeEl.style.fontFamily = fontFamily;
+            timeEl.style.fontWeight = fontWeight;
+            dateEl.style.fontFamily = fontFamily;
+            dateEl.style.fontWeight = '400';
+        }
+
+        // ✅ 颜色选择
+        function selectColor(el) {
+            var dots = document.querySelectorAll('.color-dot');
+            for (var i = 0; i < dots.length; i++) dots[i].classList.remove('selected');
+            el.classList.add('selected');
+            var color = el.getAttribute('data-color');
+            localStorage.setItem('lockTimeColor', color);
+            applyTimeColor(color);
+        }
+
+        function highlightCurrentColor() {
+            var savedColor = localStorage.getItem('lockTimeColor') || '#000';
+            var dots = document.querySelectorAll('.color-dot');
+            for (var i = 0; i < dots.length; i++) {
+                dots[i].classList.remove('selected');
+                if (dots[i].getAttribute('data-color') === savedColor) dots[i].classList.add('selected');
+            }
+        }
+
+        function applyTimeColor(color) {
+            var timeEl = document.getElementById('lock-time');
+            var dateEl = document.getElementById('lock-date');
+            var hintEl = document.querySelector('.swipe-hint');
+            timeEl.style.color = color;
+            dateEl.style.color = color;
+            if (hintEl) hintEl.style.color = color;
+        }
+
+        // ✅ 初始化
+        (function() {
+            // 壁纸
+            var savedBg = localStorage.getItem('lockWallpaper');
+            if (savedBg) {
+                if (savedBg.indexOf('linear-gradient') === 0) {
+                    document.getElementById('phone-shell').style.background = savedBg;
+                } else {
+                    document.getElementById('phone-shell').style.background = 'url(' + savedBg + ') center/cover no-repeat';
+                }
+            }
+            // 字体
+            var savedFont = localStorage.getItem('lockFontFamily');
+            var savedWeight = localStorage.getItem('lockFontWeight');
+            if (savedFont) applyFontStyle(savedFont, savedWeight || '300');
+            // 颜色
+            var savedColor = localStorage.getItem('lockTimeColor');
+            if (savedColor) applyTimeColor(savedColor);
+
             loadLockMessages();
         })();
 
