@@ -82,45 +82,60 @@
         }
         .overlay.show { display:block; }
 
-        /* ✅ 状态栏 - 横向滚动头像 */
+        /* ✅ Ins风状态栏 - 更大更宽 */
         .status-row {
-            background:#fff; padding:10px 0 8px 12px;
+            background:#fff; padding:14px 0 12px 14px;
             border-bottom:0.5px solid var(--separator);
-            overflow-x:auto; white-space:nowrap; display:flex; gap:0;
+            overflow-x:auto; white-space:nowrap; display:flex; gap:6px;
             -webkit-overflow-scrolling:touch;
         }
         .status-row::-webkit-scrollbar { display:none; }
         .status-item {
             display:inline-flex; flex-direction:column; align-items:center;
-            min-width:68px; cursor:pointer; position:relative; flex-shrink:0;
+            min-width:72px; cursor:pointer; position:relative; flex-shrink:0;
+            padding:0 4px;
         }
-        .status-avatar-wrap { position:relative; width:54px; height:54px; }
+        .status-avatar-wrap {
+            position:relative; width:66px; height:66px;
+            display:flex; align-items:center; justify-content:center;
+        }
+        /* 渐变边框环 */
+        .status-avatar-ring {
+            position:absolute; width:70px; height:70px; border-radius:50%;
+            background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
+            padding:3px;
+        }
+        .status-avatar-ring.offline-ring { background:#e0e0e0; }
+        .status-avatar-ring.sleep-ring { background:linear-gradient(135deg, #8E8E93, #636366); }
         .status-avatar {
-            width:54px; height:54px; border-radius:50%; object-fit:cover;
-            border:2.5px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,0.1);
+            width:100%; height:100%; border-radius:50%; object-fit:cover;
+            border:3px solid #fff; position:relative; z-index:1;
         }
         .status-dot {
-            position:absolute; bottom:0; right:0;
-            width:14px; height:14px; border-radius:50%;
-            border:2px solid #fff; font-size:10px;
+            position:absolute; bottom:2px; right:2px;
+            width:16px; height:16px; border-radius:50%;
+            border:3px solid #fff; font-size:10px;
             display:flex; align-items:center; justify-content:center;
+            z-index:2; font-weight:700;
         }
         .status-dot.online { background:#44B700; }
         .status-dot.offline { background:#ccc; }
         .status-dot.busy { background:#FF9500; }
-        .status-dot.sleep { background:#8E8E93; }
+        .status-dot.sleep { background:#8E8E93; color:#fff; }
         .status-name {
-            font-size:10px; color:#666; margin-top:4px; text-align:center;
-            max-width:60px; overflow:hidden; text-overflow:ellipsis;
+            font-size:11px; color:#333; margin-top:6px; text-align:center;
+            max-width:68px; overflow:hidden; text-overflow:ellipsis;
+            font-weight:500; letter-spacing:-0.2px;
         }
-        /* ✅ 小气泡（心声） */
+        /* ✅ 心声气泡 - 更好看 */
         .status-bubble {
-            position:absolute; top:-10px; right:-16px;
-            background:#fff; border-radius:14px; padding:3px 9px;
-            font-size:10px; color:#333; white-space:nowrap;
-            box-shadow:0 2px 8px rgba(0,0,0,0.12);
-            z-index:10; max-width:90px; overflow:hidden; text-overflow:ellipsis;
-            border:0.5px solid #eee; pointer-events:none;
+            position:absolute; top:-12px; right:-18px;
+            background:#fff; border-radius:16px; padding:4px 10px;
+            font-size:10px; color:#555; white-space:nowrap;
+            box-shadow:0 3px 12px rgba(0,0,0,0.1);
+            z-index:10; max-width:100px; overflow:hidden; text-overflow:ellipsis;
+            border:0.5px solid rgba(0,0,0,0.06); pointer-events:none;
+            font-weight:500;
         }
         .status-bubble::after {
             content:""; position:absolute; bottom:-5px; left:50%;
@@ -230,7 +245,6 @@
             </div>
         </div>
 
-        <!-- ✅ 状态栏 -->
         <div class="status-row" id="status-row"></div>
 
         <div class="role-list" id="role-list">
@@ -299,7 +313,6 @@
             }
         }
 
-        // ✅ 渲染状态栏
         function renderStatusRow() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             var container = document.getElementById('status-row');
@@ -314,10 +327,13 @@
                 var mood = r.mood || 'calm';
                 var bubbleText = getBubbleText(fav, mood);
                 var status = getOnlineStatus(r);
+                var ringClass = (status.class === 'offline' || status.class === 'sleep') ? ' status-avatar-ring ' + status.class + '-ring' : ' status-avatar-ring';
                 
                 html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
                     '<div class="status-avatar-wrap">' +
+                    '<div class="' + ringClass + '">' +
                     '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="">' +
+                    '</div>' +
                     '<div class="status-dot ' + status.class + '">' + status.icon + '</div>' +
                     (bubbleText ? '<div class="status-bubble">' + bubbleText + '</div>' : '') +
                     '</div>' +
@@ -326,14 +342,13 @@
             container.innerHTML = html;
         }
         
-        // ✅ 心声气泡内容
         function getBubbleText(fav, mood) {
             if (fav > 80) {
-                var highFav = ['好想你❤️', '想和你聊天💬', '今天超开心！', '你最好啦～'];
+                var highFav = ['好想你❤️', '想聊天💬', '超开心！', '你最好啦～'];
                 return highFav[Math.floor(Math.random() * highFav.length)];
             }
             if (fav > 50) {
-                var midFav = ['在想你', '有空吗？', '今天过得怎么样？', '有点想你'];
+                var midFav = ['在想你', '有空吗？', '今天怎么样？', '有点想你'];
                 return midFav[Math.floor(Math.random() * midFav.length)];
             }
             if (fav > 20) {
@@ -350,7 +365,6 @@
             return '';
         }
         
-        // ✅ 在线状态
         function getOnlineStatus(r) {
             var hour = new Date().getHours();
             if (r.mood === 'tired') return { class:'sleep', icon:'💤' };
