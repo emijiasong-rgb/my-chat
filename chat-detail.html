@@ -42,7 +42,7 @@
         #battery-percent { font-size:12px; }
 
         .top-nav {
-            display:flex; align-items:center; justify-content:center;
+            display:flex; align-items:center; justify-content:space-between;
             padding:10px 16px; background:var(--white); position:relative;
             border-bottom:0.5px solid var(--separator);
         }
@@ -50,7 +50,7 @@
             font-size:17px; font-weight:700; color:#000;
         }
         .top-nav .add-circle {
-            position:absolute; right:16px; width:28px; height:28px;
+            width:28px; height:28px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
             z-index:100;
         }
@@ -78,7 +78,7 @@
         }
         .overlay.show { display:block; }
 
-        /* ✅ 状态栏 - 头像状态行 */
+        /* ✅ Ins风状态栏 - 更大更宽 */
         .status-row {
             background:#fff; padding:14px 0 12px 14px;
             border-bottom:0.5px solid var(--separator);
@@ -123,7 +123,7 @@
             max-width:68px; overflow:hidden; text-overflow:ellipsis;
             font-weight:500; letter-spacing:-0.2px;
         }
-        /* ✅ 心声气泡 */
+        /* ✅ 心声气泡 - 更好看 */
         .status-bubble {
             position:absolute; top:-12px; right:-18px;
             background:#fff; border-radius:16px; padding:4px 10px;
@@ -142,7 +142,6 @@
             border-top:5px solid #fff;
         }
 
-        /* ✅ 聊天列表 - 只保留这一个列表 */
         .role-list { flex:1; overflow-y:auto; background:var(--white); }
         .role-list::-webkit-scrollbar { display:none; }
 
@@ -241,10 +240,10 @@
             </div>
         </div>
 
-        <!-- ✅ 头像状态栏 - 保留 -->
+        <!-- ✅ 头像状态栏 -->
         <div class="status-row" id="status-row"></div>
 
-        <!-- ✅ 唯一的联系人列表 - 点击直接进入聊天 -->
+        <!-- ✅ 联系人列表（点击直接进入聊天） -->
         <div class="role-list" id="role-list">
             <div class="empty-state">
                 <div class="empty-icon">💬</div>
@@ -327,8 +326,8 @@
                 var status = getOnlineStatus(r);
                 var ringClass = (status.class === 'offline' || status.class === 'sleep') ? ' status-avatar-ring ' + status.class + '-ring' : ' status-avatar-ring';
                 
-                // ✅ 点击头像状态直接进入聊天页面
-                html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
+                // ✅ 点击头像状态 → 直接进入聊天页面
+                html += '<div class="status-item" onclick="goToChat(\'' + r.id + '\')">' +
                     '<div class="status-avatar-wrap">' +
                     '<div class="' + ringClass + '">' +
                     '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="">' +
@@ -398,13 +397,18 @@
                 var blockedClass = r.blocked ? ' blocked' : '';
                 var pinIcon = r.pinned ? ' 📌' : '';
 
-                // ✅ 点击联系人直接进入聊天页面
-                html += '<div class="chat-row' + pinnedClass + blockedClass + '" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
+                // ✅ 点击联系人 → 直接进入聊天页面
+                html += '<div class="chat-row' + pinnedClass + blockedClass + '" onclick="goToChat(\'' + r.id + '\')">' +
                     '<div class="chat-avatar-wrap"><img class="chat-avatar" src="' + (r.avatar || '') + '" alt=""><div class="unread-dot' + (hasUnread ? ' show' : '') + '"></div></div>' +
                     '<div class="chat-info"><div class="chat-top"><span class="chat-name">' + escapeHtml(r.remark || r.name) + '</span><span class="pin-icon">' + pinIcon + '</span><span class="chat-time">' + time + '</span></div>' +
                     '<div class="chat-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div></div></div>';
             }
             container.innerHTML = html;
+        }
+
+        // ✅ 统一的跳转函数
+        function goToChat(id) {
+            window.location.href = 'chat-detail.html?id=' + id;
         }
 
         function formatTime(ts) {
