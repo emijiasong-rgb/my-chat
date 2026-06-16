@@ -50,9 +50,7 @@
             position:absolute; left:16px; font-size:18px; color:#000;
             cursor:pointer; text-decoration:none; padding:4px;
         }
-        .top-nav .nav-title {
-            font-size:17px; font-weight:700; color:#000;
-        }
+        .top-nav .nav-title { font-size:17px; font-weight:700; color:#000; }
         .top-nav .add-circle {
             position:absolute; right:16px; width:28px; height:28px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -97,28 +95,28 @@
         .status-avatar-wrap {
             position:relative; width:64px; height:64px;
         }
+        /* 黑色边框环 */
         .status-avatar-ring {
             position:absolute; width:64px; height:64px; border-radius:50%;
-            background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
-            padding:2px;
+            border:2px solid #000; padding:0;
         }
-        .status-avatar-ring.offline-ring { background:#e0e0e0; }
-        .status-avatar-ring.sleep-ring { background:linear-gradient(135deg, #8E8E93, #636366); }
         .status-avatar {
             width:100%; height:100%; border-radius:50%; object-fit:cover;
             border:2px solid #fff; position:relative; z-index:1;
         }
+        /* 状态点 */
         .status-dot {
-            position:absolute; bottom:0px; right:-2px;
-            width:14px; height:14px; border-radius:50%;
+            position:absolute; bottom:2px; right:0px;
+            width:16px; height:16px; border-radius:50%;
             border:2px solid #fff; font-size:10px;
             display:flex; align-items:center; justify-content:center;
-            z-index:2; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.15);
+            z-index:2; font-weight:700;
         }
         .status-dot.online { background:#44B700; }
-        .status-dot.offline { background:#9E9E9E; }
-        .status-dot.busy { background:#FF9500; }
-        .status-dot.emoji { background:none; border:none; font-size:12px; width:auto; height:auto; bottom:0px; right:-4px; }
+        .status-dot.offline { 
+            background:#fff; border:2px solid #999; color:#999; 
+            font-size:12px; line-height:1;
+        }
         .status-name {
             font-size:11px; color:#5B6E6B; margin-top:4px; text-align:center;
             max-width:70px; overflow:hidden; text-overflow:ellipsis;
@@ -145,12 +143,7 @@
         /* ========== 联系人列表 ========== */
         .contact-list { flex:1; overflow-y:auto; background:var(--white); }
         .contact-list::-webkit-scrollbar { display:none; }
-
-        .section-title {
-            padding:10px 16px 4px; font-size:12px; color:var(--text-tertiary);
-            font-weight:500; background:var(--white);
-        }
-
+        .section-title { padding:10px 16px 4px; font-size:12px; color:var(--text-tertiary); font-weight:500; background:var(--white); }
         .contact-card {
             display:flex; align-items:center; gap:12px; padding:12px 16px;
             cursor:pointer; border-bottom:0.5px solid var(--separator);
@@ -159,11 +152,7 @@
         .contact-card:active { background:#f9f9f9; }
         .contact-card.pinned { background:var(--pinned-bg); }
         .contact-card.blocked { opacity:0.5; }
-
-        .contact-avatar {
-            width:48px; height:48px; border-radius:6px; object-fit:cover;
-            background:#d0d0d0; flex-shrink:0;
-        }
+        .contact-avatar { width:48px; height:48px; border-radius:6px; object-fit:cover; background:#d0d0d0; flex-shrink:0; }
         .unread-badge {
             position:absolute; left:44px; top:-2px;
             min-width:18px; height:18px; background:var(--red-dot);
@@ -173,18 +162,13 @@
             z-index:5; padding:0 5px;
         }
         .unread-badge.show { display:flex; }
-
         .contact-info { flex:1; min-width:0; }
         .contact-top { display:flex; align-items:baseline; gap:8px; margin-bottom:2px; }
         .contact-name { font-size:16px; font-weight:500; color:var(--text); }
         .contact-pin { font-size:10px; color:var(--text-tertiary); }
         .contact-time { font-size:12px; color:var(--text-tertiary); margin-left:auto; flex-shrink:0; }
-        .contact-preview {
-            font-size:13px; color:var(--text-tertiary);
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-        }
+        .contact-preview { font-size:13px; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .contact-preview.unread { color:var(--text); font-weight:500; }
-
         .empty-state { text-align:center; padding:120px 20px; color:#b0b0b0; }
         .empty-icon { font-size:44px; margin-bottom:14px; opacity:0.35; }
         .empty-text { font-size:16px; font-weight:500; }
@@ -211,7 +195,6 @@
 </head>
 <body>
     <div id="phone-shell">
-        <!-- 系统状态栏 -->
         <div class="status-bar">
             <span id="clock">12:00</span>
             <div class="status-icons">
@@ -232,7 +215,6 @@
             </div>
         </div>
 
-        <!-- 顶部导航 -->
         <div class="top-nav">
             <a href="index.html" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
@@ -241,58 +223,31 @@
             </div>
         </div>
 
-        <!-- 弹出菜单 -->
         <div class="overlay" id="overlay" onclick="closeMenu()"></div>
         <div class="popup-menu" id="popup-menu">
-            <a href="create-role2.html" class="menu-item">
-                <span class="menu-icon">👤</span>
-                <span>添加好友</span>
-            </a>
-            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')">
-                <span class="menu-icon">👥</span>
-                <span>发起群聊</span>
-            </div>
+            <a href="create-role2.html" class="menu-item"><span class="menu-icon">👤</span><span>添加好友</span></a>
+            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')"><span class="menu-icon">👥</span><span>发起群聊</span></div>
         </div>
 
-        <!-- 状态栏（横向滚动） -->
+        <!-- 状态栏 -->
         <div class="status-row" id="status-row"></div>
 
         <!-- 联系人列表 -->
         <div class="contact-list" id="contact-list">
-            <div class="empty-state">
-                <div class="empty-icon">💬</div>
-                <div class="empty-text">暂无消息</div>
-                <div class="empty-sub">点击右上角 + 添加好友</div>
-            </div>
+            <div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>
         </div>
 
-        <!-- 底部导航 -->
         <div class="bottom-nav">
             <div class="bottom-tab active">
-                <div class="tab-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                    </svg>
-                </div>
+                <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
                 <span class="tab-label">信息</span>
             </div>
             <div class="bottom-tab inactive" onclick="alert('朋友圈功能即将上线')">
-                <div class="tab-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>
-                        <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                        <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-                    </svg>
-                </div>
+                <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div>
                 <span class="tab-label">朋友圈</span>
             </div>
             <div class="bottom-tab inactive" onclick="window.location.href='settings.html'">
-                <div class="tab-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-                    </svg>
-                </div>
+                <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
                 <span class="tab-label">设置</span>
             </div>
         </div>
@@ -306,8 +261,7 @@
             var now = new Date();
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateClock, 1000); updateClock();
 
         function updateBattery() {
             if ('getBattery' in navigator) {
@@ -320,6 +274,23 @@
             }
         }
         updateBattery();
+
+        // ==================== 判断角色是否在线 ====================
+        function isRoleOnline(role) {
+            // 被拉黑或拉黑了用户 → 离线
+            if (role.hasBlockedUser || role.isBlockedByUser) return false;
+            // 正在回消息 → 在线
+            if (role.isReplying) return true;
+            // 最近5分钟内有消息互动 → 在线
+            if (role.lastInteraction) {
+                var now = Date.now();
+                var fiveMin = 5 * 60 * 1000;
+                if (now - role.lastInteraction < fiveMin) return true;
+            }
+            // 用户正在查看聊天（当前在chat-detail页面打开着） → 在线
+            // 这个通过unread被清零来判断最近活跃
+            return false;
+        }
 
         // ==================== 状态栏渲染 ====================
         function renderStatusRow() {
@@ -335,15 +306,14 @@
                 var fav = r.favorability || 0;
                 var mood = r.mood || 'calm';
                 var bubbleText = getBubbleText(fav, mood, r);
-                var status = getStatusDot(r);
-                var ringClass = (status.type === 'offline' || status.type === 'sleep') ? ' status-avatar-ring ' + status.type + '-ring' : ' status-avatar-ring';
+                var online = isRoleOnline(r);
                 
                 html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
                     '<div class="status-avatar-wrap">' +
-                    '<div class="' + ringClass + '">' +
+                    '<div class="status-avatar-ring">' +
                     '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E\'">' +
                     '</div>' +
-                    '<div class="status-dot ' + (status.isEmoji ? 'emoji' : '') + '" style="' + (status.isEmoji ? '' : 'background:' + status.color) + '">' + status.icon + '</div>' +
+                    '<div class="status-dot ' + (online ? 'online' : 'offline') + '">' + (online ? '' : '⊘') + '</div>' +
                     (bubbleText ? '<div class="status-bubble">' + bubbleText + '</div>' : '') +
                     '</div>' +
                     '<div class="status-name">' + escapeHtml(r.remark || r.name) + '</div></div>';
@@ -353,64 +323,28 @@
 
         function getBubbleText(fav, mood, role) {
             var hour = new Date().getHours();
-            // 优先级1：好感度 > 80 触发思念
             if (fav > 80 && Math.random() < 0.7) {
-                var missMsgs = ['好想你❤️', '想和你聊天💬', '想你了~', '好想见你🥰'];
-                return missMsgs[Math.floor(Math.random() * missMsgs.length)];
+                var arr = ['好想你❤️', '想和你聊天💬', '想你了~', '好想见你🥰'];
+                return arr[Math.floor(Math.random() * arr.length)];
             }
-            // 优先级2：好感度 50-80 触发思念
             if (fav > 50 && Math.random() < 0.5) {
-                var midMsgs = ['在想你', '有空吗？', '今天怎么样？'];
-                return midMsgs[Math.floor(Math.random() * midMsgs.length)];
+                var arr = ['在想你', '有空吗？', '今天怎么样？'];
+                return arr[Math.floor(Math.random() * arr.length)];
             }
-            // 优先级3：情绪状态
             if (mood === 'happy' && Math.random() < 0.4) {
-                var happyMsgs = ['今天超开心✨', '心情超好🎉', '好开心呀~'];
-                return happyMsgs[Math.floor(Math.random() * happyMsgs.length)];
+                var arr = ['今天超开心✨', '心情超好🎉', '好开心呀~'];
+                return arr[Math.floor(Math.random() * arr.length)];
             }
             if (mood === 'sad') return '有点emo😔';
             if (mood === 'angry') return '别惹我😤';
             if (mood === 'tired') return '好累啊💤';
-            // 优先级4：时间段活动
-            if (hour >= 6 && hour < 10) {
-                var morningMsgs = ['早安☀️', '刚起床💤', '在吃早餐🍳'];
-                return morningMsgs[Math.floor(Math.random() * morningMsgs.length)];
-            }
+            if (hour >= 6 && hour < 10) return ['早安☀️', '刚起床💤', '在吃早餐🍳'][Math.floor(Math.random()*3)];
             if (hour >= 10 && hour < 12) return '工作中💼';
-            if (hour >= 12 && hour < 14) {
-                var lunchMsgs = ['在吃饭🍚', '午休中😴'];
-                return lunchMsgs[Math.floor(Math.random() * lunchMsgs.length)];
-            }
-            if (hour >= 14 && hour < 18) {
-                var pmMsgs = ['工作中💼', '摸鱼中🐟', '在上课📚'];
-                return pmMsgs[Math.floor(Math.random() * pmMsgs.length)];
-            }
-            if (hour >= 18 && hour < 22) {
-                var eveMsgs = ['在吃饭🍚', '在看剧📺', '打游戏🎮'];
-                return eveMsgs[Math.floor(Math.random() * eveMsgs.length)];
-            }
+            if (hour >= 12 && hour < 14) return ['在吃饭🍚', '午休中😴'][Math.floor(Math.random()*2)];
+            if (hour >= 14 && hour < 18) return ['工作中💼', '摸鱼中🐟'][Math.floor(Math.random()*2)];
+            if (hour >= 18 && hour < 22) return ['在看剧📺', '打游戏🎮'][Math.floor(Math.random()*2)];
             if (hour >= 22 || hour < 6) return '准备睡觉💤';
             return '';
-        }
-
-        function getStatusDot(role) {
-            var hour = new Date().getHours();
-            var mood = role.mood || 'calm';
-            
-            // 1. 睡觉时间 23:00-8:00
-            if (hour >= 23 || hour < 8) return { icon: '💤', type: 'sleep', color: '#8E8E93', isEmoji: true };
-            // 2. 用餐时间
-            if ((hour >= 12 && hour < 14) || (hour >= 18 && hour < 20)) return { icon: '🍚', type: 'busy', color: '#FF9500', isEmoji: true };
-            // 3. 工作时间
-            if ((hour >= 9 && hour < 12) || (hour >= 14 && hour < 18)) return { icon: '💼', type: 'busy', color: '#FF9500', isEmoji: true };
-            // 4. 情绪状态
-            if (mood === 'tired') return { icon: '💤', type: 'sleep', color: '#8E8E93', isEmoji: true };
-            if (mood === 'angry') return { icon: '⚠', type: 'busy', color: '#FF9500', isEmoji: false };
-            // 5. 拉黑
-            if (role.hasBlockedUser) return { icon: '✕', type: 'offline', color: '#9E9E9E', isEmoji: false };
-            if (role.isBlockedByUser) return { icon: '🚫', type: 'offline', color: '#9E9E9E', isEmoji: false };
-            // 6. 默认在线
-            return { icon: '', type: 'online', color: '#44B700', isEmoji: false };
         }
 
         // ==================== 联系人列表渲染 ====================
@@ -421,7 +355,6 @@
                 if (!a.pinned && b.pinned) return 1;
                 return 0;
             });
-
             var container = document.getElementById('contact-list');
             if (roles.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>';
@@ -437,16 +370,13 @@
                 var pinnedClass = r.pinned ? ' pinned' : '';
                 var blockedClass = r.hasBlockedUser ? ' blocked' : '';
                 var pinIcon = r.pinned ? '📌' : '';
-
                 html += '<div class="contact-card' + pinnedClass + blockedClass + '" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
-                    '<img class="contact-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22100%22 height=%22100%22 rx=%2212%22/%3E%3C/svg%3E\'">' +
+                    '<img class="contact-avatar" src="' + (r.avatar || '') + '" onerror="this.style.background=\'#e0e0e0\'">' +
                     '<div class="unread-badge' + (hasUnread ? ' show' : '') + '">' + (r.unread > 1 ? r.unread : '') + '</div>' +
-                    '<div class="contact-info">' +
-                    '<div class="contact-top"><span class="contact-name">' + escapeHtml(r.remark || r.name) + '</span>' +
+                    '<div class="contact-info"><div class="contact-top"><span class="contact-name">' + escapeHtml(r.remark || r.name) + '</span>' +
                     (pinIcon ? '<span class="contact-pin">' + pinIcon + '</span>' : '') +
                     '<span class="contact-time">' + time + '</span></div>' +
-                    '<div class="contact-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div>' +
-                    '</div></div>';
+                    '<div class="contact-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div></div></div>';
             }
             container.innerHTML = html;
         }
@@ -465,10 +395,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             renderStatusRow();
             renderContactList();
-            setInterval(function() {
-                renderStatusRow();
-                renderContactList();
-            }, 60000);
+            setInterval(function() { renderStatusRow(); renderContactList(); }, 60000);
         });
     </script>
 </body>
