@@ -107,9 +107,11 @@
         .modal-overlay.active { display:flex; }
         .modal-content {
             background:rgba(255,255,255,0.95); backdrop-filter:blur(30px);
-            border-radius:16px; padding:20px; width:85%; max-width:360px;
+            border-radius:16px; padding:20px; width:85%; max-width:380px;
             box-shadow:0 10px 40px rgba(0,0,0,0.2);
+            max-height:80vh; overflow-y:auto;
         }
+        .modal-content::-webkit-scrollbar { display:none; }
         .modal-title { font-size:17px; font-weight:600; text-align:center; margin-bottom:16px; }
         .modal-option {
             padding:14px; text-align:center; font-size:16px; cursor:pointer;
@@ -131,29 +133,37 @@
         }
         .remark-input::placeholder { color:var(--text-tertiary); }
 
-        /* 气泡形状选择 */
+        /* 气泡弹窗 */
+        .section-label {
+            font-size:13px; color:#888; text-align:center; margin:12px 0 8px;
+            font-weight:500; letter-spacing:0.5px;
+        }
+        .section-label:first-child { margin-top:0; }
         .bubble-shape-grid {
-            display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:16px;
+            display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:4px;
         }
         .bubble-shape-item {
-            width:80px; height:50px; border-radius:16px; cursor:pointer;
-            border:3px solid transparent; display:flex; align-items:center;
-            justify-content:center; font-size:11px; font-weight:600;
-            background:#95ec69; color:#000; position:relative; overflow:hidden;
+            width:75px; height:46px; cursor:pointer; border:3px solid transparent;
+            display:flex; align-items:center; justify-content:center;
+            font-size:11px; font-weight:600; color:#000; position:relative;
         }
         .bubble-shape-item.selected { border-color:var(--blue); }
-        .bubble-shape-item.round { border-radius:18px; }
-        .bubble-shape-item.square { border-radius:4px; }
-        .bubble-shape-item.soft { border-radius:12px 18px 12px 18px; }
-        .bubble-shape-item.leaf { border-radius:50% 4px 50% 4px; }
-        .bubble-shape-item.cloud { border-radius:20px 8px 20px 8px; }
-        .bubble-shape-item.pill { border-radius:24px; }
+        .bubble-shape-item.round { border-radius:18px; background:#95ec69; }
+        .bubble-shape-item.square { border-radius:4px; background:#95ec69; }
+        .bubble-shape-item.soft { border-radius:12px 18px 12px 18px; background:#95ec69; }
+        .bubble-shape-item.leaf { border-radius:50% 4px 50% 4px; background:#95ec69; }
+        .bubble-shape-item.cloud { border-radius:20px 8px 20px 8px; background:#95ec69; }
+        .bubble-shape-item.pill { border-radius:24px; background:#95ec69; }
 
-        .color-picker-row {
-            display:flex; align-items:center; gap:10px; padding:8px 0;
+        .color-row {
+            display:flex; align-items:center; gap:10px; padding:6px 0;
         }
-        .color-picker-row span { font-size:14px; font-weight:600; }
-        .color-picker-row input { flex:1; height:40px; border:none; cursor:pointer; border-radius:8px; }
+        .color-row .color-label { font-size:13px; font-weight:600; min-width:50px; }
+        .color-row input { flex:1; height:36px; border:none; cursor:pointer; border-radius:8px; }
+        .color-preview {
+            width:24px; height:24px; border-radius:50%; border:2px solid #ddd;
+            flex-shrink:0;
+        }
         .btn-row { display:flex; gap:10px; margin-top:16px; }
         .btn { flex:1; padding:12px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; }
         .btn-cancel { background:#e5e5ea; color:#333; }
@@ -296,7 +306,8 @@
     <div class="modal-overlay" id="bubble-modal">
         <div class="modal-content">
             <div class="modal-title">更换气泡样式</div>
-            <p style="text-align:center;font-size:13px;color:#888;margin-bottom:12px;">选择气泡形状</p>
+
+            <div class="section-label">— 气泡形状 —</div>
             <div class="bubble-shape-grid">
                 <div class="bubble-shape-item round" data-shape="round" onclick="selectBubbleShape('round')">圆形</div>
                 <div class="bubble-shape-item square" data-shape="square" onclick="selectBubbleShape('square')">方形</div>
@@ -305,11 +316,21 @@
                 <div class="bubble-shape-item cloud" data-shape="cloud" onclick="selectBubbleShape('cloud')">云朵</div>
                 <div class="bubble-shape-item pill" data-shape="pill" onclick="selectBubbleShape('pill')">胶囊</div>
             </div>
-            <p style="text-align:center;font-size:13px;color:#888;margin-bottom:12px;">选择气泡颜色</p>
-            <div class="color-picker-row">
-                <span>自定义颜色</span>
-                <input type="color" id="custom-bubble-color" value="#95ec69" onchange="selectBubbleColor()">
+
+            <div class="section-label">— 我的气泡颜色 —</div>
+            <div class="color-row">
+                <span class="color-label">颜色</span>
+                <input type="color" id="user-bubble-color" value="#95ec69" onchange="updateUserColorPreview()">
+                <div class="color-preview" id="user-color-preview" style="background:#95ec69;"></div>
             </div>
+
+            <div class="section-label">— 角色气泡颜色 —</div>
+            <div class="color-row">
+                <span class="color-label">颜色</span>
+                <input type="color" id="role-bubble-color" value="#ffffff" onchange="updateRoleColorPreview()">
+                <div class="color-preview" id="role-color-preview" style="background:#ffffff;"></div>
+            </div>
+
             <div class="btn-row">
                 <button class="btn btn-cancel" onclick="closeModal('bubble-modal')">取消</button>
                 <button class="btn btn-save" onclick="saveBubbleStyle()">保存</button>
@@ -321,7 +342,8 @@
         var roleId = null;
         var currentRole = null;
         var selectedBubbleShape = 'round';
-        var selectedBubbleColor = '#95ec69';
+        var selectedUserBubbleColor = '#95ec69';
+        var selectedRoleBubbleColor = '#ffffff';
 
         function updateClock() {
             var now = new Date();
@@ -369,8 +391,12 @@
             document.getElementById('lang-value').innerText = currentRole.language || '中文';
 
             selectedBubbleShape = currentRole.bubbleShape || 'round';
-            selectedBubbleColor = currentRole.bubbleColor || '#95ec69';
-            document.getElementById('custom-bubble-color').value = selectedBubbleColor;
+            selectedUserBubbleColor = currentRole.userBubbleColor || '#95ec69';
+            selectedRoleBubbleColor = currentRole.roleBubbleColor || '#ffffff';
+            document.getElementById('user-bubble-color').value = selectedUserBubbleColor;
+            document.getElementById('role-bubble-color').value = selectedRoleBubbleColor;
+            updateUserColorPreview();
+            updateRoleColorPreview();
             highlightBubbleShape();
         }
 
@@ -379,6 +405,16 @@
                 el.classList.remove('selected');
                 if (el.dataset.shape === selectedBubbleShape) el.classList.add('selected');
             });
+        }
+
+        function updateUserColorPreview() {
+            selectedUserBubbleColor = document.getElementById('user-bubble-color').value;
+            document.getElementById('user-color-preview').style.background = selectedUserBubbleColor;
+        }
+
+        function updateRoleColorPreview() {
+            selectedRoleBubbleColor = document.getElementById('role-bubble-color').value;
+            document.getElementById('role-color-preview').style.background = selectedRoleBubbleColor;
         }
 
         function updateGenderDisplay() {
@@ -428,15 +464,23 @@
 
         function resetBg() { currentRole.chatBackground = ''; saveRole(); closeModal('bg-modal'); alert('已恢复默认背景'); }
 
-        function showBubbleModal() { document.getElementById('bubble-modal').classList.add('active'); highlightBubbleShape(); }
+        function showBubbleModal() {
+            document.getElementById('user-bubble-color').value = selectedUserBubbleColor;
+            document.getElementById('role-bubble-color').value = selectedRoleBubbleColor;
+            updateUserColorPreview();
+            updateRoleColorPreview();
+            highlightBubbleShape();
+            document.getElementById('bubble-modal').classList.add('active');
+        }
 
         function selectBubbleShape(shape) { selectedBubbleShape = shape; highlightBubbleShape(); }
-        function selectBubbleColor() { selectedBubbleColor = document.getElementById('custom-bubble-color').value; }
 
         function saveBubbleStyle() {
-            selectedBubbleColor = document.getElementById('custom-bubble-color').value;
+            selectedUserBubbleColor = document.getElementById('user-bubble-color').value;
+            selectedRoleBubbleColor = document.getElementById('role-bubble-color').value;
             currentRole.bubbleShape = selectedBubbleShape;
-            currentRole.bubbleColor = selectedBubbleColor;
+            currentRole.userBubbleColor = selectedUserBubbleColor;
+            currentRole.roleBubbleColor = selectedRoleBubbleColor;
             saveRole(); closeModal('bubble-modal');
             alert('气泡样式已保存');
         }
@@ -471,4 +515,4 @@
         });
     </script>
 </body>
-</html>
+</html>  
