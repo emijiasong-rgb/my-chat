@@ -96,7 +96,6 @@
         .bubble-shape-cloud { border-radius:20px 8px 20px 8px !important; }
         .bubble-shape-pill { border-radius:24px !important; }
 
-        /* 翻译气泡 - 紧贴在消息气泡下方 */
         .translation-bubble {
             background:#F0F0F0; border-radius:16px; padding:4px 14px;
             font-size:11px; color:#888; margin-top:3px;
@@ -363,9 +362,10 @@
                     var borderStyle = isWhite ? 'border:0.5px solid #e0e0e0;' : '';
                     var bubbleStyle = 'style="background:' + roleBubbleColor + ';' + borderStyle + '"';
                     html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble ' + shapeClass + '" ' + bubbleStyle + '>' + text + '</div>';
-                    // 翻译气泡：非中文+开启翻译+非typing消息时显示
-                    if (!isTyping && showTranslation && msg.translation) {
+                    if (!isTyping && showTranslation && msg.translation && msg.translation !== '翻译中...') {
                         html += '<div class="translation-bubble" onclick="this.classList.toggle(\'hidden\')">' + escapeHtml(msg.translation) + '</div>';
+                    } else if (!isTyping && showTranslation && msg.translation === '翻译中...') {
+                        html += '<div class="translation-bubble" style="color:#bbb;">翻译中...</div>';
                     }
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
@@ -480,7 +480,8 @@
                 setTimeout(function() {
                     removeTypingMessage();
                     var localReply = generateLocalReply();
-                    currentChatRole.messages.push({ type: 'ai', text: localReply, time: Date.now(), translation: needsTranslation() ? translateText(localReply, currentChatRole.language) : '' });
+                    var translation = needsTranslation() ? translateText(localReply, currentChatRole.language) : '';
+                    currentChatRole.messages.push({ type: 'ai', text: localReply, time: Date.now(), translation: translation });
                     if (!isOnChatPage && !currentChatRole.doNotDisturb) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                     currentChatRole.isReplying = false;
                     saveRoleToStorage(); renderMessages(); hideTyping();
@@ -510,7 +511,6 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '';
-                    // 过滤掉"收到"类无意义回复
                     if (reply.match(/^(message received|received|ok|got it|收到|好的收到|了解).*/i)) {
                         reply = generateLocalReply();
                     }
@@ -579,15 +579,11 @@
             return list[Math.floor(Math.random() * list.length)];
         }
 
+        // ========== 翻译函数 ==========
         function translateText(text, lang) {
             if (!text || lang === '中文') return '';
-            // 本地简单翻译映射（实际应用中可调用翻译API）
+            
             var map = {
-                '好呀！': 'Okay!', '当然可以~': 'Of course~', '超开心！': 'Super happy!', '嘿嘿，你最好啦': 'Hehe, you\'re the best',
-                '嗯嗯': 'Mm-hmm', '好的': 'Alright', '明白了': 'Understood', '知道了': 'Got it',
-                '...': '...', '哦': 'Oh', '好吧': 'Fine', '算了': 'Forget it',
-                '哼': 'Hmph', '随便你': 'Whatever', '别烦我': 'Leave me alone', '关我什么事': 'Not my business',
-                '累了...': 'Tired...', '明天再说吧': 'Talk tomorrow', '好困啊': 'So sleepy', '想睡觉': 'Want to sleep',
                 'Great!': '太好了！', 'Awesome~': '太棒了~', 'Love that!': '喜欢！', 'You are the best!': '你是最棒的！',
                 'Okay': '好的', 'Got it': '明白了', 'Sure': '当然', 'I see': '知道了',
                 'Oh': '哦', 'Alright': '好吧', 'Fine': '行吧',
@@ -604,10 +600,43 @@
                 '흥': '哼', '맘대로 해': '随便你', '귀찮아': '好烦', '상관없어': '无所谓',
                 '피곤해...': '累了...', '내일 하자': '明天做吧', '졸려': '好困', '그만할래': '不想做了'
             };
+            
             if (map[text]) return map[text];
-            // 英文翻译标记
-            if (/^[a-zA-Z\s!~,.?]+$/.test(text)) return '(翻译) ' + text;
-            return '(翻译) ' + text;
+            
+            var langMap = { 'English': 'en', '日本語': 'ja', '한국어': 'ko' };
+            var sourceCode = langMap[lang] || 'en';
+            translateViaApi(text, sourceCode);
+            return '翻译中...';
+        }
+
+        function translateViaApi(text, sourceLang) {
+            var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + sourceLang + '&tl=zh&dt=t&q=' + encodeURIComponent(text);
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        var translated = '';
+                        for (var i = 0; i < data[0].length; i++) { translated += data[0][i][0]; }
+                        updateTranslationInMessages(text, translated);
+                    } catch(e) { updateTranslationInMessages(text, '(翻译失败)'); }
+                } else { updateTranslationInMessages(text, '(翻译失败)'); }
+            };
+            xhr.onerror = function() { updateTranslationInMessages(text, '(翻译失败)'); };
+            xhr.send();
+        }
+
+        function updateTranslationInMessages(originalText, translatedText) {
+            if (!currentChatRole || !currentChatRole.messages) return;
+            for (var i = currentChatRole.messages.length - 1; i >= 0; i--) {
+                if (currentChatRole.messages[i].type === 'ai' && currentChatRole.messages[i].text === originalText) {
+                    currentChatRole.messages[i].translation = translatedText;
+                    saveRoleToStorage();
+                    renderMessages();
+                    break;
+                }
+            }
         }
 
         function saveRoleToStorage() {
