@@ -56,8 +56,8 @@
             width:64px; height:64px; border-radius:50%; object-fit:cover;
             background:#e0e0e0; flex-shrink:0;
         }
-        .user-info { flex:1; min-width:0; }
-        .user-name-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+        .user-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+        .user-name-row { display:flex; align-items:center; gap:6px; }
         .user-name { font-size:19px; font-weight:700; color:var(--text); }
         .gender-badge {
             width:20px; height:20px; border-radius:50%; display:flex;
@@ -111,7 +111,7 @@
         .modal-overlay.active { display:flex; }
         .modal-content {
             background:rgba(255,255,255,0.95); backdrop-filter:blur(30px);
-            border-radius:16px; padding:20px; width:85%; max-width:320px;
+            border-radius:16px; padding:20px; width:85%; max-width:360px;
             box-shadow:0 10px 40px rgba(0,0,0,0.2);
         }
         .modal-title { font-size:17px; font-weight:600; text-align:center; margin-bottom:16px; }
@@ -130,6 +130,26 @@
             padding:0; flex:1;
         }
         .remark-input::placeholder { color:var(--text-tertiary); }
+
+        /* 气泡样式弹窗 */
+        .bubble-style-grid {
+            display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:16px;
+        }
+        .bubble-style-item {
+            width:80px; height:50px; border-radius:16px; cursor:pointer;
+            border:3px solid transparent; display:flex; align-items:center;
+            justify-content:center; font-size:11px; font-weight:600; color:#000;
+        }
+        .bubble-style-item.selected { border-color:var(--blue); }
+        .color-picker-row {
+            display:flex; align-items:center; gap:10px; padding:8px 0;
+        }
+        .color-picker-row input { flex:1; height:40px; border:none; cursor:pointer; }
+        .btn-row { display:flex; gap:10px; margin-top:16px; }
+        .btn { flex:1; padding:12px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; }
+        .btn-cancel { background:#e5e5ea; color:#333; }
+        .btn-save { background:var(--blue); color:#fff; }
+        .btn:active { opacity:0.7; }
     </style>
 </head>
 <body>
@@ -160,7 +180,6 @@
         </div>
 
         <div id="viewport">
-            <!-- 用户信息卡片 -->
             <div class="user-card">
                 <img class="user-avatar" id="info-avatar" src="" alt="">
                 <div class="user-info">
@@ -173,7 +192,6 @@
                 </div>
             </div>
 
-            <!-- 设置列表 -->
             <div class="section">
                 <div class="setting-row">
                     <span class="setting-label">备注</span>
@@ -186,6 +204,14 @@
                 <div class="setting-row" onclick="showGenderModal()">
                     <span class="setting-label">性别</span>
                     <span class="setting-value" id="gender-value">选择/修改 <span class="setting-arrow">〉</span></span>
+                </div>
+                <div class="setting-row" onclick="showBgModal()">
+                    <span class="setting-label">设置当前聊天背景</span>
+                    <span class="setting-value">选择 <span class="setting-arrow">〉</span></span>
+                </div>
+                <div class="setting-row" onclick="showBubbleModal()">
+                    <span class="setting-label">更换气泡样式</span>
+                    <span class="setting-value">更换 <span class="setting-arrow">〉</span></span>
                 </div>
             </div>
 
@@ -208,7 +234,6 @@
                 </div>
             </div>
 
-            <!-- 删除 -->
             <div class="delete-section">
                 <button class="delete-btn" onclick="deleteRole()">删除好友</button>
             </div>
@@ -237,9 +262,45 @@
         </div>
     </div>
 
+    <!-- 聊天背景弹窗 -->
+    <div class="modal-overlay" id="bg-modal">
+        <div class="modal-content">
+            <div class="modal-title">设置聊天背景</div>
+            <input type="file" id="bg-file-input" accept="image/*" style="display:none;" onchange="handleBgUpload(event)">
+            <div class="modal-option" onclick="document.getElementById('bg-file-input').click()">📷 从相册选择</div>
+            <div class="modal-option" onclick="resetBg()">🔄 恢复默认背景</div>
+            <div class="modal-option" onclick="closeModal('bg-modal')">取消</div>
+        </div>
+    </div>
+
+    <!-- 气泡样式弹窗 -->
+    <div class="modal-overlay" id="bubble-modal">
+        <div class="modal-content">
+            <div class="modal-title">更换气泡样式</div>
+            <div class="bubble-style-grid">
+                <div class="bubble-style-item" style="background:#95ec69; border-top-right-radius:4px;" onclick="selectBubbleStyle('green')">经典绿</div>
+                <div class="bubble-style-item" style="background:#fff; border:1px solid #e0e0e0; border-top-right-radius:4px;" onclick="selectBubbleStyle('white')">简约白</div>
+                <div class="bubble-style-item" style="background:#007aff; color:#fff; border-top-right-radius:4px;" onclick="selectBubbleStyle('blue')">天空蓝</div>
+                <div class="bubble-style-item" style="background:#ff6b6b; color:#fff; border-top-right-radius:4px;" onclick="selectBubbleStyle('red')">热情红</div>
+                <div class="bubble-style-item" style="background:#ffd93d; border-top-right-radius:4px;" onclick="selectBubbleStyle('yellow')">暖阳黄</div>
+                <div class="bubble-style-item" style="background:#a29bfe; color:#fff; border-top-right-radius:4px;" onclick="selectBubbleStyle('purple')">梦幻紫</div>
+            </div>
+            <div class="color-picker-row">
+                <span style="font-size:14px;font-weight:600;">自定义颜色：</span>
+                <input type="color" id="custom-bubble-color" value="#95ec69" onchange="selectBubbleStyle('custom')">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal('bubble-modal')">取消</button>
+                <button class="btn btn-save" onclick="saveBubbleStyle()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         var roleId = null;
         var currentRole = null;
+        var selectedBubbleStyle = 'green';
+        var selectedBubbleColor = '#95ec69';
 
         function updateClock() {
             var now = new Date();
@@ -264,7 +325,6 @@
             roleId = parseInt(params.get('id'));
             if (!roleId) { window.location.href = 'chat.html'; return; }
             loadRole();
-
             document.getElementById('back-btn').href = 'chat-detail.html?id=' + roleId;
         });
 
@@ -281,14 +341,24 @@
             document.getElementById('info-phone').innerText = '手机号: ' + (currentRole.phone || '未设置');
             document.getElementById('remark-input').value = currentRole.remark || '';
 
-            // 性别
             updateGenderDisplay();
-            // 开关状态
             if (currentRole.muted) document.getElementById('mute-toggle').classList.add('on');
             if (currentRole.pinned) document.getElementById('pin-toggle').classList.add('on');
             if (currentRole.blocked) document.getElementById('block-toggle').classList.add('on');
-            // 语言
             document.getElementById('lang-value').innerText = currentRole.language || '中文';
+
+            // 气泡样式
+            selectedBubbleStyle = currentRole.bubbleStyle || 'green';
+            selectedBubbleColor = currentRole.bubbleColor || '#95ec69';
+            document.getElementById('custom-bubble-color').value = selectedBubbleColor;
+            highlightBubbleSelection();
+        }
+
+        function highlightBubbleSelection() {
+            document.querySelectorAll('.bubble-style-item').forEach(function(el) {
+                el.classList.remove('selected');
+                if (el.dataset.style === selectedBubbleStyle) el.classList.add('selected');
+            });
         }
 
         function updateGenderDisplay() {
@@ -323,19 +393,74 @@
             saveRole();
         }
 
-        function editRole() {
-            window.location.href = 'contact-edit.html?id=' + roleId;
-        }
+        function editRole() { window.location.href = 'contact-edit.html?id=' + roleId; }
 
-        function showGenderModal() {
-            document.getElementById('gender-modal').classList.add('active');
-        }
+        function showGenderModal() { document.getElementById('gender-modal').classList.add('active'); }
 
         function setGender(g) {
             currentRole.gender = g;
             saveRole();
             updateGenderDisplay();
             closeModal('gender-modal');
+        }
+
+        function showBgModal() { document.getElementById('bg-modal').classList.add('active'); }
+
+        function handleBgUpload(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                currentRole.chatBackground = e.target.result;
+                saveRole();
+                closeModal('bg-modal');
+                alert('✅ 聊天背景已更新！');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetBg() {
+            currentRole.chatBackground = '';
+            saveRole();
+            closeModal('bg-modal');
+            alert('✅ 已恢复默认背景！');
+        }
+
+        function showBubbleModal() {
+            document.getElementById('bubble-modal').classList.add('active');
+            highlightBubbleSelection();
+        }
+
+        function selectBubbleStyle(style) {
+            selectedBubbleStyle = style;
+            if (style === 'custom') {
+                selectedBubbleColor = document.getElementById('custom-bubble-color').value;
+            }
+            highlightBubbleSelection();
+            // 更新自定义样式项的显示
+            var customItem = document.querySelector('.bubble-style-item[data-style="custom"]');
+            if (!customItem) {
+                customItem = document.createElement('div');
+                customItem.className = 'bubble-style-item';
+                customItem.style.borderTopRightRadius = '4px';
+                customItem.style.color = '#fff';
+                customItem.innerText = '自定义';
+                customItem.dataset.style = 'custom';
+                customItem.onclick = function() { selectBubbleStyle('custom'); };
+                document.querySelector('.bubble-style-grid').appendChild(customItem);
+            }
+            customItem.style.background = selectedBubbleColor;
+        }
+
+        function saveBubbleStyle() {
+            if (selectedBubbleStyle === 'custom') {
+                selectedBubbleColor = document.getElementById('custom-bubble-color').value;
+            }
+            currentRole.bubbleStyle = selectedBubbleStyle;
+            currentRole.bubbleColor = selectedBubbleColor;
+            saveRole();
+            closeModal('bubble-modal');
+            alert('✅ 气泡样式已保存！');
         }
 
         function toggleMute() {
@@ -356,9 +481,7 @@
             saveRole();
         }
 
-        function showLangModal() {
-            document.getElementById('lang-modal').classList.add('active');
-        }
+        function showLangModal() { document.getElementById('lang-modal').classList.add('active'); }
 
         function setLang(lang) {
             currentRole.language = lang;
@@ -372,9 +495,7 @@
             }
         }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         function deleteRole() {
             if (!confirm('确定删除好友？此操作不可撤销。')) return;
@@ -387,7 +508,6 @@
             window.location.href = 'chat.html';
         }
 
-        // 点击遮罩关闭
         document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
             overlay.addEventListener('click', function(e) {
                 if (e.target === this) this.classList.remove('active');
