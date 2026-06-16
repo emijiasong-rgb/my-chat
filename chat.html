@@ -231,7 +231,6 @@
             </div>
         </div>
 
-        <!-- 联系人列表（Ins风头像+渐变环+状态点+心声气泡） -->
         <div class="contact-list" id="contact-list">
             <div class="empty-state">
                 <div class="empty-icon">💬</div>
@@ -280,6 +279,7 @@
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
         }
         setInterval(updateClock, 1000);
+        updateClock();
 
         function updateBattery() {
             if ('getBattery' in navigator) {
@@ -291,6 +291,7 @@
                 });
             }
         }
+        updateBattery();
 
         function renderContactList() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
@@ -385,7 +386,6 @@
         function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
 
         document.addEventListener('DOMContentLoaded', function() {
-            updateClock(); updateBattery();
             renderContactList();
             setInterval(renderContactList, 60000);
         });
