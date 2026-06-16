@@ -207,10 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
     refreshUserUI(); 
 
     var urlParams = new URLSearchParams(window.location.search);
-    var isFromSettings = urlParams.get('from') === 'settings';
-    var isFromLockscreen = urlParams.get('from') === 'lockscreen';
-
-    if (isFromSettings || isFromLockscreen) {
+    var from = urlParams.get('from');
+    if (from === 'settings' || from === 'lockscreen' || from === 'chat') {
         document.getElementById('welcome-container').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
     } else {
