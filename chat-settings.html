@@ -86,6 +86,7 @@
             position:relative; transition:background 0.3s; cursor:pointer; flex-shrink:0;
         }
         .toggle.on { background:var(--green); }
+        .toggle.on.red { background:var(--red); }
         .toggle::after {
             content:""; position:absolute; top:2px; left:2px;
             width:26px; height:26px; border-radius:50%; background:#fff;
@@ -121,6 +122,7 @@
         }
         .modal-option:last-child { border-bottom:none; margin-bottom:0; }
         .modal-option:active { background:#f5f5f5; }
+        .modal-option.selected { color:var(--blue); font-weight:600; }
         .modal-option-icon {
             width:22px; height:22px; display:flex; align-items:center; justify-content:center;
         }
@@ -132,6 +134,15 @@
             padding:0; flex:1;
         }
         .remark-input::placeholder { color:var(--text-tertiary); }
+
+        /* 翻译开关行 */
+        .translate-row {
+            display:none; align-items:center; justify-content:space-between;
+            padding:14px 16px; border-bottom:0.5px solid #f0f0f0;
+            cursor:pointer; background:var(--white);
+        }
+        .translate-row.show { display:flex; }
+        .translate-row:active { background:#f5f5f5; }
 
         /* 气泡弹窗 */
         .section-label {
@@ -169,6 +180,15 @@
         .btn-cancel { background:#e5e5ea; color:#333; }
         .btn-save { background:var(--blue); color:#fff; }
         .btn:active { opacity:0.7; }
+
+        /* Toast */
+        .toast {
+            position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+            background:#333; color:#fff; padding:10px 24px; border-radius:20px;
+            font-size:14px; z-index:3000; opacity:0; transition:opacity 0.3s;
+            pointer-events:none;
+        }
+        .toast.show { opacity:1; }
     </style>
 </head>
 <body>
@@ -235,6 +255,14 @@
             </div>
 
             <div class="section">
+                <div class="setting-row" onclick="showLangModal()">
+                    <span class="setting-label">语言</span>
+                    <span class="setting-value" id="lang-value">中文 <span class="setting-arrow">›</span></span>
+                </div>
+                <div class="translate-row" id="translate-row" onclick="toggleTranslate()">
+                    <span class="setting-label">翻译</span>
+                    <div class="toggle" id="translate-toggle"></div>
+                </div>
                 <div class="setting-row" onclick="toggleMute()">
                     <span class="setting-label">开启免打扰模式</span>
                     <div class="toggle" id="mute-toggle"></div>
@@ -243,12 +271,8 @@
                     <span class="setting-label">置顶</span>
                     <div class="toggle" id="pin-toggle"></div>
                 </div>
-                <div class="setting-row" onclick="showLangModal()">
-                    <span class="setting-label">语言</span>
-                    <span class="setting-value" id="lang-value">中文 <span class="setting-arrow">›</span></span>
-                </div>
                 <div class="setting-row" onclick="toggleBlock()">
-                    <span class="setting-label">拉黑</span>
+                    <span class="setting-label" id="block-label">拉黑</span>
                     <div class="toggle" id="block-toggle"></div>
                 </div>
             </div>
@@ -306,7 +330,6 @@
     <div class="modal-overlay" id="bubble-modal">
         <div class="modal-content">
             <div class="modal-title">更换气泡样式</div>
-
             <div class="section-label">— 气泡形状 —</div>
             <div class="bubble-shape-grid">
                 <div class="bubble-shape-item round" data-shape="round" onclick="selectBubbleShape('round')">圆形</div>
@@ -316,27 +339,27 @@
                 <div class="bubble-shape-item cloud" data-shape="cloud" onclick="selectBubbleShape('cloud')">云朵</div>
                 <div class="bubble-shape-item pill" data-shape="pill" onclick="selectBubbleShape('pill')">胶囊</div>
             </div>
-
             <div class="section-label">— 我的气泡颜色 —</div>
             <div class="color-row">
                 <span class="color-label">颜色</span>
                 <input type="color" id="user-bubble-color" value="#95ec69" onchange="updateUserColorPreview()">
                 <div class="color-preview" id="user-color-preview" style="background:#95ec69;"></div>
             </div>
-
             <div class="section-label">— 角色气泡颜色 —</div>
             <div class="color-row">
                 <span class="color-label">颜色</span>
                 <input type="color" id="role-bubble-color" value="#ffffff" onchange="updateRoleColorPreview()">
                 <div class="color-preview" id="role-color-preview" style="background:#ffffff;"></div>
             </div>
-
             <div class="btn-row">
                 <button class="btn btn-cancel" onclick="closeModal('bubble-modal')">取消</button>
                 <button class="btn btn-save" onclick="saveBubbleStyle()">保存</button>
             </div>
         </div>
     </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
 
     <script>
         var roleId = null;
@@ -360,6 +383,13 @@
                     if (lel) { lel.setAttribute('width', Math.round((lvl/100)*18)); lel.setAttribute('fill', lvl <= 20 ? '#ff3b30' : 'currentColor'); }
                 });
             }
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 2000);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -387,9 +417,15 @@
             updateGenderDisplay();
             if (currentRole.muted) document.getElementById('mute-toggle').classList.add('on');
             if (currentRole.pinned) document.getElementById('pin-toggle').classList.add('on');
-            if (currentRole.blocked) document.getElementById('block-toggle').classList.add('on');
-            document.getElementById('lang-value').innerText = currentRole.language || '中文';
 
+            // 拉黑
+            updateBlockDisplay();
+            // 语言
+            document.getElementById('lang-value').innerText = currentRole.language || '中文';
+            updateTranslateRow();
+            if (currentRole.translate) document.getElementById('translate-toggle').classList.add('on');
+
+            // 气泡
             selectedBubbleShape = currentRole.bubbleShape || 'round';
             selectedUserBubbleColor = currentRole.userBubbleColor || '#95ec69';
             selectedRoleBubbleColor = currentRole.roleBubbleColor || '#ffffff';
@@ -398,6 +434,29 @@
             updateUserColorPreview();
             updateRoleColorPreview();
             highlightBubbleShape();
+        }
+
+        function updateBlockDisplay() {
+            var toggle = document.getElementById('block-toggle');
+            var label = document.getElementById('block-label');
+            if (currentRole.isBlockedByUser) {
+                toggle.classList.add('on', 'red');
+                label.innerText = '已拉黑（点击解除）';
+            } else {
+                toggle.classList.remove('on', 'red');
+                label.innerText = '拉黑';
+            }
+        }
+
+        function updateTranslateRow() {
+            var row = document.getElementById('translate-row');
+            if ((currentRole.language || '中文') !== '中文') {
+                row.classList.add('show');
+            } else {
+                row.classList.remove('show');
+                currentRole.translate = false;
+                document.getElementById('translate-toggle').classList.remove('on');
+            }
         }
 
         function highlightBubbleShape() {
@@ -457,18 +516,17 @@
             reader.onload = function(e) {
                 currentRole.chatBackground = e.target.result;
                 saveRole(); closeModal('bg-modal');
-                alert('聊天背景已更新');
+                showToast('聊天背景已更新');
             };
             reader.readAsDataURL(file);
         }
 
-        function resetBg() { currentRole.chatBackground = ''; saveRole(); closeModal('bg-modal'); alert('已恢复默认背景'); }
+        function resetBg() { currentRole.chatBackground = ''; saveRole(); closeModal('bg-modal'); showToast('已恢复默认背景'); }
 
         function showBubbleModal() {
             document.getElementById('user-bubble-color').value = selectedUserBubbleColor;
             document.getElementById('role-bubble-color').value = selectedRoleBubbleColor;
-            updateUserColorPreview();
-            updateRoleColorPreview();
+            updateUserColorPreview(); updateRoleColorPreview();
             highlightBubbleShape();
             document.getElementById('bubble-modal').classList.add('active');
         }
@@ -482,19 +540,44 @@
             currentRole.userBubbleColor = selectedUserBubbleColor;
             currentRole.roleBubbleColor = selectedRoleBubbleColor;
             saveRole(); closeModal('bubble-modal');
-            alert('气泡样式已保存');
+            showToast('气泡样式已保存');
         }
 
-        function toggleMute() { currentRole.muted = !currentRole.muted; document.getElementById('mute-toggle').classList.toggle('on', currentRole.muted); saveRole(); }
-        function togglePin() { currentRole.pinned = !currentRole.pinned; document.getElementById('pin-toggle').classList.toggle('on', currentRole.pinned); saveRole(); }
-        function toggleBlock() { currentRole.blocked = !currentRole.blocked; document.getElementById('block-toggle').classList.toggle('on', currentRole.blocked); saveRole(); }
         function showLangModal() { document.getElementById('lang-modal').classList.add('active'); }
 
         function setLang(lang) {
             currentRole.language = lang;
             document.getElementById('lang-value').innerText = lang;
+            updateTranslateRow();
             saveRole(); closeModal('lang-modal');
-            if (lang !== '中文') { currentRole.translate = confirm('是否开启翻译？'); saveRole(); }
+            showToast('已切换为 ' + lang);
+        }
+
+        function toggleTranslate() {
+            if ((currentRole.language || '中文') === '中文') return;
+            currentRole.translate = !currentRole.translate;
+            document.getElementById('translate-toggle').classList.toggle('on', currentRole.translate);
+            saveRole();
+            showToast(currentRole.translate ? '已开启翻译' : '已关闭翻译');
+        }
+
+        function toggleMute() {
+            currentRole.muted = !currentRole.muted;
+            document.getElementById('mute-toggle').classList.toggle('on', currentRole.muted);
+            saveRole();
+        }
+
+        function togglePin() {
+            currentRole.pinned = !currentRole.pinned;
+            document.getElementById('pin-toggle').classList.toggle('on', currentRole.pinned);
+            saveRole();
+        }
+
+        function toggleBlock() {
+            currentRole.isBlockedByUser = !currentRole.isBlockedByUser;
+            updateBlockDisplay();
+            saveRole();
+            showToast(currentRole.isBlockedByUser ? '已拉黑 ' + (currentRole.remark || currentRole.name) : '已解除对 ' + (currentRole.remark || currentRole.name) + ' 的拉黑');
         }
 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -515,4 +598,4 @@
         });
     </script>
 </body>
-</html>  
+</html>
