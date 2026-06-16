@@ -4,15 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>微信</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #ededed;
             --white: #fff;
             --text: #191919;
-            --text-secondary: #888;
             --text-tertiary: #b0b0b0;
             --red-dot: #f44;
             --separator: #e5e5e5;
@@ -24,12 +20,11 @@
         body {
             background:#1a1a1a; height:100dvh; width:100vw;
             display:flex; justify-content:center; align-items:center;
-            font-family:-apple-system,'Inter','Noto Sans SC',sans-serif; overflow:hidden;
-            padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+            font-family:-apple-system,sans-serif; overflow:hidden;
         }
         #phone-shell {
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
-            background:var(--bg); display:flex; flex-direction:column; overflow:hidden; position:relative;
+            background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
         }
 
         .status-bar {
@@ -38,8 +33,6 @@
             background:var(--white);
         }
         .status-icons { display:flex; align-items:center; gap:5px; }
-        #battery-container { display:flex; align-items:center; gap:2px; }
-        #battery-percent { font-size:12px; }
 
         .top-nav {
             display:flex; align-items:center; justify-content:center;
@@ -50,15 +43,12 @@
             position:absolute; left:16px; font-size:18px; color:#000;
             cursor:pointer; text-decoration:none; padding:4px;
         }
-        .top-nav .nav-title {
-            font-size:17px; font-weight:700; color:#000;
-        }
-        .top-nav .add-circle {
+        .nav-title { font-size:17px; font-weight:700; color:#000; }
+        .add-circle {
             position:absolute; right:16px; width:28px; height:28px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
-            z-index:100;
+            font-size:22px; color:#000;
         }
-        .top-nav .add-circle svg { width:22px; height:22px; stroke:#000; }
 
         .popup-menu {
             display:none; position:absolute; top:90px; right:10px;
@@ -73,99 +63,75 @@
             border-bottom:0.5px solid var(--separator); text-decoration:none;
         }
         .popup-menu .menu-item:last-child { border-bottom:none; }
-        .popup-menu .menu-item:active { background:#ececec; }
-        .popup-menu .menu-icon { font-size:16px; width:20px; text-align:center; }
-
         .overlay {
-            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            z-index:150;
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:150;
         }
         .overlay.show { display:block; }
 
-        /* ========== 状态栏（横向滚动） ========== */
-        .status-row {
-            background:#fff; padding:12px 0 10px 14px;
-            border-bottom:1px solid #F0EDE8;
-            overflow-x:auto; white-space:nowrap; display:flex; gap:12px;
-            -webkit-overflow-scrolling:touch; height:100px;
+        /* ========== 状态栏 - 方框容器 ========== */
+        .status-box {
+            background:#fff; margin:10px 14px; padding:12px 0;
+            border:1px solid #e8e8e8; border-radius:12px;
+            overflow:hidden;
         }
-        .status-row::-webkit-scrollbar { display:none; }
-        .status-item {
-            display:inline-flex; flex-direction:column; align-items:center;
-            min-width:70px; cursor:pointer; position:relative; flex-shrink:0;
+        .status-box-inner {
+            display:flex; gap:16px; padding:0 14px;
+            overflow-x:auto; white-space:nowrap;
+            -webkit-overflow-scrolling:touch;
         }
-        .status-avatar-wrap {
-            position:relative; width:64px; height:64px;
+        .status-box-inner::-webkit-scrollbar { display:none; }
+        .status-box-item {
+            display:flex; flex-direction:column; align-items:center;
+            min-width:56px; cursor:pointer; flex-shrink:0;
         }
-        .status-avatar-ring {
-            position:absolute; width:64px; height:64px; border-radius:50%;
-            background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
-            padding:2px;
+        .status-box-avatar {
+            width:52px; height:52px; border-radius:50%;
+            border:2px solid #e0e0e0; object-fit:cover;
+            background:#f0f0f0;
         }
-        .status-avatar-ring.offline-ring { background:#e0e0e0; }
-        .status-avatar-ring.sleep-ring { background:linear-gradient(135deg, #8E8E93, #636366); }
-        .status-avatar {
-            width:100%; height:100%; border-radius:50%; object-fit:cover;
-            border:2px solid #fff; position:relative; z-index:1;
+        .status-box-dot {
+            width:10px; height:10px; border-radius:50%;
+            margin-top:-8px; margin-left:30px; z-index:2;
+            border:2px solid #fff;
         }
-        .status-dot {
-            position:absolute; bottom:0px; right:-2px;
-            width:14px; height:14px; border-radius:50%;
-            border:2px solid #fff; font-size:10px;
-            display:flex; align-items:center; justify-content:center;
-            z-index:2; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.15);
+        .status-box-dot.online { background:#44B700; }
+        .status-box-dot.offline { background:#ccc; }
+        .status-box-name {
+            font-size:11px; color:#555; margin-top:3px;
+            max-width:56px; overflow:hidden; text-overflow:ellipsis;
+            text-align:center;
         }
-        .status-dot.online { background:#44B700; }
-        .status-dot.offline { background:#9E9E9E; }
-        .status-dot.busy { background:#FF9500; }
-        .status-dot.emoji { background:none; border:none; font-size:12px; width:auto; height:auto; bottom:0px; right:-4px; }
-        .status-name {
-            font-size:11px; color:#5B6E6B; margin-top:4px; text-align:center;
-            max-width:70px; overflow:hidden; text-overflow:ellipsis;
-            font-weight:500;
-        }
-        /* 心声气泡 */
-        .status-bubble {
-            position:absolute; top:-8px; right:-4px;
-            transform:translate(10px, -4px);
-            background:#fff; border-radius:20px; padding:4px 10px;
-            font-size:11px; color:#3A3A3A; white-space:nowrap;
-            box-shadow:0 2px 8px rgba(0,0,0,0.10);
-            z-index:10; max-width:100px; overflow:hidden; text-overflow:ellipsis;
-            pointer-events:none; font-weight:500;
-        }
-        .status-bubble::after {
-            content:""; position:absolute; bottom:-6px; left:20px;
-            width:0; height:0;
-            border-left:6px solid transparent;
-            border-right:6px solid transparent;
-            border-top:6px solid #fff;
+        /* 小气泡 */
+        .status-box-bubble {
+            background:#fff; border:1px solid #e8e8e8;
+            border-radius:14px; padding:3px 8px;
+            font-size:10px; color:#666; white-space:nowrap;
+            position:absolute; top:-18px; left:50%;
+            transform:translateX(-50%);
+            box-shadow:0 1px 4px rgba(0,0,0,0.06);
+            pointer-events:none;
         }
 
         /* ========== 联系人列表 ========== */
         .contact-list { flex:1; overflow-y:auto; background:var(--white); }
         .contact-list::-webkit-scrollbar { display:none; }
-
         .section-title {
-            padding:10px 16px 4px; font-size:12px; color:var(--text-tertiary);
+            padding:8px 16px 4px; font-size:12px; color:var(--text-tertiary);
             font-weight:500; background:var(--white);
         }
-
         .contact-card {
             display:flex; align-items:center; gap:12px; padding:12px 16px;
             cursor:pointer; border-bottom:0.5px solid var(--separator);
-            transition:background 0.15s; position:relative;
+            position:relative;
         }
         .contact-card:active { background:#f9f9f9; }
         .contact-card.pinned { background:var(--pinned-bg); }
-        .contact-card.blocked { opacity:0.5; }
-
         .contact-avatar {
             width:48px; height:48px; border-radius:6px; object-fit:cover;
             background:#d0d0d0; flex-shrink:0;
         }
         .unread-badge {
-            position:absolute; left:44px; top:-2px;
+            position:absolute; left:48px; top:8px;
             min-width:18px; height:18px; background:var(--red-dot);
             border-radius:9px; border:2px solid #fff; display:none;
             color:#fff; font-size:10px; font-weight:700;
@@ -173,128 +139,69 @@
             z-index:5; padding:0 5px;
         }
         .unread-badge.show { display:flex; }
-
         .contact-info { flex:1; min-width:0; }
         .contact-top { display:flex; align-items:baseline; gap:8px; margin-bottom:2px; }
         .contact-name { font-size:16px; font-weight:500; color:var(--text); }
-        .contact-pin { font-size:10px; color:var(--text-tertiary); }
         .contact-time { font-size:12px; color:var(--text-tertiary); margin-left:auto; flex-shrink:0; }
         .contact-preview {
             font-size:13px; color:var(--text-tertiary);
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
-        .contact-preview.unread { color:var(--text); font-weight:500; }
+        .empty-state { text-align:center; padding:100px 20px; color:#b0b0b0; }
+        .empty-icon { font-size:40px; margin-bottom:12px; opacity:0.4; }
+        .empty-text { font-size:15px; }
 
-        .empty-state { text-align:center; padding:120px 20px; color:#b0b0b0; }
-        .empty-icon { font-size:44px; margin-bottom:14px; opacity:0.35; }
-        .empty-text { font-size:16px; font-weight:500; }
-        .empty-sub { font-size:13px; margin-top:4px; opacity:0.7; }
-
-        /* ========== 底部导航 ========== */
         .bottom-nav {
-            display:flex; align-items:flex-start; justify-content:space-around;
+            display:flex; justify-content:space-around;
             background:var(--white); border-top:0.5px solid var(--separator);
             padding:8px 0 16px;
         }
         .bottom-tab {
             display:flex; flex-direction:column; align-items:center; gap:4px;
-            cursor:pointer; text-decoration:none; flex:1; transition:all 0.2s;
+            cursor:pointer; flex:1; font-size:10px; color:var(--inactive);
         }
-        .bottom-tab .tab-icon { width:24px; height:24px; display:flex; align-items:center; justify-content:center; }
-        .bottom-tab .tab-icon svg { width:22px; height:22px; }
-        .bottom-tab .tab-label { font-size:10px; font-weight:500; }
-        .bottom-tab.active .tab-icon svg { stroke:var(--active); }
-        .bottom-tab.active .tab-label { color:var(--active); }
-        .bottom-tab.inactive .tab-icon svg { stroke:var(--inactive); }
-        .bottom-tab.inactive .tab-label { color:var(--inactive); }
+        .bottom-tab.active { color:var(--active); }
     </style>
 </head>
 <body>
     <div id="phone-shell">
-        <!-- 系统状态栏 -->
         <div class="status-bar">
             <span id="clock">12:00</span>
             <div class="status-icons">
-                <svg width="15" height="10" viewBox="0 0 18 12" fill="currentColor">
-                    <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
-                    <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
-                    <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
-                    <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
-                </svg>
-                <span id="battery-container">
-                    <svg width="20" height="10" viewBox="0 0 25 12">
-                        <rect x="0" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
-                        <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
-                        <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
-                    </svg>
-                    <span id="battery-percent">--%</span>
-                </span>
+                <span>📶</span>
+                <span id="battery-percent">--%</span>
             </div>
         </div>
 
-        <!-- 顶部导航 -->
         <div class="top-nav">
             <a href="index.html" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
-            <div class="add-circle" onclick="toggleMenu()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
+            <div class="add-circle" onclick="toggleMenu()">+</div>
         </div>
 
-        <!-- 弹出菜单 -->
         <div class="overlay" id="overlay" onclick="closeMenu()"></div>
         <div class="popup-menu" id="popup-menu">
-            <a href="create-role2.html" class="menu-item">
-                <span class="menu-icon">👤</span>
-                <span>添加好友</span>
-            </a>
-            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')">
-                <span class="menu-icon">👥</span>
-                <span>发起群聊</span>
-            </div>
+            <a href="create-role2.html" class="menu-item">👤 添加好友</a>
+            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')">👥 发起群聊</div>
         </div>
 
-        <!-- 状态栏（横向滚动） -->
-        <div class="status-row" id="status-row"></div>
+        <!-- 状态栏方框 -->
+        <div class="status-box" id="status-box" style="display:none;">
+            <div class="status-box-inner" id="status-box-inner"></div>
+        </div>
 
         <!-- 联系人列表 -->
         <div class="contact-list" id="contact-list">
             <div class="empty-state">
                 <div class="empty-icon">💬</div>
                 <div class="empty-text">暂无消息</div>
-                <div class="empty-sub">点击右上角 + 添加好友</div>
             </div>
         </div>
 
-        <!-- 底部导航 -->
         <div class="bottom-nav">
-            <div class="bottom-tab active">
-                <div class="tab-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                    </svg>
-                </div>
-                <span class="tab-label">信息</span>
-            </div>
-            <div class="bottom-tab inactive" onclick="alert('朋友圈功能即将上线')">
-                <div class="tab-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>
-                        <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                        <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-                    </svg>
-                </div>
-                <span class="tab-label">朋友圈</span>
-            </div>
-            <div class="bottom-tab inactive" onclick="window.location.href='settings.html'">
-                <div class="tab-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-                    </svg>
-                </div>
-                <span class="tab-label">设置</span>
-            </div>
+            <div class="bottom-tab active">💬 信息</div>
+            <div class="bottom-tab" onclick="alert('即将上线')">🔘 朋友圈</div>
+            <div class="bottom-tab" onclick="window.location.href='settings.html'">⚙️ 设置</div>
         </div>
     </div>
 
@@ -306,111 +213,36 @@
             var now = new Date();
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
         }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        function updateBattery() {
-            if ('getBattery' in navigator) {
-                navigator.getBattery().then(function(b) {
-                    var lvl = Math.round(b.level * 100);
-                    document.getElementById('battery-percent').textContent = lvl + '%';
-                    var lel = document.getElementById('battery-level');
-                    if (lel) { lel.setAttribute('width', Math.round((lvl/100)*18)); lel.setAttribute('fill', lvl <= 20 ? '#ff3b30' : 'currentColor'); }
-                });
-            }
-        }
-        updateBattery();
+        setInterval(updateClock, 1000); updateClock();
 
         // ==================== 状态栏渲染 ====================
-        function renderStatusRow() {
+        function renderStatusBox() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            var container = document.getElementById('status-row');
-            if (!container) return;
-            if (roles.length === 0) { container.style.display = 'none'; return; }
-            container.style.display = 'flex';
+            var box = document.getElementById('status-box');
+            var inner = document.getElementById('status-box-inner');
+            if (roles.length === 0) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
             
             var html = '';
             for (var i = 0; i < roles.length; i++) {
                 var r = roles[i];
                 var fav = r.favorability || 0;
-                var mood = r.mood || 'calm';
-                var bubbleText = getBubbleText(fav, mood, r);
-                var status = getStatusDot(r);
-                var ringClass = (status.type === 'offline' || status.type === 'sleep') ? ' status-avatar-ring ' + status.type + '-ring' : ' status-avatar-ring';
+                var bubble = '';
+                if (fav > 80) bubble = '好想你❤️';
+                else if (fav > 50) bubble = '在想你';
+                else if (fav < 0) bubble = '...';
                 
-                html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
-                    '<div class="status-avatar-wrap">' +
-                    '<div class="' + ringClass + '">' +
-                    '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E\'">' +
-                    '</div>' +
-                    '<div class="status-dot ' + (status.isEmoji ? 'emoji' : '') + '" style="' + (status.isEmoji ? '' : 'background:' + status.color) + '">' + status.icon + '</div>' +
-                    (bubbleText ? '<div class="status-bubble">' + bubbleText + '</div>' : '') +
-                    '</div>' +
-                    '<div class="status-name">' + escapeHtml(r.remark || r.name) + '</div></div>';
+                var online = !r.hasBlockedUser && !r.isBlockedByUser;
+                var dotClass = online ? 'online' : 'offline';
+                var bubbleHtml = bubble ? '<div class="status-box-bubble">' + bubble + '</div>' : '';
+                
+                html += '<div class="status-box-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'" style="position:relative;">' +
+                    bubbleHtml +
+                    '<img class="status-box-avatar" src="' + (r.avatar || '') + '" onerror="this.style.background=\'#e0e0e0\'">' +
+                    '<div class="status-box-dot ' + dotClass + '"></div>' +
+                    '<div class="status-box-name">' + escapeHtml(r.remark || r.name) + '</div></div>';
             }
-            container.innerHTML = html;
-        }
-
-        function getBubbleText(fav, mood, role) {
-            var hour = new Date().getHours();
-            // 优先级1：好感度 > 80 触发思念
-            if (fav > 80 && Math.random() < 0.7) {
-                var missMsgs = ['好想你❤️', '想和你聊天💬', '想你了~', '好想见你🥰'];
-                return missMsgs[Math.floor(Math.random() * missMsgs.length)];
-            }
-            // 优先级2：好感度 50-80 触发思念
-            if (fav > 50 && Math.random() < 0.5) {
-                var midMsgs = ['在想你', '有空吗？', '今天怎么样？'];
-                return midMsgs[Math.floor(Math.random() * midMsgs.length)];
-            }
-            // 优先级3：情绪状态
-            if (mood === 'happy' && Math.random() < 0.4) {
-                var happyMsgs = ['今天超开心✨', '心情超好🎉', '好开心呀~'];
-                return happyMsgs[Math.floor(Math.random() * happyMsgs.length)];
-            }
-            if (mood === 'sad') return '有点emo😔';
-            if (mood === 'angry') return '别惹我😤';
-            if (mood === 'tired') return '好累啊💤';
-            // 优先级4：时间段活动
-            if (hour >= 6 && hour < 10) {
-                var morningMsgs = ['早安☀️', '刚起床💤', '在吃早餐🍳'];
-                return morningMsgs[Math.floor(Math.random() * morningMsgs.length)];
-            }
-            if (hour >= 10 && hour < 12) return '工作中💼';
-            if (hour >= 12 && hour < 14) {
-                var lunchMsgs = ['在吃饭🍚', '午休中😴'];
-                return lunchMsgs[Math.floor(Math.random() * lunchMsgs.length)];
-            }
-            if (hour >= 14 && hour < 18) {
-                var pmMsgs = ['工作中💼', '摸鱼中🐟', '在上课📚'];
-                return pmMsgs[Math.floor(Math.random() * pmMsgs.length)];
-            }
-            if (hour >= 18 && hour < 22) {
-                var eveMsgs = ['在吃饭🍚', '在看剧📺', '打游戏🎮'];
-                return eveMsgs[Math.floor(Math.random() * eveMsgs.length)];
-            }
-            if (hour >= 22 || hour < 6) return '准备睡觉💤';
-            return '';
-        }
-
-        function getStatusDot(role) {
-            var hour = new Date().getHours();
-            var mood = role.mood || 'calm';
-            
-            // 1. 睡觉时间 23:00-8:00
-            if (hour >= 23 || hour < 8) return { icon: '💤', type: 'sleep', color: '#8E8E93', isEmoji: true };
-            // 2. 用餐时间
-            if ((hour >= 12 && hour < 14) || (hour >= 18 && hour < 20)) return { icon: '🍚', type: 'busy', color: '#FF9500', isEmoji: true };
-            // 3. 工作时间
-            if ((hour >= 9 && hour < 12) || (hour >= 14 && hour < 18)) return { icon: '💼', type: 'busy', color: '#FF9500', isEmoji: true };
-            // 4. 情绪状态
-            if (mood === 'tired') return { icon: '💤', type: 'sleep', color: '#8E8E93', isEmoji: true };
-            if (mood === 'angry') return { icon: '⚠', type: 'busy', color: '#FF9500', isEmoji: false };
-            // 5. 拉黑
-            if (role.hasBlockedUser) return { icon: '✕', type: 'offline', color: '#9E9E9E', isEmoji: false };
-            if (role.isBlockedByUser) return { icon: '🚫', type: 'offline', color: '#9E9E9E', isEmoji: false };
-            // 6. 默认在线
-            return { icon: '', type: 'online', color: '#44B700', isEmoji: false };
+            inner.innerHTML = html;
         }
 
         // ==================== 联系人列表渲染 ====================
@@ -421,10 +253,9 @@
                 if (!a.pinned && b.pinned) return 1;
                 return 0;
             });
-
             var container = document.getElementById('contact-list');
             if (roles.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div></div>';
                 return;
             }
             var html = '<div class="section-title">联系人</div>';
@@ -433,20 +264,13 @@
                 var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1] : null;
                 var preview = lastMsg ? lastMsg.text : '';
                 var hasUnread = r.unread && r.unread > 0;
-                var time = lastMsg ? formatTime(lastMsg.time || r.id) : '';
-                var pinnedClass = r.pinned ? ' pinned' : '';
-                var blockedClass = r.hasBlockedUser ? ' blocked' : '';
-                var pinIcon = r.pinned ? '📌' : '';
-
-                html += '<div class="contact-card' + pinnedClass + blockedClass + '" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
-                    '<img class="contact-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22100%22 height=%22100%22 rx=%2212%22/%3E%3C/svg%3E\'">' +
+                var time = lastMsg ? formatTime(lastMsg.time) : '';
+                html += '<div class="contact-card' + (r.pinned ? ' pinned' : '') + '" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
+                    '<img class="contact-avatar" src="' + (r.avatar || '') + '">' +
                     '<div class="unread-badge' + (hasUnread ? ' show' : '') + '">' + (r.unread > 1 ? r.unread : '') + '</div>' +
-                    '<div class="contact-info">' +
-                    '<div class="contact-top"><span class="contact-name">' + escapeHtml(r.remark || r.name) + '</span>' +
-                    (pinIcon ? '<span class="contact-pin">' + pinIcon + '</span>' : '') +
+                    '<div class="contact-info"><div class="contact-top"><span class="contact-name">' + escapeHtml(r.remark || r.name) + '</span>' +
                     '<span class="contact-time">' + time + '</span></div>' +
-                    '<div class="contact-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div>' +
-                    '</div></div>';
+                    '<div class="contact-preview">' + escapeHtml(preview) + '</div></div></div>';
             }
             container.innerHTML = html;
         }
@@ -463,12 +287,9 @@
         function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
 
         document.addEventListener('DOMContentLoaded', function() {
-            renderStatusRow();
+            renderStatusBox();
             renderContactList();
-            setInterval(function() {
-                renderStatusRow();
-                renderContactList();
-            }, 60000);
+            setInterval(function() { renderStatusBox(); renderContactList(); }, 60000);
         });
     </script>
 </body>
