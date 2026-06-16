@@ -46,6 +46,14 @@
             opacity:0.6; padding:4px; letter-spacing:2px; color:#000; z-index:1;
         }
 
+        /* 拉黑提示条 */
+        .blocked-banner {
+            background:#fff3f3; padding:8px 16px; font-size:12px;
+            color:#ff3b30; text-align:center; border-bottom:0.5px solid #ffcccc;
+            display:none;
+        }
+        .blocked-banner.show { display:block; }
+
         .messages-container {
             flex:1; overflow-y:auto; padding:12px 12px;
             display:flex; flex-direction:column; gap:2px;
@@ -74,23 +82,29 @@
             padding:9px 14px; font-size:15px;
             line-height:1.45; word-break:break-word;
         }
-        /* AI气泡默认 */
         .msg-content.ai .msg-bubble {
             background:#fff; border:0.5px solid #e0e0e0; color:#000;
             border-radius:18px; border-top-left-radius:4px;
         }
-        /* 用户气泡默认 */
         .msg-content.user .msg-bubble {
             background:#95ec69; color:#000;
             border-radius:18px; border-top-right-radius:4px;
         }
-        /* 形状样式 */
+        /* 形状 */
         .bubble-shape-round { border-radius:18px !important; }
         .bubble-shape-square { border-radius:4px !important; }
         .bubble-shape-soft { border-radius:12px 18px 12px 18px !important; }
         .bubble-shape-leaf { border-radius:50% 4px 50% 4px !important; }
         .bubble-shape-cloud { border-radius:20px 8px 20px 8px !important; }
         .bubble-shape-pill { border-radius:24px !important; }
+
+        /* 翻译气泡 */
+        .translation-bubble {
+            background:#F0F0F0; border-radius:16px; padding:4px 14px;
+            font-size:11px; color:#888; margin-top:4px;
+            cursor:pointer; max-width:90%; word-break:break-word;
+        }
+        .translation-bubble.hidden { display:none; }
 
         .msg-time { font-size:11px; color:var(--time-grey); margin-top:2px; padding:0 4px; }
         .typing-dots { display:inline-flex; gap:3px; padding:3px 0; }
@@ -99,7 +113,16 @@
         .typing-dots span:nth-child(3) { animation-delay:0.4s; }
         @keyframes bounce { 0%,60%,100% { transform:translateY(0); opacity:0.3; } 30% { transform:translateY(-5px); opacity:1; } }
 
-        .blocked-notice { font-size:11px; color:#ff3b30; text-align:right; margin-top:2px; }
+        /* 红色感叹号 */
+        .blocked-exclamation {
+            display:inline-flex; align-items:center; justify-content:center;
+            width:18px; height:18px; border-radius:50%; background:#ff3b30;
+            color:#fff; font-size:10px; font-weight:700; margin-left:6px;
+            cursor:pointer; flex-shrink:0;
+        }
+        .msg-content.user .msg-bubble-wrap {
+            display:flex; align-items:center; gap:4px;
+        }
 
         .input-area { display:flex; gap:8px; padding:8px 10px 12px; align-items:center; border-top:0.5px solid var(--separator); background:var(--bg); }
         .voice-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -109,6 +132,17 @@
         .input-area input::placeholder { color:#b0b0b0; }
         .plus-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; color:#000; opacity:0.6; }
         .input-area input.blocked-input { background:#f0f0f0; color:#999; }
+
+        /* 申请解除拉黑按钮 */
+        .unblock-request {
+            display:none; padding:8px 16px; text-align:center;
+            background:#fff; border-top:0.5px solid var(--separator);
+        }
+        .unblock-request.show { display:block; }
+        .unblock-request button {
+            padding:8px 20px; border-radius:16px; border:1px solid #ff3b30;
+            background:#fff; color:#ff3b30; font-size:13px; cursor:pointer;
+        }
     </style>
 </head>
 <body>
@@ -139,9 +173,17 @@
             <button class="three-dots" onclick="openMore()">···</button>
         </div>
 
+        <!-- 拉黑提示条 -->
+        <div class="blocked-banner" id="blocked-banner">已拉黑该角色，对方无法给你发消息</div>
+
         <div class="messages-container" id="messages-container"></div>
 
-        <div class="input-area">
+        <!-- 申请解除拉黑 -->
+        <div class="unblock-request" id="unblock-request">
+            <button onclick="requestUnblock()">申请解除拉黑</button>
+        </div>
+
+        <div class="input-area" id="input-area">
             <div class="voice-icon">
                 <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
@@ -167,6 +209,10 @@
             sad: { prob: 0.7, delay: 2500, replyStyle: '冷淡简短，少言' },
             angry: { prob: 0.5, delay: 4000, replyStyle: '暴躁带刺，怼人' },
             tired: { prob: 0.4, delay: 5500, replyStyle: '敷衍，说累了困了' }
+        };
+
+        var LANG_MAP = {
+            '中文': 'zh', 'English': 'en', '日本語': 'ja', '한국어': 'ko'
         };
 
         function updateClock() {
@@ -200,6 +246,8 @@
             if (role.doNotDisturb === undefined) role.doNotDisturb = false;
             if (!role.messageQueue) role.messageQueue = [];
             if (role.isReplying === undefined) role.isReplying = false;
+            if (!role.language) role.language = '中文';
+            if (!role.translate) role.translate = false;
             return role;
         }
 
@@ -221,7 +269,6 @@
 
         function applyChatSettings() {
             var container = document.getElementById('messages-container');
-            // 聊天背景
             if (currentChatRole.chatBackground) {
                 container.style.backgroundImage = 'url(' + currentChatRole.chatBackground + ')';
             } else {
@@ -232,6 +279,44 @@
         function getBubbleShapeClass() {
             var shape = currentChatRole.bubbleShape || 'round';
             return 'bubble-shape-' + shape;
+        }
+
+        function updateBlockedUI() {
+            var input = document.getElementById('chat-input');
+            var banner = document.getElementById('blocked-banner');
+            var unblockBtn = document.getElementById('unblock-request');
+
+            // 用户拉黑角色
+            if (currentChatRole.isBlockedByUser) {
+                banner.classList.add('show');
+                banner.innerText = '已拉黑该角色，对方无法给你发消息';
+            } else {
+                banner.classList.remove('show');
+            }
+
+            // 角色拉黑用户
+            if (currentChatRole.hasBlockedUser) {
+                input.classList.add('blocked-input');
+                input.placeholder = '你已被 ' + (currentChatRole.remark || currentChatRole.name) + ' 拉黑，无法发送消息';
+                input.disabled = true;
+                unblockBtn.classList.add('show');
+            } else {
+                input.classList.remove('blocked-input');
+                input.placeholder = '';
+                input.disabled = false;
+                unblockBtn.classList.remove('show');
+            }
+        }
+
+        function requestUnblock() {
+            if (!currentChatRole) return;
+            currentChatRole.favorability = Math.max((currentChatRole.favorability || -50), -40);
+            currentChatRole.hasBlockedUser = false;
+            updateMood();
+            saveRoleToStorage();
+            updateBlockedUI();
+            renderMessages();
+            alert((currentChatRole.remark || currentChatRole.name) + ' 已解除拉黑');
         }
 
         function loadRole() {
@@ -246,13 +331,7 @@
             saveRoleToStorage();
             currentApi = getActiveApi();
             document.getElementById('chat-nav-name').innerText = currentChatRole.remark || currentChatRole.name;
-            
-            if (currentChatRole.hasBlockedUser) {
-                document.getElementById('chat-input').classList.add('blocked-input');
-                document.getElementById('chat-input').placeholder = '你已被 ' + (currentChatRole.remark || currentChatRole.name) + ' 拉黑';
-                document.getElementById('chat-input').disabled = true;
-            }
-            
+            updateBlockedUI();
             applyChatSettings();
             renderMessages();
         }
@@ -266,6 +345,11 @@
             return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
         }
 
+        function needsTranslation() {
+            var lang = currentChatRole.language || '中文';
+            return lang !== '中文' && currentChatRole.translate;
+        }
+
         function renderMessages() {
             var container = document.getElementById('messages-container');
             applyChatSettings();
@@ -275,6 +359,7 @@
             var userBubbleColor = currentChatRole.userBubbleColor || '#95ec69';
             var roleBubbleColor = currentChatRole.roleBubbleColor || '#ffffff';
             var shapeClass = getBubbleShapeClass();
+            var showTranslation = needsTranslation();
 
             var html = '';
             for (var i = 0; i < msgs.length; i++) {
@@ -285,17 +370,23 @@
 
                 if (msg.type === 'ai') {
                     var roleImg = currentChatRole.avatar || '';
-                    var bubbleStyle = 'style="background:' + roleBubbleColor + ';' + (roleBubbleColor.toLowerCase() === '#ffffff' || roleBubbleColor.toLowerCase() === '#fff' ? 'border:0.5px solid #e0e0e0;' : '') + '"';
+                    var borderStyle = (roleBubbleColor.toLowerCase() === '#ffffff' || roleBubbleColor.toLowerCase() === '#fff') ? 'border:0.5px solid #e0e0e0;' : '';
+                    var bubbleStyle = 'style="background:' + roleBubbleColor + ';' + borderStyle + '"';
                     html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble ' + shapeClass + '" ' + bubbleStyle + '>' + text + '</div>';
+                    if (!isTyping && showTranslation) {
+                        html += '<div class="translation-bubble" onclick="this.classList.toggle(\'hidden\')">' + (msg.translation || '翻译中...') + '</div>';
+                    }
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 } else {
                     var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
                     var userBubbleStyle = 'style="background:' + userBubbleColor + ';"';
-                    html += '<div class="msg-row-user"><img class="msg-avatar" src="' + userImg + '" alt=""><div class="msg-content user"><div class="msg-bubble ' + shapeClass + '" ' + userBubbleStyle + '>' + text + '</div>';
-                    if (currentChatRole.hasBlockedUser && i === msgs.length - 1 && msg.type === 'user') {
-                        html += '<div class="blocked-notice">已被拉黑</div>';
+                    var isBlockedMsg = currentChatRole.hasBlockedUser && i === msgs.length - 1;
+                    html += '<div class="msg-row-user"><img class="msg-avatar" src="' + userImg + '" alt=""><div class="msg-content user"><div class="msg-bubble-wrap"><div class="msg-bubble ' + shapeClass + '" ' + userBubbleStyle + '>' + text + '</div>';
+                    if (isBlockedMsg) {
+                        html += '<span class="blocked-exclamation" onclick="alert(\'对方已拉黑你，消息未送达\')">!</span>';
                     }
+                    html += '</div>';
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 }
@@ -317,6 +408,7 @@
         function sendMsg() {
             if (!currentChatRole) return;
             currentChatRole = initRoleData(currentChatRole);
+            // 被角色拉黑时不能发消息
             if (currentChatRole.hasBlockedUser) return;
             var input = document.getElementById('chat-input');
             var text = input.value.trim();
@@ -327,6 +419,8 @@
             currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
             input.value = ''; saveRoleToStorage(); renderMessages();
             updateFavorabilityAndMood(text);
+            // 用户拉黑角色时角色不回复
+            if (currentChatRole.isBlockedByUser) return;
             if (!currentChatRole.isReplying) processMessageQueue();
         }
 
@@ -358,7 +452,7 @@
         function updateFavorabilityAndMood(userMsg) {
             var msg = userMsg.toLowerCase();
             var change = 0;
-            var positiveWords = ['可爱','聪明','帅','漂亮','厉害','棒','喜欢','爱','好','谢谢','开心','想你','温柔','善良'];
+            var positiveWords = ['可爱','聪明','帅','漂亮','厉害','棒','喜欢','爱','好','谢谢','开心','想你','温柔','善良','对不起','抱歉'];
             var negativeWords = ['讨厌','烦','滚','恶心','笨','傻','丑','垃圾','废物','恨','滚开','别烦我'];
             for (var i = 0; i < positiveWords.length; i++) { if (msg.indexOf(positiveWords[i]) !== -1) { change += 5; break; } }
             for (var j = 0; j < negativeWords.length; j++) { if (msg.indexOf(negativeWords[j]) !== -1) { change -= 10; break; } }
@@ -366,12 +460,15 @@
                 var oldFav = currentChatRole.favorability || 0;
                 currentChatRole.favorability = Math.min(Math.max(oldFav + change, -100), 100);
                 updateMood();
+                // 好感度 < -50 角色拉黑用户
                 if (currentChatRole.favorability < -50 && !currentChatRole.hasBlockedUser) {
                     currentChatRole.hasBlockedUser = true;
-                    document.getElementById('chat-input').classList.add('blocked-input');
-                    document.getElementById('chat-input').placeholder = '你已被 ' + (currentChatRole.remark || currentChatRole.name) + ' 拉黑';
-                    document.getElementById('chat-input').disabled = true;
                 }
+                // 好感度回升到 -40 以上自动解除拉黑
+                if (currentChatRole.favorability >= -40 && currentChatRole.hasBlockedUser) {
+                    currentChatRole.hasBlockedUser = false;
+                }
+                updateBlockedUI();
             }
             var hour = new Date().getHours();
             if (hour >= 23 || hour < 6) { currentChatRole.mood = 'tired'; currentChatRole.moodReason = '已经很晚了，有点困'; }
@@ -395,7 +492,8 @@
             if (!currentApi) {
                 setTimeout(function() {
                     removeTypingMessage();
-                    currentChatRole.messages.push({ type: 'ai', text: generateLocalReply(), time: Date.now() });
+                    var localReply = generateLocalReply();
+                    currentChatRole.messages.push({ type: 'ai', text: localReply, time: Date.now(), translation: needsTranslation() ? translateLocal(localReply) : '' });
                     if (!isOnChatPage && !currentChatRole.doNotDisturb) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
                     currentChatRole.isReplying = false;
                     saveRoleToStorage(); renderMessages(); hideTyping();
@@ -425,7 +523,7 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '无回复';
-                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now() });
+                    currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now(), translation: needsTranslation() ? '(翻译待获取)' : '' });
                 } else if (retryCount === 0) {
                     tryRequest(currentApi.url + '/chat/completions', messages, 1); return;
                 } else {
@@ -455,11 +553,13 @@
             var nick = r.userNickname || r.userName || '你';
             var mood = r.mood || 'calm';
             var fav = r.favorability || 0;
+            var lang = r.language || '中文';
             var config = MOOD_CONFIG[mood] || MOOD_CONFIG.calm;
             var p = '你是一个角色：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n';
             p += '【口头禅】' + (r.catchphrase||'无') + '\n【关系】' + r.relation + '\n【称呼】' + nick + '\n';
             if (r.userPreference) p += '【用户偏好】' + r.userPreference + '\n';
             p += '【当前心情】' + config.replyStyle + '\n【好感度】' + fav + '%\n';
+            if (lang !== '中文') p += '【回复语言】请用' + lang + '回复，不要用中文\n';
             if (fav > 60) p += '好感度高，请热情回复\n';
             if (fav < 20) p += '好感度低，请冷淡回复\n';
             return p + '要求：保持角色、称呼用户"' + nick + '"';
@@ -468,9 +568,32 @@
         function generateLocalReply() {
             var r = currentChatRole;
             var mood = r.mood || 'calm';
-            var replies = { happy: ['好呀！','当然可以','超开心~'], calm: ['嗯嗯','好的','明白了'], sad: ['...','哦','好吧'], angry: ['哼','随便','别烦我'], tired: ['累了...','明天吧','困了'] };
-            var list = replies[mood] || replies.calm;
+            var lang = r.language || '中文';
+            var replies = {
+                '中文': { happy: ['好呀！','当然可以','超开心~'], calm: ['嗯嗯','好的','明白了'], sad: ['...','哦','好吧'], angry: ['哼','随便','别烦我'], tired: ['累了...','明天吧','困了'] },
+                'English': { happy: ['Great!','Awesome~'], calm: ['Okay','Got it'], sad: ['...','Oh','Alright'], angry: ['Hmph','Whatever'], tired: ['Tired...','Maybe tomorrow'] },
+                '日本語': { happy: ['いいね！','最高~'], calm: ['うん','わかった'], sad: ['...','そう'], angry: ['ふん','勝手に'], tired: ['疲れた...','また明日'] },
+                '한국어': { happy: ['좋아!','최고~'], calm: ['응','알겠어'], sad: ['...','그래'], angry: ['흥','맘대로'], tired: ['피곤해...','내일'] }
+            };
+            var langReplies = replies[lang] || replies['中文'];
+            var list = langReplies[mood] || langReplies.calm;
             return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function translateLocal(text) {
+            var map = {
+                '好呀！': 'Okay!', '当然可以': 'Of course', '超开心~': 'Super happy~',
+                '嗯嗯': 'Mm-hmm', '好的': 'Alright', '明白了': 'Understood',
+                '哼': 'Hmph', '随便': 'Whatever', '别烦我': 'Leave me alone',
+                '累了...': 'Tired...', '明天吧': 'Tomorrow', '困了': 'Sleepy',
+                'Great!': '太好了！', 'Awesome~': '太棒了~', 'Okay': '好的', 'Got it': '明白了',
+                'Oh': '哦', 'Alright': '好吧', 'Hmph': '哼', 'Whatever': '随便',
+                'いいね！': '真好！', '最高~': '最棒~', 'うん': '嗯', 'わかった': '知道了',
+                'そう': '这样啊', 'ふん': '哼', '勝手に': '随你', '疲れた...': '累了...', 'また明日': '明天见',
+                '좋아!': '好！', '최고~': '最棒~', '응': '嗯', '알겠어': '知道了',
+                '그래': '好吧', '흥': '哼', '맘대로': '随便', '피곤해...': '累了...', '내일': '明天'
+            };
+            return map[text] || '(翻译)';
         }
 
         function saveRoleToStorage() {
