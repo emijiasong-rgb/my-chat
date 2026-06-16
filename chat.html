@@ -82,12 +82,77 @@
         }
         .overlay.show { display:block; }
 
-        /* 联系人列表 */
+        /* ========== 状态栏（横向滚动） ========== */
+        .status-row {
+            background:#fff; padding:12px 0 10px 14px;
+            border-bottom:1px solid #F0EDE8;
+            overflow-x:auto; white-space:nowrap; display:flex; gap:12px;
+            -webkit-overflow-scrolling:touch; height:100px;
+        }
+        .status-row::-webkit-scrollbar { display:none; }
+        .status-item {
+            display:inline-flex; flex-direction:column; align-items:center;
+            min-width:70px; cursor:pointer; position:relative; flex-shrink:0;
+        }
+        .status-avatar-wrap {
+            position:relative; width:64px; height:64px;
+        }
+        .status-avatar-ring {
+            position:absolute; width:64px; height:64px; border-radius:50%;
+            background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
+            padding:2px;
+        }
+        .status-avatar-ring.offline-ring { background:#e0e0e0; }
+        .status-avatar-ring.sleep-ring { background:linear-gradient(135deg, #8E8E93, #636366); }
+        .status-avatar {
+            width:100%; height:100%; border-radius:50%; object-fit:cover;
+            border:2px solid #fff; position:relative; z-index:1;
+        }
+        .status-dot {
+            position:absolute; bottom:0px; right:-2px;
+            width:14px; height:14px; border-radius:50%;
+            border:2px solid #fff; font-size:10px;
+            display:flex; align-items:center; justify-content:center;
+            z-index:2; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.15);
+        }
+        .status-dot.online { background:#44B700; }
+        .status-dot.offline { background:#9E9E9E; }
+        .status-dot.busy { background:#FF9500; }
+        .status-dot.emoji { background:none; border:none; font-size:12px; width:auto; height:auto; bottom:0px; right:-4px; }
+        .status-name {
+            font-size:11px; color:#5B6E6B; margin-top:4px; text-align:center;
+            max-width:70px; overflow:hidden; text-overflow:ellipsis;
+            font-weight:500;
+        }
+        /* 心声气泡 */
+        .status-bubble {
+            position:absolute; top:-8px; right:-4px;
+            transform:translate(10px, -4px);
+            background:#fff; border-radius:20px; padding:4px 10px;
+            font-size:11px; color:#3A3A3A; white-space:nowrap;
+            box-shadow:0 2px 8px rgba(0,0,0,0.10);
+            z-index:10; max-width:100px; overflow:hidden; text-overflow:ellipsis;
+            pointer-events:none; font-weight:500;
+        }
+        .status-bubble::after {
+            content:""; position:absolute; bottom:-6px; left:20px;
+            width:0; height:0;
+            border-left:6px solid transparent;
+            border-right:6px solid transparent;
+            border-top:6px solid #fff;
+        }
+
+        /* ========== 联系人列表 ========== */
         .contact-list { flex:1; overflow-y:auto; background:var(--white); }
         .contact-list::-webkit-scrollbar { display:none; }
 
+        .section-title {
+            padding:10px 16px 4px; font-size:12px; color:var(--text-tertiary);
+            font-weight:500; background:var(--white);
+        }
+
         .contact-card {
-            display:flex; align-items:center; gap:14px; padding:14px 18px;
+            display:flex; align-items:center; gap:12px; padding:12px 16px;
             cursor:pointer; border-bottom:0.5px solid var(--separator);
             transition:background 0.15s; position:relative;
         }
@@ -95,82 +160,37 @@
         .contact-card.pinned { background:var(--pinned-bg); }
         .contact-card.blocked { opacity:0.5; }
 
-        .contact-avatar-wrap {
-            position:relative; width:66px; height:66px;
-            display:flex; align-items:center; justify-content:center;
-            flex-shrink:0;
-        }
-        .contact-avatar-ring {
-            position:absolute; width:70px; height:70px; border-radius:50%;
-            background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
-            padding:3px;
-        }
-        .contact-avatar-ring.offline-ring { background:#e0e0e0; }
-        .contact-avatar-ring.sleep-ring { background:linear-gradient(135deg, #8E8E93, #636366); }
         .contact-avatar {
-            width:100%; height:100%; border-radius:50%; object-fit:cover;
-            border:3px solid #fff; position:relative; z-index:1;
+            width:48px; height:48px; border-radius:6px; object-fit:cover;
+            background:#d0d0d0; flex-shrink:0;
         }
-        .contact-dot {
-            position:absolute; bottom:2px; right:2px;
-            width:16px; height:16px; border-radius:50%;
-            border:3px solid #fff; font-size:10px;
-            display:flex; align-items:center; justify-content:center;
-            z-index:2; font-weight:700;
-        }
-        .contact-dot.online { background:#44B700; }
-        .contact-dot.offline { background:#ccc; }
-        .contact-dot.busy { background:#FF9500; }
-        .contact-dot.sleep { background:#8E8E93; color:#fff; }
-
-        .unread-dot {
-            position:absolute; top:-2px; right:-2px;
+        .unread-badge {
+            position:absolute; left:44px; top:-2px;
             min-width:18px; height:18px; background:var(--red-dot);
             border-radius:9px; border:2px solid #fff; display:none;
             color:#fff; font-size:10px; font-weight:700;
             align-items:center; justify-content:center;
             z-index:5; padding:0 5px;
         }
-        .unread-dot.show { display:flex; }
-
-        .contact-bubble {
-            position:absolute; top:-12px; right:-18px;
-            background:#fff; border-radius:16px; padding:4px 10px;
-            font-size:10px; color:#555; white-space:nowrap;
-            box-shadow:0 3px 12px rgba(0,0,0,0.1);
-            z-index:10; max-width:100px; overflow:hidden; text-overflow:ellipsis;
-            border:0.5px solid rgba(0,0,0,0.06); pointer-events:none;
-            font-weight:500;
-        }
-        .contact-bubble::after {
-            content:""; position:absolute; bottom:-5px; left:50%;
-            transform:translateX(-50%);
-            width:0; height:0;
-            border-left:5px solid transparent;
-            border-right:5px solid transparent;
-            border-top:5px solid #fff;
-        }
+        .unread-badge.show { display:flex; }
 
         .contact-info { flex:1; min-width:0; }
-        .contact-top { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
-        .contact-name { font-size:16px; font-weight:600; color:var(--text); letter-spacing:-0.3px; }
-        .contact-pin { font-size:11px; color:var(--text-tertiary); }
-        .contact-time { font-size:12px; color:var(--text-tertiary); margin-left:auto; flex-shrink:0; font-weight:400; }
+        .contact-top { display:flex; align-items:baseline; gap:8px; margin-bottom:2px; }
+        .contact-name { font-size:16px; font-weight:500; color:var(--text); }
+        .contact-pin { font-size:10px; color:var(--text-tertiary); }
+        .contact-time { font-size:12px; color:var(--text-tertiary); margin-left:auto; flex-shrink:0; }
         .contact-preview {
-            font-size:14px; color:var(--text-tertiary);
+            font-size:13px; color:var(--text-tertiary);
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-            font-weight:400; letter-spacing:-0.2px;
         }
         .contact-preview.unread { color:var(--text); font-weight:500; }
-        .contact-subtitle {
-            font-size:12px; color:var(--text-tertiary); margin-top:2px;
-        }
 
         .empty-state { text-align:center; padding:120px 20px; color:#b0b0b0; }
         .empty-icon { font-size:44px; margin-bottom:14px; opacity:0.35; }
         .empty-text { font-size:16px; font-weight:500; }
         .empty-sub { font-size:13px; margin-top:4px; opacity:0.7; }
 
+        /* ========== 底部导航 ========== */
         .bottom-nav {
             display:flex; align-items:flex-start; justify-content:space-around;
             background:var(--white); border-top:0.5px solid var(--separator);
@@ -191,6 +211,7 @@
 </head>
 <body>
     <div id="phone-shell">
+        <!-- 系统状态栏 -->
         <div class="status-bar">
             <span id="clock">12:00</span>
             <div class="status-icons">
@@ -211,6 +232,7 @@
             </div>
         </div>
 
+        <!-- 顶部导航 -->
         <div class="top-nav">
             <a href="index.html" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
@@ -219,6 +241,7 @@
             </div>
         </div>
 
+        <!-- 弹出菜单 -->
         <div class="overlay" id="overlay" onclick="closeMenu()"></div>
         <div class="popup-menu" id="popup-menu">
             <a href="create-role2.html" class="menu-item">
@@ -231,6 +254,10 @@
             </div>
         </div>
 
+        <!-- 状态栏（横向滚动） -->
+        <div class="status-row" id="status-row"></div>
+
+        <!-- 联系人列表 -->
         <div class="contact-list" id="contact-list">
             <div class="empty-state">
                 <div class="empty-icon">💬</div>
@@ -239,6 +266,7 @@
             </div>
         </div>
 
+        <!-- 底部导航 -->
         <div class="bottom-nav">
             <div class="bottom-tab active">
                 <div class="tab-icon">
@@ -293,6 +321,99 @@
         }
         updateBattery();
 
+        // ==================== 状态栏渲染 ====================
+        function renderStatusRow() {
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            var container = document.getElementById('status-row');
+            if (!container) return;
+            if (roles.length === 0) { container.style.display = 'none'; return; }
+            container.style.display = 'flex';
+            
+            var html = '';
+            for (var i = 0; i < roles.length; i++) {
+                var r = roles[i];
+                var fav = r.favorability || 0;
+                var mood = r.mood || 'calm';
+                var bubbleText = getBubbleText(fav, mood, r);
+                var status = getStatusDot(r);
+                var ringClass = (status.type === 'offline' || status.type === 'sleep') ? ' status-avatar-ring ' + status.type + '-ring' : ' status-avatar-ring';
+                
+                html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
+                    '<div class="status-avatar-wrap">' +
+                    '<div class="' + ringClass + '">' +
+                    '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E\'">' +
+                    '</div>' +
+                    '<div class="status-dot ' + (status.isEmoji ? 'emoji' : '') + '" style="' + (status.isEmoji ? '' : 'background:' + status.color) + '">' + status.icon + '</div>' +
+                    (bubbleText ? '<div class="status-bubble">' + bubbleText + '</div>' : '') +
+                    '</div>' +
+                    '<div class="status-name">' + escapeHtml(r.remark || r.name) + '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function getBubbleText(fav, mood, role) {
+            var hour = new Date().getHours();
+            // 优先级1：好感度 > 80 触发思念
+            if (fav > 80 && Math.random() < 0.7) {
+                var missMsgs = ['好想你❤️', '想和你聊天💬', '想你了~', '好想见你🥰'];
+                return missMsgs[Math.floor(Math.random() * missMsgs.length)];
+            }
+            // 优先级2：好感度 50-80 触发思念
+            if (fav > 50 && Math.random() < 0.5) {
+                var midMsgs = ['在想你', '有空吗？', '今天怎么样？'];
+                return midMsgs[Math.floor(Math.random() * midMsgs.length)];
+            }
+            // 优先级3：情绪状态
+            if (mood === 'happy' && Math.random() < 0.4) {
+                var happyMsgs = ['今天超开心✨', '心情超好🎉', '好开心呀~'];
+                return happyMsgs[Math.floor(Math.random() * happyMsgs.length)];
+            }
+            if (mood === 'sad') return '有点emo😔';
+            if (mood === 'angry') return '别惹我😤';
+            if (mood === 'tired') return '好累啊💤';
+            // 优先级4：时间段活动
+            if (hour >= 6 && hour < 10) {
+                var morningMsgs = ['早安☀️', '刚起床💤', '在吃早餐🍳'];
+                return morningMsgs[Math.floor(Math.random() * morningMsgs.length)];
+            }
+            if (hour >= 10 && hour < 12) return '工作中💼';
+            if (hour >= 12 && hour < 14) {
+                var lunchMsgs = ['在吃饭🍚', '午休中😴'];
+                return lunchMsgs[Math.floor(Math.random() * lunchMsgs.length)];
+            }
+            if (hour >= 14 && hour < 18) {
+                var pmMsgs = ['工作中💼', '摸鱼中🐟', '在上课📚'];
+                return pmMsgs[Math.floor(Math.random() * pmMsgs.length)];
+            }
+            if (hour >= 18 && hour < 22) {
+                var eveMsgs = ['在吃饭🍚', '在看剧📺', '打游戏🎮'];
+                return eveMsgs[Math.floor(Math.random() * eveMsgs.length)];
+            }
+            if (hour >= 22 || hour < 6) return '准备睡觉💤';
+            return '';
+        }
+
+        function getStatusDot(role) {
+            var hour = new Date().getHours();
+            var mood = role.mood || 'calm';
+            
+            // 1. 睡觉时间 23:00-8:00
+            if (hour >= 23 || hour < 8) return { icon: '💤', type: 'sleep', color: '#8E8E93', isEmoji: true };
+            // 2. 用餐时间
+            if ((hour >= 12 && hour < 14) || (hour >= 18 && hour < 20)) return { icon: '🍚', type: 'busy', color: '#FF9500', isEmoji: true };
+            // 3. 工作时间
+            if ((hour >= 9 && hour < 12) || (hour >= 14 && hour < 18)) return { icon: '💼', type: 'busy', color: '#FF9500', isEmoji: true };
+            // 4. 情绪状态
+            if (mood === 'tired') return { icon: '💤', type: 'sleep', color: '#8E8E93', isEmoji: true };
+            if (mood === 'angry') return { icon: '⚠', type: 'busy', color: '#FF9500', isEmoji: false };
+            // 5. 拉黑
+            if (role.hasBlockedUser) return { icon: '✕', type: 'offline', color: '#9E9E9E', isEmoji: false };
+            if (role.isBlockedByUser) return { icon: '🚫', type: 'offline', color: '#9E9E9E', isEmoji: false };
+            // 6. 默认在线
+            return { icon: '', type: 'online', color: '#44B700', isEmoji: false };
+        }
+
+        // ==================== 联系人列表渲染 ====================
         function renderContactList() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.sort(function(a, b) {
@@ -306,14 +427,9 @@
                 container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>';
                 return;
             }
-            var html = '';
+            var html = '<div class="section-title">联系人</div>';
             for (var i = 0; i < roles.length; i++) {
                 var r = roles[i];
-                var fav = r.favorability || 0;
-                var mood = r.mood || 'calm';
-                var status = getOnlineStatus(r);
-                var ringClass = (status.class === 'offline' || status.class === 'sleep') ? ' contact-avatar-ring ' + status.class + '-ring' : ' contact-avatar-ring';
-                var bubbleText = getBubbleText(fav, mood);
                 var lastMsg = r.messages && r.messages.length > 0 ? r.messages[r.messages.length-1] : null;
                 var preview = lastMsg ? lastMsg.text : '';
                 var hasUnread = r.unread && r.unread > 0;
@@ -323,55 +439,16 @@
                 var pinIcon = r.pinned ? '📌' : '';
 
                 html += '<div class="contact-card' + pinnedClass + blockedClass + '" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
-                    '<div class="contact-avatar-wrap">' +
-                    '<div class="' + ringClass + '">' +
-                    '<img class="contact-avatar" src="' + (r.avatar || '') + '" alt="">' +
-                    '</div>' +
-                    '<div class="contact-dot ' + status.class + '">' + status.icon + '</div>' +
-                    '<div class="unread-dot' + (hasUnread ? ' show' : '') + '">' + (r.unread > 1 ? r.unread : '') + '</div>' +
-                    (bubbleText ? '<div class="contact-bubble">' + bubbleText + '</div>' : '') +
-                    '</div>' +
+                    '<img class="contact-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22100%22 height=%22100%22 rx=%2212%22/%3E%3C/svg%3E\'">' +
+                    '<div class="unread-badge' + (hasUnread ? ' show' : '') + '">' + (r.unread > 1 ? r.unread : '') + '</div>' +
                     '<div class="contact-info">' +
                     '<div class="contact-top"><span class="contact-name">' + escapeHtml(r.remark || r.name) + '</span>' +
                     (pinIcon ? '<span class="contact-pin">' + pinIcon + '</span>' : '') +
                     '<span class="contact-time">' + time + '</span></div>' +
                     '<div class="contact-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div>' +
-                    '<div class="contact-subtitle">' + getSubtitleText(r) + '</div>' +
                     '</div></div>';
             }
             container.innerHTML = html;
-        }
-
-        function getBubbleText(fav, mood) {
-            if (fav > 80) { var arr = ['好想你❤️','想聊天💬','超开心！','你最好啦～']; return arr[Math.floor(Math.random()*arr.length)]; }
-            if (fav > 50) { var arr = ['在想你','有空吗？','今天怎么样？','有点想你']; return arr[Math.floor(Math.random()*arr.length)]; }
-            if (fav > 20) { var arr = ['在忙','有空聊','嗯嗯','还好吧']; return arr[Math.floor(Math.random()*arr.length)]; }
-            if (fav > -20) { var arr = ['...','不想说话','随便','哦']; return arr[Math.floor(Math.random()*arr.length)]; }
-            if (mood === 'tired') return '好累...';
-            if (mood === 'angry') return '别烦我';
-            if (mood === 'sad') return '不开心';
-            return '';
-        }
-
-        function getOnlineStatus(r) {
-            var hour = new Date().getHours();
-            if (r.mood === 'tired') return { class:'sleep', icon:'💤' };
-            if (hour >= 23 || hour < 6) return { class:'sleep', icon:'💤' };
-            if (r.mood === 'angry' || r.mood === 'sad') return { class:'busy', icon:'⚠' };
-            if (r.hasBlockedUser) return { class:'offline', icon:'✕' };
-            if (r.isBlockedByUser) return { class:'offline', icon:'🚫' };
-            return { class:'online', icon:'' };
-        }
-
-        function getSubtitleText(r) {
-            var texts = [];
-            if (r.isBlockedByUser) texts.push('已拉黑');
-            if (r.hasBlockedUser) texts.push('已被拉黑');
-            if (r.doNotDisturb) texts.push('🔕免打扰');
-            if (r.mood === 'tired') texts.push('疲倦中');
-            if (r.mood === 'angry') texts.push('生气中');
-            if ((r.favorability || 0) > 80) texts.push('好感度 ' + (r.favorability || 0) + '% ❤️');
-            return texts.join(' · ');
         }
 
         function formatTime(ts) {
@@ -386,8 +463,12 @@
         function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
 
         document.addEventListener('DOMContentLoaded', function() {
+            renderStatusRow();
             renderContactList();
-            setInterval(renderContactList, 60000);
+            setInterval(function() {
+                renderStatusRow();
+                renderContactList();
+            }, 60000);
         });
     </script>
 </body>
