@@ -7,9 +7,6 @@
     <style>
         :root {
             --bg: #fff;
-            --bubble-user: #95ec69;
-            --bubble-ai: #fff;
-            --green: #07c160;
             --separator: #e5e5e5;
             --text: #191919;
             --time-grey: #b0b0b0;
@@ -42,9 +39,7 @@
             position:absolute; left:16px; font-size:18px; color:#000;
             cursor:pointer; text-decoration:none; padding:4px; z-index:1;
         }
-        .nav-title {
-            font-size:17px; font-weight:700; color:#000;
-        }
+        .nav-title { font-size:17px; font-weight:700; color:#000; }
         .three-dots {
             position:absolute; right:16px; width:28px; height:28px;
             border:none; background:none; font-size:18px; cursor:pointer;
@@ -53,7 +48,9 @@
 
         .messages-container {
             flex:1; overflow-y:auto; padding:12px 12px;
-            display:flex; flex-direction:column; gap:2px; background:var(--bg);
+            display:flex; flex-direction:column; gap:2px;
+            background-size:cover; background-position:center;
+            background-repeat:no-repeat;
         }
         .messages-container::-webkit-scrollbar { display:none; }
         .msg-row-ai {
@@ -74,17 +71,27 @@
         .msg-content.ai { align-items:flex-start; }
         .msg-content.user { align-items:flex-end; }
         .msg-bubble {
-            padding:9px 14px; border-radius:18px; font-size:15px;
+            padding:9px 14px; font-size:15px;
             line-height:1.45; word-break:break-word;
         }
+        /* AI气泡默认 */
         .msg-content.ai .msg-bubble {
-            background:var(--bubble-ai); border:0.5px solid #e0e0e0; color:#000;
-            border-top-left-radius:4px;
+            background:#fff; border:0.5px solid #e0e0e0; color:#000;
+            border-radius:18px; border-top-left-radius:4px;
         }
+        /* 用户气泡默认 */
         .msg-content.user .msg-bubble {
-            background:var(--bubble-user); color:#000;
-            border-top-right-radius:4px;
+            background:#95ec69; color:#000;
+            border-radius:18px; border-top-right-radius:4px;
         }
+        /* 形状样式 */
+        .bubble-shape-round { border-radius:18px !important; }
+        .bubble-shape-square { border-radius:4px !important; }
+        .bubble-shape-soft { border-radius:12px 18px 12px 18px !important; }
+        .bubble-shape-leaf { border-radius:50% 4px 50% 4px !important; }
+        .bubble-shape-cloud { border-radius:20px 8px 20px 8px !important; }
+        .bubble-shape-pill { border-radius:24px !important; }
+
         .msg-time { font-size:11px; color:var(--time-grey); margin-top:2px; padding:0 4px; }
         .typing-dots { display:inline-flex; gap:3px; padding:3px 0; }
         .typing-dots span { width:6px; height:6px; background:#b0b0b0; border-radius:50%; animation:bounce 1.2s infinite; }
@@ -98,7 +105,7 @@
         .voice-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .voice-icon svg { width:22px; height:22px; stroke:#000; fill:none; }
         .input-area input { flex:1; padding:10px 12px; background:#f7f7f8; border:0.5px solid #e0e0e0; border-radius:20px; font-size:15px; outline:none; color:#000; }
-        .input-area input:focus { border-color:var(--green); }
+        .input-area input:focus { border-color:#07c160; }
         .input-area input::placeholder { color:#b0b0b0; }
         .plus-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; color:#000; opacity:0.6; }
         .input-area input.blocked-input { background:#f0f0f0; color:#999; }
@@ -212,6 +219,21 @@
             });
         });
 
+        function applyChatSettings() {
+            var container = document.getElementById('messages-container');
+            // 聊天背景
+            if (currentChatRole.chatBackground) {
+                container.style.backgroundImage = 'url(' + currentChatRole.chatBackground + ')';
+            } else {
+                container.style.backgroundImage = '';
+            }
+        }
+
+        function getBubbleShapeClass() {
+            var shape = currentChatRole.bubbleShape || 'round';
+            return 'bubble-shape-' + shape;
+        }
+
         function loadRole() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             for (var i = 0; i < roles.length; i++) {
@@ -220,6 +242,7 @@
             if (!currentChatRole) { window.location.href = 'chat.html'; return; }
             currentChatRole = initRoleData(currentChatRole);
             currentChatRole.unread = 0;
+            currentChatRole.lastInteraction = Date.now();
             saveRoleToStorage();
             currentApi = getActiveApi();
             document.getElementById('chat-nav-name').innerText = currentChatRole.remark || currentChatRole.name;
@@ -230,6 +253,7 @@
                 document.getElementById('chat-input').disabled = true;
             }
             
+            applyChatSettings();
             renderMessages();
         }
 
@@ -244,8 +268,14 @@
 
         function renderMessages() {
             var container = document.getElementById('messages-container');
+            applyChatSettings();
             var msgs = currentChatRole ? (currentChatRole.messages || []) : [];
             if (msgs.length === 0) { container.innerHTML = ''; return; }
+
+            var userBubbleColor = currentChatRole.userBubbleColor || '#95ec69';
+            var roleBubbleColor = currentChatRole.roleBubbleColor || '#ffffff';
+            var shapeClass = getBubbleShapeClass();
+
             var html = '';
             for (var i = 0; i < msgs.length; i++) {
                 var msg = msgs[i];
@@ -255,14 +285,16 @@
 
                 if (msg.type === 'ai') {
                     var roleImg = currentChatRole.avatar || '';
-                    html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble">' + text + '</div>';
+                    var bubbleStyle = 'style="background:' + roleBubbleColor + ';' + (roleBubbleColor.toLowerCase() === '#ffffff' || roleBubbleColor.toLowerCase() === '#fff' ? 'border:0.5px solid #e0e0e0;' : '') + '"';
+                    html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble ' + shapeClass + '" ' + bubbleStyle + '>' + text + '</div>';
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
                 } else {
                     var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
-                    html += '<div class="msg-row-user"><img class="msg-avatar" src="' + userImg + '" alt=""><div class="msg-content user"><div class="msg-bubble">' + text + '</div>';
+                    var userBubbleStyle = 'style="background:' + userBubbleColor + ';"';
+                    html += '<div class="msg-row-user"><img class="msg-avatar" src="' + userImg + '" alt=""><div class="msg-content user"><div class="msg-bubble ' + shapeClass + '" ' + userBubbleStyle + '>' + text + '</div>';
                     if (currentChatRole.hasBlockedUser && i === msgs.length - 1 && msg.type === 'user') {
-                        html += '<div class="blocked-notice">❗ 已被拉黑</div>';
+                        html += '<div class="blocked-notice">已被拉黑</div>';
                     }
                     if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                     html += '</div></div>';
@@ -290,6 +322,7 @@
             var text = input.value.trim();
             if (!text) return;
             if (!currentChatRole.messages) currentChatRole.messages = [];
+            currentChatRole.lastInteraction = Date.now();
             currentChatRole.messageQueue.push(text);
             currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
             input.value = ''; saveRoleToStorage(); renderMessages();
@@ -312,12 +345,9 @@
             if (Math.random() > prob) { currentChatRole.messageQueue = []; currentChatRole.isReplying = false; saveRoleToStorage(); return; }
             var delay = config.delay + Math.floor(Math.random() * 1000);
             var allMsgs = currentChatRole.messageQueue.join('；');
-            var self = this;
             setTimeout(function() {
                 if (!currentChatRole || currentChatRole.messageQueue.length === 0) { 
-                    currentChatRole.isReplying = false; 
-                    saveRoleToStorage(); 
-                    return; 
+                    currentChatRole.isReplying = false; saveRoleToStorage(); return; 
                 }
                 currentChatRole.messageQueue = [];
                 showTyping();
@@ -438,7 +468,7 @@
         function generateLocalReply() {
             var r = currentChatRole;
             var mood = r.mood || 'calm';
-            var replies = { happy: ['好呀！','当然可以✨','超开心~'], calm: ['嗯嗯','好的','明白了'], sad: ['...','哦','好吧'], angry: ['哼','随便','别烦我'], tired: ['累了...','明天吧','困了😴'] };
+            var replies = { happy: ['好呀！','当然可以','超开心~'], calm: ['嗯嗯','好的','明白了'], sad: ['...','哦','好吧'], angry: ['哼','随便','别烦我'], tired: ['累了...','明天吧','困了'] };
             var list = replies[mood] || replies.calm;
             return list[Math.floor(Math.random() * list.length)];
         }
