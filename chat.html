@@ -54,25 +54,33 @@
         .top-nav .add-circle {
             position:absolute; right:16px; width:28px; height:28px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
-            z-index:100;
+            z-index:100; border-radius:50%; transition:background 0.2s;
         }
+        .top-nav .add-circle:active { background:#f0f0f0; }
         .top-nav .add-circle svg { width:22px; height:22px; stroke:#000; }
 
+        /* ========== 弹出菜单 - Ins风 ========== */
         .popup-menu {
-            display:none; position:absolute; top:90px; right:10px;
-            background:var(--white); border-radius:8px;
-            box-shadow:0 4px 20px rgba(0,0,0,0.15); z-index:200;
-            min-width:140px; overflow:hidden;
+            display:none; position:absolute; top:88px; right:12px;
+            background:var(--white); border-radius:12px;
+            box-shadow:0 8px 30px rgba(0,0,0,0.12); z-index:200;
+            min-width:150px; overflow:hidden; padding:4px 0;
+            animation:menuIn 0.2s ease;
         }
+        @keyframes menuIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
         .popup-menu.show { display:block; }
         .popup-menu .menu-item {
-            display:flex; align-items:center; gap:10px; padding:13px 16px;
-            font-size:15px; color:var(--text); cursor:pointer;
-            border-bottom:0.5px solid var(--separator); text-decoration:none;
+            display:flex; align-items:center; gap:12px; padding:12px 18px;
+            font-size:14px; color:var(--text); cursor:pointer;
+            text-decoration:none; transition:background 0.15s;
+            font-weight:500; letter-spacing:-0.2px;
         }
-        .popup-menu .menu-item:last-child { border-bottom:none; }
-        .popup-menu .menu-item:active { background:#ececec; }
-        .popup-menu .menu-icon { font-size:16px; width:20px; text-align:center; }
+        .popup-menu .menu-item:active { background:#f5f5f5; }
+        .popup-menu .menu-icon {
+            width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+            flex-shrink:0;
+        }
+        .popup-menu .menu-icon svg { width:18px; height:18px; stroke:#555; stroke-width:1.5; }
 
         .overlay {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
@@ -92,10 +100,7 @@
             display:inline-flex; flex-direction:column; align-items:center;
             min-width:70px; cursor:pointer; position:relative; flex-shrink:0;
         }
-        .status-avatar-wrap {
-            position:relative; width:64px; height:64px;
-        }
-        /* 黑色边框环 */
+        .status-avatar-wrap { position:relative; width:64px; height:64px; }
         .status-avatar-ring {
             position:absolute; width:64px; height:64px; border-radius:50%;
             border:2px solid #000; padding:0;
@@ -104,7 +109,6 @@
             width:100%; height:100%; border-radius:50%; object-fit:cover;
             border:2px solid #fff; position:relative; z-index:1;
         }
-        /* 状态点 */
         .status-dot {
             position:absolute; bottom:2px; right:0px;
             width:16px; height:16px; border-radius:50%;
@@ -113,8 +117,8 @@
             z-index:2; font-weight:700;
         }
         .status-dot.online { background:#44B700; }
-        .status-dot.offline { 
-            background:#fff; border:2px solid #999; color:#999; 
+        .status-dot.offline {
+            background:#fff; border:2px solid #999; color:#999;
             font-size:12px; line-height:1;
         }
         .status-name {
@@ -122,7 +126,6 @@
             max-width:70px; overflow:hidden; text-overflow:ellipsis;
             font-weight:500;
         }
-        /* 心声气泡 */
         .status-bubble {
             position:absolute; top:-8px; right:-4px;
             transform:translate(10px, -4px);
@@ -219,14 +222,36 @@
             <a href="index.html" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
             <div class="add-circle" onclick="toggleMenu()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
             </div>
         </div>
 
         <div class="overlay" id="overlay" onclick="closeMenu()"></div>
         <div class="popup-menu" id="popup-menu">
-            <a href="create-role2.html" class="menu-item"><span class="menu-icon">👤</span><span>添加好友</span></a>
-            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')"><span class="menu-icon">👥</span><span>发起群聊</span></div>
+            <a href="create-role2.html" class="menu-item">
+                <span class="menu-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                </span>
+                <span>添加好友</span>
+            </a>
+            <div class="menu-item" onclick="closeMenu();alert('群聊功能即将上线')">
+                <span class="menu-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                </span>
+                <span>发起群聊</span>
+            </div>
         </div>
 
         <!-- 状态栏 -->
@@ -275,31 +300,22 @@
         }
         updateBattery();
 
-        // ==================== 判断角色是否在线 ====================
         function isRoleOnline(role) {
-            // 被拉黑或拉黑了用户 → 离线
             if (role.hasBlockedUser || role.isBlockedByUser) return false;
-            // 正在回消息 → 在线
             if (role.isReplying) return true;
-            // 最近5分钟内有消息互动 → 在线
             if (role.lastInteraction) {
                 var now = Date.now();
-                var fiveMin = 5 * 60 * 1000;
-                if (now - role.lastInteraction < fiveMin) return true;
+                if (now - role.lastInteraction < 5 * 60 * 1000) return true;
             }
-            // 用户正在查看聊天（当前在chat-detail页面打开着） → 在线
-            // 这个通过unread被清零来判断最近活跃
             return false;
         }
 
-        // ==================== 状态栏渲染 ====================
         function renderStatusRow() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             var container = document.getElementById('status-row');
             if (!container) return;
             if (roles.length === 0) { container.style.display = 'none'; return; }
             container.style.display = 'flex';
-            
             var html = '';
             for (var i = 0; i < roles.length; i++) {
                 var r = roles[i];
@@ -307,47 +323,33 @@
                 var mood = r.mood || 'calm';
                 var bubbleText = getBubbleText(fav, mood, r);
                 var online = isRoleOnline(r);
-                
                 html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
-                    '<div class="status-avatar-wrap">' +
-                    '<div class="status-avatar-ring">' +
-                    '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E\'">' +
-                    '</div>' +
-                    '<div class="status-dot ' + (online ? 'online' : 'offline') + '">' + (online ? '' : '⊘') + '</div>' +
+                    '<div class="status-avatar-wrap"><div class="status-avatar-ring">' +
+                    '<img class="status-avatar" src="' + (r.avatar || '') + '" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E\'">' +
+                    '</div><div class="status-dot ' + (online ? 'online' : 'offline') + '">' + (online ? '' : '⊘') + '</div>' +
                     (bubbleText ? '<div class="status-bubble">' + bubbleText + '</div>' : '') +
-                    '</div>' +
-                    '<div class="status-name">' + escapeHtml(r.remark || r.name) + '</div></div>';
+                    '</div><div class="status-name">' + escapeHtml(r.remark || r.name) + '</div></div>';
             }
             container.innerHTML = html;
         }
 
         function getBubbleText(fav, mood, role) {
             var hour = new Date().getHours();
-            if (fav > 80 && Math.random() < 0.7) {
-                var arr = ['好想你❤️', '想和你聊天💬', '想你了~', '好想见你🥰'];
-                return arr[Math.floor(Math.random() * arr.length)];
-            }
-            if (fav > 50 && Math.random() < 0.5) {
-                var arr = ['在想你', '有空吗？', '今天怎么样？'];
-                return arr[Math.floor(Math.random() * arr.length)];
-            }
-            if (mood === 'happy' && Math.random() < 0.4) {
-                var arr = ['今天超开心✨', '心情超好🎉', '好开心呀~'];
-                return arr[Math.floor(Math.random() * arr.length)];
-            }
+            if (fav > 80 && Math.random() < 0.7) { var a = ['好想你❤️','想和你聊天💬','想你了~','好想见你🥰']; return a[Math.floor(Math.random()*a.length)]; }
+            if (fav > 50 && Math.random() < 0.5) { var a = ['在想你','有空吗？','今天怎么样？']; return a[Math.floor(Math.random()*a.length)]; }
+            if (mood === 'happy' && Math.random() < 0.4) { var a = ['今天超开心✨','心情超好🎉','好开心呀~']; return a[Math.floor(Math.random()*a.length)]; }
             if (mood === 'sad') return '有点emo😔';
             if (mood === 'angry') return '别惹我😤';
             if (mood === 'tired') return '好累啊💤';
-            if (hour >= 6 && hour < 10) return ['早安☀️', '刚起床💤', '在吃早餐🍳'][Math.floor(Math.random()*3)];
+            if (hour >= 6 && hour < 10) { var a = ['早安☀️','刚起床💤','在吃早餐🍳']; return a[Math.floor(Math.random()*3)]; }
             if (hour >= 10 && hour < 12) return '工作中💼';
-            if (hour >= 12 && hour < 14) return ['在吃饭🍚', '午休中😴'][Math.floor(Math.random()*2)];
-            if (hour >= 14 && hour < 18) return ['工作中💼', '摸鱼中🐟'][Math.floor(Math.random()*2)];
-            if (hour >= 18 && hour < 22) return ['在看剧📺', '打游戏🎮'][Math.floor(Math.random()*2)];
+            if (hour >= 12 && hour < 14) { var a = ['在吃饭🍚','午休中😴']; return a[Math.floor(Math.random()*2)]; }
+            if (hour >= 14 && hour < 18) { var a = ['工作中💼','摸鱼中🐟']; return a[Math.floor(Math.random()*2)]; }
+            if (hour >= 18 && hour < 22) { var a = ['在看剧📺','打游戏🎮']; return a[Math.floor(Math.random()*2)]; }
             if (hour >= 22 || hour < 6) return '准备睡觉💤';
             return '';
         }
 
-        // ==================== 联系人列表渲染 ====================
         function renderContactList() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.sort(function(a, b) {
