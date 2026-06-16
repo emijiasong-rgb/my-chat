@@ -587,4 +587,37 @@
                 '嗯嗯': 'Mm-hmm', '好的': 'Alright', '明白了': 'Understood', '知道了': 'Got it',
                 '...': '...', '哦': 'Oh', '好吧': 'Fine', '算了': 'Forget it',
                 '哼': 'Hmph', '随便你': 'Whatever', '别烦我': 'Leave me alone', '关我什么事': 'Not my business',
-                '累了...': 'Tired...', '明天再说吧': 'Talk
+                '累了...': 'Tired...', '明天再说吧': 'Talk tomorrow', '好困啊': 'So sleepy', '想睡觉': 'Want to sleep',
+                'Great!': '太好了！', 'Awesome~': '太棒了~', 'Love that!': '喜欢！', 'You are the best!': '你是最棒的！',
+                'Okay': '好的', 'Got it': '明白了', 'Sure': '当然', 'I see': '知道了',
+                'Oh': '哦', 'Alright': '好吧', 'Fine': '行吧',
+                'Hmph': '哼', 'Whatever': '随便', 'Leave me alone': '别管我', 'Not my problem': '不关我事',
+                'So tired...': '好累...', 'Maybe tomorrow': '也许明天吧', 'I need sleep': '我要睡觉', 'Too exhausted': '太累了',
+                'いいね！': '真好！', '最高！': '最棒！', '嬉しい~': '好开心~', '大好き！': '超喜欢！',
+                'うん': '嗯', 'わかった': '知道了', 'そうだね': '是啊', 'なるほど': '原来如此',
+                'そう': '这样啊', '別に': '没什么', 'もういい': '算了',
+                'ふん': '哼', '勝手にしろ': '随你便', 'うるさい': '吵死了', '関係ない': '没关系',
+                '疲れた...': '累了...', 'また明日': '明天见', '眠い': '好困', 'もう無理': '不行了',
+                '좋아!': '好！', '최고야~': '最棒~', '너무 좋아!': '太好了！', '짱이야!': '超棒！',
+                '응': '嗯', '알겠어': '知道了', '그래': '好吧', '그렇구나': '原来如此',
+                '됐어': '算了', '아니야': '不是',
+                '흥': '哼', '맘대로 해': '随便你', '귀찮아': '好烦', '상관없어': '无所谓',
+                '피곤해...': '累了...', '내일 하자': '明天做吧', '졸려': '好困', '그만할래': '不想做了'
+            };
+            if (map[text]) return map[text];
+            // 英文翻译标记
+            if (/^[a-zA-Z\s!~,.?]+$/.test(text)) return '(翻译) ' + text;
+            return '(翻译) ' + text;
+        }
+
+        function saveRoleToStorage() {
+            if (!currentChatRole) return;
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            for (var i = 0; i < roles.length; i++) { if (roles[i].id === currentChatRole.id) { roles[i] = currentChatRole; break; } }
+            localStorage.setItem('chat_roles', JSON.stringify(roles));
+        }
+
+        function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
+    </script>
+</body>
+</html>
