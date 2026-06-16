@@ -42,15 +42,19 @@
         #battery-percent { font-size:12px; }
 
         .top-nav {
-            display:flex; align-items:center; justify-content:space-between;
+            display:flex; align-items:center; justify-content:center;
             padding:10px 16px; background:var(--white); position:relative;
             border-bottom:0.5px solid var(--separator);
+        }
+        .top-nav .back-arrow {
+            position:absolute; left:16px; font-size:18px; color:#000;
+            cursor:pointer; text-decoration:none; padding:4px;
         }
         .top-nav .nav-title {
             font-size:17px; font-weight:700; color:#000;
         }
         .top-nav .add-circle {
-            width:28px; height:28px;
+            position:absolute; right:16px; width:28px; height:28px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
             z-index:100;
         }
@@ -78,7 +82,7 @@
         }
         .overlay.show { display:block; }
 
-        /* ✅ Ins风状态栏 - 更大更宽 */
+        /* Ins风状态栏 - 更大更宽 */
         .status-row {
             background:#fff; padding:14px 0 12px 14px;
             border-bottom:0.5px solid var(--separator);
@@ -95,7 +99,6 @@
             position:relative; width:66px; height:66px;
             display:flex; align-items:center; justify-content:center;
         }
-        /* 渐变边框环 */
         .status-avatar-ring {
             position:absolute; width:70px; height:70px; border-radius:50%;
             background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
@@ -123,7 +126,6 @@
             max-width:68px; overflow:hidden; text-overflow:ellipsis;
             font-weight:500; letter-spacing:-0.2px;
         }
-        /* ✅ 心声气泡 - 更好看 */
         .status-bubble {
             position:absolute; top:-12px; right:-18px;
             background:#fff; border-radius:16px; padding:4px 10px;
@@ -142,44 +144,57 @@
             border-top:5px solid #fff;
         }
 
-        .role-list { flex:1; overflow-y:auto; background:var(--white); }
-        .role-list::-webkit-scrollbar { display:none; }
+        /* ✅ 联系人列表 - 和状态栏头像统一风格 */
+        .contact-list { flex:1; overflow-y:auto; background:var(--white); }
+        .contact-list::-webkit-scrollbar { display:none; }
 
-        .chat-row {
-            display:flex; align-items:center; gap:12px; padding:12px 16px;
+        .contact-card {
+            display:flex; align-items:center; gap:14px; padding:14px 18px;
             cursor:pointer; border-bottom:0.5px solid var(--separator);
             transition:background 0.15s;
         }
-        .chat-row.pinned { background:var(--pinned-bg); }
-        .chat-row:active { background:#ececec; }
-        .chat-row.blocked { opacity:0.6; }
-        .chat-avatar-wrap { position:relative; flex-shrink:0; }
-        .chat-avatar {
-            width:48px; height:48px; border-radius:6px; object-fit:cover;
-            background:#d0d0d0;
+        .contact-card:active { background:#f9f9f9; }
+        .contact-card.pinned { background:var(--pinned-bg); }
+        .contact-card.blocked { opacity:0.5; }
+        .contact-avatar-wrap { position:relative; flex-shrink:0; }
+        .contact-avatar {
+            width:52px; height:52px; border-radius:50%; object-fit:cover;
+            border:2px solid rgba(0,0,0,0.06);
         }
+        .contact-avatar-ring {
+            position:absolute; top:-3px; left:-3px; width:58px; height:58px;
+            border-radius:50%; background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4);
+            padding:2px; z-index:-1;
+        }
+        .contact-avatar-ring.offline { background:#e0e0e0; }
         .unread-dot {
-            position:absolute; top:-4px; right:-4px;
-            width:10px; height:10px; background:var(--red-dot);
+            position:absolute; top:-2px; right:-2px;
+            width:18px; height:18px; background:var(--red-dot);
             border-radius:50%; border:2px solid #fff; display:none;
+            color:#fff; font-size:10px; font-weight:700;
+            align-items:center; justify-content:center;
         }
-        .unread-dot.show { display:block; }
+        .unread-dot.show { display:flex; }
 
-        .chat-info { flex:1; min-width:0; }
-        .chat-top { display:flex; align-items:baseline; gap:6px; margin-bottom:3px; }
-        .chat-name { font-size:16px; font-weight:500; color:var(--text); }
-        .pin-icon { font-size:10px; color:var(--text-tertiary); }
-        .chat-time { font-size:12px; color:var(--text-tertiary); margin-left:auto; flex-shrink:0; }
-        .chat-preview {
-            font-size:13px; color:var(--text-tertiary);
+        .contact-info { flex:1; min-width:0; }
+        .contact-top { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+        .contact-name { font-size:16px; font-weight:600; color:var(--text); letter-spacing:-0.3px; }
+        .contact-pin { font-size:11px; color:var(--text-tertiary); }
+        .contact-time { font-size:12px; color:var(--text-tertiary); margin-left:auto; flex-shrink:0; font-weight:400; }
+        .contact-preview {
+            font-size:14px; color:var(--text-tertiary);
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            font-weight:400; letter-spacing:-0.2px;
         }
-        .chat-preview.unread { color:var(--text); }
+        .contact-preview.unread { color:var(--text); font-weight:500; }
+        .contact-subtitle {
+            font-size:12px; color:var(--text-tertiary); margin-top:1px;
+        }
 
         .empty-state { text-align:center; padding:120px 20px; color:#b0b0b0; }
-        .empty-icon { font-size:40px; margin-bottom:12px; opacity:0.4; }
-        .empty-text { font-size:15px; }
-        .empty-sub { font-size:12px; margin-top:4px; opacity:0.7; }
+        .empty-icon { font-size:44px; margin-bottom:14px; opacity:0.35; }
+        .empty-text { font-size:16px; font-weight:500; }
+        .empty-sub { font-size:13px; margin-top:4px; opacity:0.7; }
 
         .bottom-nav {
             display:flex; align-items:flex-start; justify-content:space-around;
@@ -222,6 +237,7 @@
         </div>
 
         <div class="top-nav">
+            <a href="index.html" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
             <div class="add-circle" onclick="toggleMenu()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -240,11 +256,11 @@
             </div>
         </div>
 
-        <!-- ✅ 头像状态栏 -->
+        <!-- Ins风头像状态栏 -->
         <div class="status-row" id="status-row"></div>
 
-        <!-- ✅ 联系人列表（点击直接进入聊天） -->
-        <div class="role-list" id="role-list">
+        <!-- ✅ 联系人列表（合并了原来的role-list） -->
+        <div class="contact-list" id="contact-list">
             <div class="empty-state">
                 <div class="empty-icon">💬</div>
                 <div class="empty-text">暂无消息</div>
@@ -326,8 +342,7 @@
                 var status = getOnlineStatus(r);
                 var ringClass = (status.class === 'offline' || status.class === 'sleep') ? ' status-avatar-ring ' + status.class + '-ring' : ' status-avatar-ring';
                 
-                // ✅ 点击头像状态 → 直接进入聊天页面
-                html += '<div class="status-item" onclick="goToChat(\'' + r.id + '\')">' +
+                html += '<div class="status-item" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
                     '<div class="status-avatar-wrap">' +
                     '<div class="' + ringClass + '">' +
                     '<img class="status-avatar" src="' + (r.avatar || '') + '" alt="">' +
@@ -373,7 +388,8 @@
             return { class:'online', icon:'' };
         }
 
-        function renderRoleList() {
+        // ✅ 联系人列表（和状态栏头像统一风格）
+        function renderContactList() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             roles.sort(function(a, b) {
                 if (a.pinned && !b.pinned) return -1;
@@ -381,7 +397,7 @@
                 return 0;
             });
 
-            var container = document.getElementById('role-list');
+            var container = document.getElementById('contact-list');
             if (roles.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>';
                 return;
@@ -394,21 +410,42 @@
                 var hasUnread = r.unread && r.unread > 0;
                 var time = lastMsg ? formatTime(lastMsg.time || r.id) : '';
                 var pinnedClass = r.pinned ? ' pinned' : '';
-                var blockedClass = r.blocked ? ' blocked' : '';
-                var pinIcon = r.pinned ? ' 📌' : '';
+                var blockedClass = r.hasBlockedUser ? ' blocked' : '';
+                var pinIcon = r.pinned ? '📌' : '';
+                var mood = r.mood || 'calm';
+                var fav = r.favorability || 0;
+                var status = getOnlineStatus(r);
+                var ringClass = (status.class === 'offline' || status.class === 'sleep') ? ' offline' : '';
 
-                // ✅ 点击联系人 → 直接进入聊天页面
-                html += '<div class="chat-row' + pinnedClass + blockedClass + '" onclick="goToChat(\'' + r.id + '\')">' +
-                    '<div class="chat-avatar-wrap"><img class="chat-avatar" src="' + (r.avatar || '') + '" alt=""><div class="unread-dot' + (hasUnread ? ' show' : '') + '"></div></div>' +
-                    '<div class="chat-info"><div class="chat-top"><span class="chat-name">' + escapeHtml(r.remark || r.name) + '</span><span class="pin-icon">' + pinIcon + '</span><span class="chat-time">' + time + '</span></div>' +
-                    '<div class="chat-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div></div></div>';
+                html += '<div class="contact-card' + pinnedClass + blockedClass + '" onclick="window.location.href=\'chat-detail.html?id=' + r.id + '\'">' +
+                    '<div class="contact-avatar-wrap">' +
+                    '<div class="contact-avatar-ring' + ringClass + '">' +
+                    '<img class="contact-avatar" src="' + (r.avatar || '') + '" alt="">' +
+                    '</div>' +
+                    '<div class="unread-dot' + (hasUnread ? ' show' : '') + '">' + (r.unread > 1 ? r.unread : '') + '</div>' +
+                    '</div>' +
+                    '<div class="contact-info">' +
+                    '<div class="contact-top"><span class="contact-name">' + escapeHtml(r.remark || r.name) + '</span>' +
+                    (pinIcon ? '<span class="contact-pin">' + pinIcon + '</span>' : '') +
+                    '<span class="contact-time">' + time + '</span></div>' +
+                    '<div class="contact-preview' + (hasUnread ? ' unread' : '') + '">' + escapeHtml(preview) + '</div>' +
+                    '<div class="contact-subtitle">' + getSubtitleText(r) + '</div>' +
+                    '</div></div>';
             }
             container.innerHTML = html;
         }
 
-        // ✅ 统一的跳转函数
-        function goToChat(id) {
-            window.location.href = 'chat-detail.html?id=' + id;
+        function getSubtitleText(r) {
+            var fav = r.favorability || 0;
+            var mood = r.mood || 'calm';
+            var texts = [];
+            if (r.isBlockedByUser) texts.push('已拉黑');
+            if (r.hasBlockedUser) texts.push('已被拉黑');
+            if (r.doNotDisturb) texts.push('🔕免打扰');
+            if (mood === 'tired') texts.push('疲倦中');
+            if (mood === 'angry') texts.push('生气中');
+            if (fav > 80) texts.push('好感度 ' + fav + '% ❤️');
+            return texts.join(' · ');
         }
 
         function formatTime(ts) {
@@ -425,7 +462,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateClock(); updateBattery();
             renderStatusRow();
-            renderRoleList();
+            renderContactList();
             setInterval(renderStatusRow, 60000);
         });
     </script>
