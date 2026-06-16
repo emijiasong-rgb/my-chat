@@ -59,7 +59,6 @@
         .top-nav .add-circle:active { background:#f0f0f0; }
         .top-nav .add-circle svg { width:22px; height:22px; stroke:#000; }
 
-        /* ========== 弹出菜单 - Ins风 ========== */
         .popup-menu {
             display:none; position:absolute; top:88px; right:12px;
             background:var(--white); border-radius:12px;
@@ -88,7 +87,6 @@
         }
         .overlay.show { display:block; }
 
-        /* ========== 状态栏（横向滚动） ========== */
         .status-row {
             background:#fff; padding:12px 0 10px 14px;
             border-bottom:1px solid #F0EDE8;
@@ -143,7 +141,6 @@
             border-top:6px solid #fff;
         }
 
-        /* ========== 联系人列表 ========== */
         .contact-list { flex:1; overflow-y:auto; background:var(--white); }
         .contact-list::-webkit-scrollbar { display:none; }
         .section-title { padding:10px 16px 4px; font-size:12px; color:var(--text-tertiary); font-weight:500; background:var(--white); }
@@ -177,7 +174,6 @@
         .empty-text { font-size:16px; font-weight:500; }
         .empty-sub { font-size:13px; margin-top:4px; opacity:0.7; }
 
-        /* ========== 底部导航 ========== */
         .bottom-nav {
             display:flex; align-items:flex-start; justify-content:space-around;
             background:var(--white); border-top:0.5px solid var(--separator);
@@ -219,7 +215,7 @@
         </div>
 
         <div class="top-nav">
-            <a href="index.html" class="back-arrow">←</a>
+            <a href="index.html?from=chat" class="back-arrow">←</a>
             <span class="nav-title">信息</span>
             <div class="add-circle" onclick="toggleMenu()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -254,10 +250,8 @@
             </div>
         </div>
 
-        <!-- 状态栏 -->
         <div class="status-row" id="status-row"></div>
 
-        <!-- 联系人列表 -->
         <div class="contact-list" id="contact-list">
             <div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无消息</div><div class="empty-sub">点击右上角 + 添加好友</div></div>
         </div>
@@ -304,8 +298,7 @@
             if (role.hasBlockedUser || role.isBlockedByUser) return false;
             if (role.isReplying) return true;
             if (role.lastInteraction) {
-                var now = Date.now();
-                if (now - role.lastInteraction < 5 * 60 * 1000) return true;
+                if (Date.now() - role.lastInteraction < 5 * 60 * 1000) return true;
             }
             return false;
         }
