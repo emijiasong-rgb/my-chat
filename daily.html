@@ -65,6 +65,12 @@
         }
         .my-avatar-label { font-size:14px; color:var(--text); font-weight:500; }
 
+        .account-info {
+            padding:4px 16px 12px; font-size:12px; color:var(--grey);
+            display:flex; align-items:center; gap:6px;
+        }
+        .account-info .switch-link { color:var(--green); cursor:pointer; text-decoration:underline; }
+
         .section-title { padding:10px 16px 4px; font-size:12px; color:var(--grey); font-weight:500; }
         .contact-card {
             display:flex; align-items:center; gap:12px; padding:14px 16px;
@@ -135,14 +141,20 @@
         <div class="login-overlay" id="login-overlay">
             <div class="login-card">
                 <h2>登录</h2>
-                <button class="login-btn" onclick="startBind()">与微信绑定</button>
+                <button class="login-btn" onclick="bindAccount()">与微信绑定</button>
             </div>
         </div>
 
         <div class="main-page" id="main-page">
             <div class="my-avatar-section" onclick="window.location.href='daily-profile.html'">
                 <img class="my-avatar" id="my-avatar" src="" alt="">
-                <span class="my-avatar-label">我的日常 ›</span>
+                <div>
+                    <span class="my-avatar-label" id="my-name-label">我的日常 ›</span>
+                    <div class="account-info">
+                        <span id="bound-account">未绑定账号</span>
+                        <span class="switch-link" onclick="switchAccount()">切换</span>
+                    </div>
+                </div>
             </div>
             <div class="section-title">联系人</div>
             <div id="contact-list"></div>
@@ -151,8 +163,9 @@
 
     <div class="modal-overlay" id="bind-modal">
         <div class="modal-card">
-            <h3>是否绑定该联系人？</h3>
-            <input type="text" class="modal-input" id="bind-name" placeholder="名字">
+            <h3>绑定你的账号</h3>
+            <p style="font-size:13px;color:#888;margin-bottom:12px;">绑定后将使用你的 Chat 账号信息</p>
+            <input type="text" class="modal-input" id="bind-name" placeholder="你的名字">
             <input type="file" id="bind-avatar-file" accept="image/*" style="display:none;" onchange="handleBindAvatar(event)">
             <button class="modal-btn cancel" onclick="document.getElementById('bind-avatar-file').click()">更换头像</button>
             <button class="modal-btn confirm" onclick="confirmBind()">确认绑定</button>
@@ -163,7 +176,6 @@
     <div class="success-toast" id="success-toast">登入成功 ✨</div>
 
     <script>
-        var bindRoleId = null;
         var bindAvatarData = '';
 
         function updateClock() {
@@ -185,46 +197,52 @@
         updateBattery();
 
         document.addEventListener('DOMContentLoaded', function() {
-            var bound = localStorage.getItem('daily_bound');
-            if (bound) {
-                document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('main-page').classList.add('show');
-                document.getElementById('my-avatar').src = localStorage.getItem('daily_avatar') || '';
-                renderContacts();
-            }
+            checkBinding();
         });
 
-        function startBind() {
-            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
-            if (roles.length === 0) {
-                alert('请先在 Chat 中创建角色');
-                return;
+        // 检查是否已绑定
+        function checkBinding() {
+            var boundUser = localStorage.getItem('daily_bound_user') || localStorage.getItem('currentUser');
+            var boundAvatar = localStorage.getItem('daily_avatar') || localStorage.getItem('savedAvatar');
+            var bound = localStorage.getItem('daily_bound');
+
+            if (bound && boundUser) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('main-page').classList.add('show');
+                document.getElementById('my-avatar').src = boundAvatar || '';
+                document.getElementById('my-name-label').innerText = boundUser + ' 的日常 ›';
+                document.getElementById('bound-account').innerText = '已绑定：' + boundUser;
+                renderContacts();
             }
-            showRoleSelectModal(roles);
         }
 
-        function showRoleSelectModal(roles) {
-            var html = '<div class="modal-overlay active" id="role-select-modal" onclick="if(event.target===this)closeRoleSelect()"><div class="modal-card"><h3>选择要绑定的联系人</h3>';
-            roles.forEach(function(r) {
-                html += '<div style="display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;border-radius:12px;margin:4px 0;" onclick="selectRoleForBind(' + r.id + ',\'' + escapeHtml(r.remark || r.name) + '\',\'' + (r.avatar || '') + '\')" onmouseover="this.style.background=\'#f9f9f9\'" onmouseout="this.style.background=\'transparent\'">' +
-                    '<img src="' + (r.avatar || '') + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#e0e0e0;" onerror="this.style.background=\'#e0e0e0\'">' +
-                    '<span style="font-size:15px;font-weight:500;color:#3A3A3A;">' + escapeHtml(r.remark || r.name) + '</span></div>';
-            });
-            html += '<button class="modal-btn cancel" onclick="closeRoleSelect()">取消</button></div></div>';
-            document.body.insertAdjacentHTML('beforeend', html);
+        // 绑定账号（与微信绑定）
+        function bindAccount() {
+            var currentUser = localStorage.getItem('currentUser');
+            var savedAvatar = localStorage.getItem('savedAvatar');
+            
+            // 使用当前登录的Chat账号信息
+            if (currentUser && currentUser !== '未登录用户') {
+                bindAvatarData = savedAvatar || '';
+                document.getElementById('bind-name').value = currentUser;
+                document.getElementById('bind-modal').classList.add('active');
+            } else {
+                // 没有Chat账号时手动填写
+                bindAvatarData = '';
+                document.getElementById('bind-name').value = '';
+                document.getElementById('bind-modal').classList.add('active');
+            }
         }
 
-        function selectRoleForBind(id, name, avatar) {
-            closeRoleSelect();
-            bindRoleId = id;
-            document.getElementById('bind-name').value = name;
-            bindAvatarData = avatar;
-            document.getElementById('bind-modal').classList.add('active');
-        }
-
-        function closeRoleSelect() {
-            var el = document.getElementById('role-select-modal');
-            if (el) el.remove();
+        // 切换账号
+        function switchAccount() {
+            if (confirm('确定要切换绑定的账号吗？切换后需要重新绑定。')) {
+                localStorage.removeItem('daily_bound');
+                localStorage.removeItem('daily_bound_user');
+                localStorage.removeItem('daily_avatar');
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('main-page').classList.remove('show');
+            }
         }
 
         function handleBindAvatar(event) {
@@ -238,15 +256,22 @@
         function confirmBind() {
             var name = document.getElementById('bind-name').value.trim();
             if (!name) { alert('请输入名字'); return; }
+            
+            var currentUser = localStorage.getItem('currentUser');
+            var boundUser = currentUser && currentUser !== '未登录用户' ? currentUser : name;
+            
             localStorage.setItem('daily_bound', 'true');
-            localStorage.setItem('daily_name', name);
-            localStorage.setItem('daily_avatar', bindAvatarData);
-            localStorage.setItem('daily_bound_role', bindRoleId);
+            localStorage.setItem('daily_bound_user', boundUser);
+            localStorage.setItem('daily_avatar', bindAvatarData || localStorage.getItem('savedAvatar') || '');
+            
             closeBindModal();
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('main-page').classList.add('show');
-            document.getElementById('my-avatar').src = bindAvatarData || '';
+            document.getElementById('my-avatar').src = bindAvatarData || localStorage.getItem('savedAvatar') || '';
+            document.getElementById('my-name-label').innerText = boundUser + ' 的日常 ›';
+            document.getElementById('bound-account').innerText = '已绑定：' + boundUser;
             renderContacts();
+            
             var toast = document.getElementById('success-toast');
             toast.classList.add('show');
             setTimeout(function() { toast.classList.remove('show'); }, 1500);
