@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>权限管理</title>
+    <style>
+        :root {
+            --bg: #FDF8F2;
+            --card-bg: #fff;
+            --text: #3A3A3A;
+            --green: #7CB87C;
+            --purple: #E0D4F5;
+            --pink: #F7A1C4;
+            --grey: #B0B0B0;
+            --red: #F5D4D4;
+            --light-green: #D4F0D4;
+            --separator: #f0ede8;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            background:#1a1a1a; height:100dvh; width:100vw;
+            display:flex; justify-content:center; align-items:center;
+            font-family:-apple-system,sans-serif; overflow:hidden;
+        }
+        #phone-shell {
+            width:100vw; max-width:430px; height:100dvh; max-height:932px;
+            background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
+        }
+        .status-bar {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:14px 24px 6px; font-size:13px; font-weight:600; color:var(--text);
+            background:var(--bg);
+        }
+        .nav-bar {
+            display:flex; align-items:center; padding:10px 16px;
+            background:var(--bg); border-bottom:0.5px solid var(--separator);
+            position:relative;
+        }
+        .nav-back { font-size:17px; color:#007aff; cursor:pointer; text-decoration:none; }
+        .nav-title { font-size:17px; font-weight:600; position:absolute; left:50%; transform:translateX(-50%); color:var(--text); }
+
+        /* Tab切换 */
+        .tab-row {
+            display:flex; background:var(--card-bg); margin:10px 14px;
+            border-radius:14px; overflow:hidden;
+        }
+        .tab {
+            flex:1; text-align:center; padding:12px; font-size:14px;
+            cursor:pointer; color:var(--grey); font-weight:500;
+            transition:all 0.2s; border-bottom:2px solid transparent;
+        }
+        .tab.active { color:var(--text); font-weight:700; border-bottom-color:var(--green); }
+
+        #viewport { flex:1; overflow-y:auto; padding:0 14px 20px; }
+        #viewport::-webkit-scrollbar { display:none; }
+
+        .card {
+            background:var(--card-bg); border-radius:16px; padding:16px;
+            margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.03);
+        }
+        .card-top { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+        .card-avatar {
+            width:40px; height:40px; border-radius:50%; object-fit:cover;
+            background:#e0e0e0; flex-shrink:0;
+        }
+        .card-info { flex:1; }
+        .card-name { font-size:15px; font-weight:600; color:var(--text); }
+        .card-desc { font-size:12px; color:var(--grey); margin-top:2px; }
+        .card-actions { display:flex; gap:8px; margin-top:8px; }
+        .btn {
+            flex:1; padding:10px; border:none; border-radius:10px;
+            font-size:13px; font-weight:600; cursor:pointer;
+        }
+        .btn.accept { background:var(--green); color:#fff; }
+        .btn.reject { background:#f0f0f0; color:var(--grey); }
+        .btn.revoke { background:#fff0f0; color:#D48383; }
+        .btn:active { opacity:0.7; }
+
+        .empty-state { text-align:center; padding:60px 20px; color:var(--grey); }
+        .section-label {
+            font-size:13px; color:var(--grey); padding:8px 0 4px;
+            font-weight:600;
+        }
+    </style>
+</head>
+<body>
+    <div id="phone-shell">
+        <div class="status-bar">
+            <span id="clock">12:00</span>
+            <div class="status-icons">
+                <span>📶</span>
+                <span id="battery-percent">--%</span>
+            </div>
+        </div>
+        <div class="nav-bar">
+            <a href="daily-profile.html" class="nav-back">← 返回</a>
+            <span class="nav-title">权限管理</span>
+        </div>
+
+        <div class="tab-row">
+            <div class="tab active" id="tab-received" onclick="switchTab('received')">收到的申请</div>
+            <div class="tab" id="tab-sent" onclick="switchTab('sent')">发出的申请</div>
+        </div>
+
+        <div id="viewport">
+            <div id="received-list"></div>
+            <div class="section-label">已授权角色</div>
+            <div id="granted-list"></div>
+        </div>
+    </div>
+
+    <script>
+        var currentTab = 'received';
+
+        function updateClock() {
+            var now = new Date();
+            document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderAll();
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-received').classList.toggle('active', tab === 'received');
+            document.getElementById('tab-sent').classList.toggle('active', tab === 'sent');
+            renderAll();
+        }
+
+        function renderAll() {
+            var requests = JSON.parse(localStorage.getItem('daily_requests') || '[]');
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+
+            if (currentTab === 'received') {
+                renderReceived(requests, roles);
+            } else {
+                renderSent(requests, roles);
+            }
+            renderGranted(roles);
+        }
+
+        function renderReceived(requests, roles) {
+            var container = document.getElementById('received-list');
+            var received = requests.filter(function(r) { return r.from !== 'user' && r.status === 'pending'; });
+            if (received.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无收到的申请</div>';
+                return;
+            }
+            var html = '';
+            received.forEach(function(req) {
+                var role = findRole(roles, req.fromId || req.from);
+                var name = role ? (role.remark || role.name) : req.from;
+                var avatar = role ? role.avatar : '';
+                html += '<div class="card"><div class="card-top"><img class="card-avatar" src="' + avatar + '" onerror="this.style.background=\'#e0e0e0\'">' +
+                    '<div class="card-info"><div class="card-name">' + escapeHtml(name) + '</div><div class="card-desc">申请查看你的日常行程</div></div></div>' +
+                    '<div class="card-actions"><button class="btn accept" onclick="handleRequest(\'' + req.from + '\',\'accept\')">同意</button>' +
+                    '<button class="btn reject" onclick="handleRequest(\'' + req.from + '\',\'reject\')">拒绝</button></div></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function renderSent(requests, roles) {
+            var container = document.getElementById('received-list');
+            var sent = requests.filter(function(r) { return r.from === 'user' && r.status === 'pending'; });
+            if (sent.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无发出的申请</div>';
+                return;
+            }
+            var html = '';
+            sent.forEach(function(req) {
+                var role = findRole(roles, req.toId);
+                var name = role ? (role.remark || role.name) : req.to;
+                var avatar = role ? role.avatar : '';
+                html += '<div class="card"><div class="card-top"><img class="card-avatar" src="' + avatar + '" onerror="this.style.background=\'#e0e0e0\'">' +
+                    '<div class="card-info"><div class="card-name">' + escapeHtml(name) + '</div><div class="card-desc">等待对方同意...</div></div></div></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function renderGranted(roles) {
+            var container = document.getElementById('granted-list');
+            var grantedRoles = roles.filter(function(r) { return r.dailyPermissionGranted; });
+            if (grantedRoles.length === 0) {
+                container.innerHTML += '<div class="empty-state">暂无已授权角色</div>';
+                return;
+            }
+            var html = '';
+            grantedRoles.forEach(function(r) {
+                html += '<div class="card"><div class="card-top"><img class="card-avatar" src="' + (r.avatar || '') + '" onerror="this.style.background=\'#e0e0e0\'">' +
+                    '<div class="card-info"><div class="card-name">' + escapeHtml(r.remark || r.name) + '</div><div class="card-desc">已授权查看行程</div></div></div>' +
+                    '<button class="btn revoke" onclick="revokePermission(' + r.id + ')" style="width:100%;margin-top:6px;">解除授权</button></div>';
+            });
+            container.innerHTML += html;
+        }
+
+        function handleRequest(from, action) {
+            var requests = JSON.parse(localStorage.getItem('daily_requests') || '[]');
+            for (var i = 0; i < requests.length; i++) {
+                if (requests[i].from === from && requests[i].status === 'pending') {
+                    requests[i].status = action === 'accept' ? 'accepted' : 'rejected';
+                    break;
+                }
+            }
+            localStorage.setItem('daily_requests', JSON.stringify(requests));
+
+            if (action === 'accept') {
+                var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+                for (var j = 0; j < roles.length; j++) {
+                    if (roles[j].name === from || roles[j].id === from) {
+                        roles[j].dailyPermissionGranted = true;
+                        localStorage.setItem('chat_roles', JSON.stringify(roles));
+                        break;
+                    }
+                }
+            }
+            renderAll();
+            alert(action === 'accept' ? '已同意申请' : '已拒绝申请');
+        }
+
+        function revokePermission(roleId) {
+            if (!confirm('确定解除授权？')) return;
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            for (var i = 0; i < roles.length; i++) {
+                if (roles[i].id === roleId) {
+                    roles[i].dailyPermissionGranted = false;
+                    localStorage.setItem('chat_roles', JSON.stringify(roles));
+                    break;
+                }
+            }
+            renderAll();
+            alert('已解除授权');
+        }
+
+        function findRole(roles, idOrName) {
+            for (var i = 0; i < roles.length; i++) {
+                if (roles[i].id === idOrName || roles[i].name === idOrName) return roles[i];
+            }
+            return null;
+        }
+
+        function escapeHtml(text) {
+            var d = document.createElement('div');
+            d.innerText = text || '';
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>
