@@ -251,7 +251,6 @@
         var currentYear, currentMonth, eventsKey = 'daily_events_self';
         var pendingEventType = '';
         var editingEventIndex = -1;
-        var editingEvent = null;
 
         function updateClock() {
             var now = new Date();
@@ -274,7 +273,7 @@
         function updatePill(pillId, input) {
             if (input.value) {
                 var parts = input.value.split('-');
-                document.getElementById(pillId).innerText = parts[1] + '月' + parts[2] + '日';
+                document.getElementById(pillId).innerText = parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日';
             }
         }
 
@@ -316,7 +315,6 @@
                 var isToday = (currentYear === today.getFullYear() && currentMonth === today.getMonth() && d === today.getDate());
                 var dayEvents = getEventsForDay(events, currentYear, currentMonth + 1, d);
 
-                // 只有经期改变整个格子背景
                 var isPeriodDay = false;
                 for (var j = 0; j < dayEvents.length; j++) {
                     if (dayEvents[j].type === 'period') { isPeriodDay = true; break; }
@@ -348,45 +346,47 @@
 
         function getEventsForDay(events, y, m, d) {
             return events.filter(function(e) {
-                if (e.type === 'period' && e.endDate) {
+                if (e.type === 'period') {
                     var start = new Date(e.year, e.month - 1, e.day);
-                    start.setHours(0, 0, 0, 0);
-                    var end = new Date(e.endYear, e.endMonth - 1, e.endDay);
-                    end.setHours(23, 59, 59, 999);
+                    start.setHours(0,0,0,0);
+                    var endDay = e.endDay || e.day;
+                    var endMonth = e.endMonth || e.month;
+                    var endYear = e.endYear || e.year;
+                    var end = new Date(endYear, endMonth - 1, endDay);
+                    end.setHours(23,59,59,999);
                     var cur = new Date(y, m - 1, d);
-                    cur.setHours(12, 0, 0, 0);
+                    cur.setHours(12,0,0,0);
                     return cur >= start && cur <= end;
                 }
                 return e.year === y && e.month === m && e.day === d;
             });
         }
 
-        // ========== 编辑事件 ==========
         function editEvent(index) {
             var events = getEvents();
-            editingEvent = events[index];
+            var ev = events[index];
             editingEventIndex = index;
-            if (!editingEvent) return;
+            if (!ev) return;
 
-            pendingEventType = editingEvent.type;
+            pendingEventType = ev.type;
             document.getElementById('detail-modal-title').innerText = '编辑';
             document.getElementById('detail-delete-btn').style.display = 'inline-block';
 
-            if (editingEvent.type === 'period') {
+            if (ev.type === 'period') {
                 document.getElementById('detail-title').style.display = 'none';
                 document.getElementById('detail-title').value = '';
                 document.getElementById('detail-date-sep').style.display = 'inline';
                 document.getElementById('detail-end-date-input').style.display = 'inline-block';
-                document.getElementById('detail-start-date-input').value = formatDateStr(editingEvent.year, editingEvent.month, editingEvent.day);
-                document.getElementById('detail-end-date-input').value = editingEvent.endDate ? formatDateStr(editingEvent.endYear, editingEvent.endMonth, editingEvent.endDay) : '';
+                document.getElementById('detail-start-date-input').value = formatDateStr(ev.year, ev.month, ev.day);
+                document.getElementById('detail-end-date-input').value = formatDateStr(ev.endYear || ev.year, ev.endMonth || ev.month, ev.endDay || ev.day);
             } else {
                 document.getElementById('detail-title').style.display = 'block';
-                document.getElementById('detail-title').value = editingEvent.title || '';
+                document.getElementById('detail-title').value = ev.title || '';
                 document.getElementById('detail-date-sep').style.display = 'none';
                 document.getElementById('detail-end-date-input').style.display = 'none';
-                document.getElementById('detail-start-date-input').value = formatDateStr(editingEvent.year, editingEvent.month, editingEvent.day);
+                document.getElementById('detail-start-date-input').value = formatDateStr(ev.year, ev.month, ev.day);
             }
-            document.getElementById('detail-note').value = editingEvent.note || '';
+            document.getElementById('detail-note').value = ev.note || '';
             document.getElementById('detail-modal').classList.add('active');
         }
 
@@ -404,12 +404,11 @@
             return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
         }
 
-        // ========== 新增 ==========
         function showAddModal() { document.getElementById('add-modal').classList.add('active'); }
         function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
         function showPeriodForm() {
-            editingEventIndex = -1; editingEvent = null;
+            editingEventIndex = -1;
             pendingEventType = 'period';
             document.getElementById('detail-modal-title').innerText = '标记经期';
             document.getElementById('detail-delete-btn').style.display = 'none';
@@ -425,7 +424,7 @@
         }
 
         function showReminderForm() {
-            editingEventIndex = -1; editingEvent = null;
+            editingEventIndex = -1;
             pendingEventType = 'reminder';
             document.getElementById('detail-modal-title').innerText = '提醒事项';
             document.getElementById('detail-delete-btn').style.display = 'none';
@@ -440,7 +439,7 @@
         }
 
         function showImportantForm() {
-            editingEventIndex = -1; editingEvent = null;
+            editingEventIndex = -1;
             pendingEventType = 'important';
             document.getElementById('detail-modal-title').innerText = '重要日程';
             document.getElementById('detail-delete-btn').style.display = 'none';
@@ -457,33 +456,28 @@
         function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
 
         function saveDetail() {
-            var dateStr = document.getElementById('detail-start-date-input').value;
-            if (!dateStr) { alert('请选择日期'); return; }
-            var parts = dateStr.split('-');
-            var title = pendingEventType === 'period' ? '' : (document.getElementById('detail-title').value.trim() || '');
+            var startDateStr = document.getElementById('detail-start-date-input').value;
+            if (!startDateStr) { alert('请选择开始日期'); return; }
+            var parts = startDateStr.split('-');
+            var title = pendingEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名');
             var note = document.getElementById('detail-note').value.trim();
-            var displayTitle = pendingEventType === 'period' ? (note || '经期') : (title || note || '未命名');
 
             var ev = {
                 type: pendingEventType,
                 title: title,
                 note: note,
-                displayTitle: displayTitle,
-                year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
+                year: parseInt(parts[0]),
+                month: parseInt(parts[1]),
+                day: parseInt(parts[2])
             };
 
             if (pendingEventType === 'period') {
-                var endStr = document.getElementById('detail-end-date-input').value;
-                if (endStr) {
-                    var ep = endStr.split('-');
-                    ev.endYear = parseInt(ep[0]);
-                    ev.endMonth = parseInt(ep[1]);
-                    ev.endDay = parseInt(ep[2]);
-                } else {
-                    ev.endYear = ev.year;
-                    ev.endMonth = ev.month;
-                    ev.endDay = ev.day;
-                }
+                var endDateStr = document.getElementById('detail-end-date-input').value;
+                if (!endDateStr) { alert('请选择结束日期'); return; }
+                var endParts = endDateStr.split('-');
+                ev.endYear = parseInt(endParts[0]);
+                ev.endMonth = parseInt(endParts[1]);
+                ev.endDay = parseInt(endParts[2]);
             }
 
             var events = getEvents();
