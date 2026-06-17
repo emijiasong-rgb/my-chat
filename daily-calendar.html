@@ -75,8 +75,6 @@
         .cal-cell.other-month { background:#fafafa; }
         .cal-cell.other-month .day-num { color:#ddd; }
         .cal-cell.period { background:var(--purple); }
-        .cal-cell.important { background:var(--red); }
-        .cal-cell.reminder { background:var(--light-green); }
 
         .day-num {
             font-size:14px; font-weight:600; color:var(--text);
@@ -89,21 +87,21 @@
         }
 
         .cell-events {
-            flex:1; display:flex; flex-direction:column; gap:1px;
+            flex:1; display:flex; flex-direction:column; gap:2px;
             overflow:hidden;
         }
         .cell-event {
-            font-size:9px; padding:2px 4px; border-radius:4px;
+            font-size:9px; padding:3px 6px; border-radius:10px;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-            font-weight:500;
+            font-weight:500; cursor:pointer;
         }
-        .cell-event.period-tag { background:#C4A8E0; color:#4A3070; }
-        .cell-event.important-tag { background:#E8A0A0; color:#6B2020; }
-        .cell-event.reminder-tag { background:#A0D4A0; color:#205020; }
+        .cell-event.period-tag { background:rgba(196,168,224,0.6); color:#4A3070; }
+        .cell-event.important-tag { background:var(--red); color:#6B2020; }
+        .cell-event.reminder-tag { background:var(--light-green); color:#205020; }
 
         .legend { display:flex; gap:16px; padding:10px 4px; font-size:11px; color:var(--grey); }
         .legend-item { display:flex; align-items:center; gap:4px; }
-        .legend-dot { width:10px; height:10px; border-radius:3px; }
+        .legend-dot { width:10px; height:10px; border-radius:10px; }
         .legend-dot.period-dot { background:var(--purple); }
         .legend-dot.important-dot { background:var(--red); }
         .legend-dot.reminder-dot { background:var(--light-green); }
@@ -146,6 +144,7 @@
         .modal-btn { padding:10px 20px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; margin:4px; }
         .modal-btn.save { background:var(--green); color:#fff; }
         .modal-btn.cancel { background:#f0f0f0; color:#888; }
+        .modal-btn.delete { background:#fff0f0; color:#D48383; }
 
         .date-input-row {
             display:flex; gap:8px; align-items:center; justify-content:center; margin-bottom:8px;
@@ -232,7 +231,7 @@
 
     <div class="modal-overlay" id="detail-modal">
         <div class="modal-card">
-            <h4 id="detail-modal-title">添加</h4>
+            <h4 id="detail-modal-title">编辑</h4>
             <input type="text" class="modal-input" id="detail-title" placeholder="标题">
             <input type="text" class="modal-input" id="detail-note" placeholder="备注（可选）">
             <div class="date-input-row" id="detail-date-row">
@@ -241,6 +240,7 @@
                 <input type="date" id="detail-end-date-input" style="display:none;">
             </div>
             <div>
+                <button class="modal-btn delete" id="detail-delete-btn" onclick="deleteEvent()">删除</button>
                 <button class="modal-btn cancel" onclick="closeDetailModal()">取消</button>
                 <button class="modal-btn save" onclick="saveDetail()">保存</button>
             </div>
@@ -250,6 +250,8 @@
     <script>
         var currentYear, currentMonth, eventsKey = 'daily_events_self';
         var pendingEventType = '';
+        var editingEventIndex = -1;
+        var editingEvent = null;
 
         function updateClock() {
             var now = new Date();
@@ -291,12 +293,20 @@
             renderCalendar();
         }
 
+        function getEvents() {
+            return JSON.parse(localStorage.getItem(eventsKey) || '[]');
+        }
+
+        function saveEvents(events) {
+            localStorage.setItem(eventsKey, JSON.stringify(events));
+        }
+
         function renderCalendar() {
             document.getElementById('month-label').innerText = currentYear + '年 ' + (currentMonth + 1) + '月';
             var today = new Date();
             var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             var firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
+            var events = getEvents();
 
             var html = '';
             for (var i = 0; i < firstDay; i++) { html += '<div class="cal-cell other-month"><div class="day-num"></div></div>'; }
@@ -306,11 +316,12 @@
                 var isToday = (currentYear === today.getFullYear() && currentMonth === today.getMonth() && d === today.getDate());
                 var dayEvents = getEventsForDay(events, currentYear, currentMonth + 1, d);
 
-                if (dayEvents.length > 0) {
-                    if (dayEvents[0].type === 'period') cls += ' period';
-                    if (dayEvents[0].type === 'important') cls += ' important';
-                    if (dayEvents[0].type === 'reminder') cls += ' reminder';
+                // 只有经期改变整个格子背景
+                var isPeriodDay = false;
+                for (var j = 0; j < dayEvents.length; j++) {
+                    if (dayEvents[j].type === 'period') { isPeriodDay = true; break; }
                 }
+                if (isPeriodDay) cls += ' period';
 
                 var numHtml = isToday ? '<span class="day-num today-circle">' + d + '</span>' : '<span class="day-num">' + d + '</span>';
 
@@ -318,13 +329,15 @@
                 if (dayEvents.length > 0) {
                     eventsHtml = '<div class="cell-events">';
                     var shown = [];
-                    dayEvents.forEach(function(e) {
+                    for (var k = 0; k < dayEvents.length; k++) {
+                        var e = dayEvents[k];
                         var label = e.title || e.note || (e.type === 'period' ? '经期' : '');
                         if (label && shown.indexOf(label) === -1) {
                             shown.push(label);
-                            eventsHtml += '<div class="cell-event ' + e.type + '-tag">' + escapeHtml(label) + '</div>';
+                            var origIndex = events.indexOf(e);
+                            eventsHtml += '<div class="cell-event ' + e.type + '-tag" onclick="event.stopPropagation();editEvent(' + origIndex + ')">' + escapeHtml(label) + '</div>';
                         }
-                    });
+                    }
                     eventsHtml += '</div>';
                 }
 
@@ -345,12 +358,58 @@
             });
         }
 
+        // ========== 编辑事件 ==========
+        function editEvent(index) {
+            var events = getEvents();
+            editingEvent = events[index];
+            editingEventIndex = index;
+            if (!editingEvent) return;
+
+            pendingEventType = editingEvent.type;
+            document.getElementById('detail-modal-title').innerText = '编辑';
+            document.getElementById('detail-delete-btn').style.display = 'inline-block';
+
+            if (editingEvent.type === 'period') {
+                document.getElementById('detail-title').style.display = 'none';
+                document.getElementById('detail-title').value = '';
+                document.getElementById('detail-date-sep').style.display = 'inline';
+                document.getElementById('detail-end-date-input').style.display = 'inline-block';
+                document.getElementById('detail-start-date-input').value = formatDateStr(editingEvent.year, editingEvent.month, editingEvent.day);
+                document.getElementById('detail-end-date-input').value = editingEvent.endDate ? formatDateStr(editingEvent.endYear, editingEvent.endMonth, editingEvent.endDay) : '';
+            } else {
+                document.getElementById('detail-title').style.display = 'block';
+                document.getElementById('detail-title').value = editingEvent.title || '';
+                document.getElementById('detail-date-sep').style.display = 'none';
+                document.getElementById('detail-end-date-input').style.display = 'none';
+                document.getElementById('detail-start-date-input').value = formatDateStr(editingEvent.year, editingEvent.month, editingEvent.day);
+            }
+            document.getElementById('detail-note').value = editingEvent.note || '';
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function deleteEvent() {
+            if (editingEventIndex < 0) return;
+            if (!confirm('确定删除？')) return;
+            var events = getEvents();
+            events.splice(editingEventIndex, 1);
+            saveEvents(events);
+            closeDetailModal();
+            renderCalendar();
+        }
+
+        function formatDateStr(y, m, d) {
+            return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        }
+
+        // ========== 新增 ==========
         function showAddModal() { document.getElementById('add-modal').classList.add('active'); }
         function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
         function showPeriodForm() {
+            editingEventIndex = -1; editingEvent = null;
             pendingEventType = 'period';
             document.getElementById('detail-modal-title').innerText = '标记经期';
+            document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'none';
             document.getElementById('detail-title').value = '';
             document.getElementById('detail-note').value = '';
@@ -363,8 +422,10 @@
         }
 
         function showReminderForm() {
+            editingEventIndex = -1; editingEvent = null;
             pendingEventType = 'reminder';
             document.getElementById('detail-modal-title').innerText = '提醒事项';
+            document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'block';
             document.getElementById('detail-title').value = '';
             document.getElementById('detail-note').value = '';
@@ -376,8 +437,10 @@
         }
 
         function showImportantForm() {
+            editingEventIndex = -1; editingEvent = null;
             pendingEventType = 'important';
             document.getElementById('detail-modal-title').innerText = '重要日程';
+            document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'block';
             document.getElementById('detail-title').value = '';
             document.getElementById('detail-note').value = '';
@@ -412,9 +475,14 @@
                     ev.endYear = parseInt(ep[0]); ev.endMonth = parseInt(ep[1]); ev.endDay = parseInt(ep[2]);
                 }
             }
-            var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
-            events.push(ev);
-            localStorage.setItem(eventsKey, JSON.stringify(events));
+
+            var events = getEvents();
+            if (editingEventIndex >= 0) {
+                events[editingEventIndex] = ev;
+            } else {
+                events.push(ev);
+            }
+            saveEvents(events);
             closeDetailModal();
             renderCalendar();
         }
