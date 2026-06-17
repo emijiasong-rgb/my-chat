@@ -169,7 +169,7 @@
             <input type="text" class="modal-input" id="event-title" placeholder="标题">
             <input type="text" class="modal-input" id="event-note" placeholder="备注（可选）">
             <input type="date" class="modal-input" id="event-date">
-            <input type="date" class="modal-input" id="event-end-date" placeholder="截止日期（经期用）" style="display:none;">
+            <input type="date" class="modal-input" id="event-end-date" placeholder="截止日期" style="display:none;">
             <div>
                 <button class="modal-btn cancel" onclick="closeEventModal()">取消</button>
                 <button class="modal-btn save" onclick="saveEvent()">保存</button>
@@ -262,6 +262,7 @@
             currentEventType = type;
             document.getElementById('event-modal-title').innerText = type === 'period' ? '标记经期' : type === 'important' ? '重要日程' : '提醒事项';
             document.getElementById('event-end-date').style.display = type === 'period' ? 'block' : 'none';
+            document.getElementById('event-title').style.display = type === 'period' ? 'none' : 'block';
             document.getElementById('event-title').value = '';
             document.getElementById('event-note').value = '';
             document.getElementById('event-date').value = '';
@@ -276,9 +277,10 @@
             var dateStr = document.getElementById('event-date').value;
             if (!dateStr) { alert('请选择日期'); return; }
             var parts = dateStr.split('-');
+            var title = currentEventType === 'period' ? '经期' : (document.getElementById('event-title').value.trim() || '未命名');
             var ev = {
                 type: currentEventType,
-                title: document.getElementById('event-title').value.trim() || '未命名',
+                title: title,
                 note: document.getElementById('event-note').value.trim(),
                 year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
             };
