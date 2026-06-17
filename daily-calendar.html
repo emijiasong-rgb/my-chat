@@ -350,8 +350,11 @@
             return events.filter(function(e) {
                 if (e.type === 'period' && e.endDate) {
                     var start = new Date(e.year, e.month - 1, e.day);
+                    start.setHours(0, 0, 0, 0);
                     var end = new Date(e.endYear, e.endMonth - 1, e.endDay);
+                    end.setHours(23, 59, 59, 999);
                     var cur = new Date(y, m - 1, d);
+                    cur.setHours(12, 0, 0, 0);
                     return cur >= start && cur <= end;
                 }
                 return e.year === y && e.month === m && e.day === d;
@@ -468,11 +471,18 @@
                 displayTitle: displayTitle,
                 year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
             };
+
             if (pendingEventType === 'period') {
                 var endStr = document.getElementById('detail-end-date-input').value;
                 if (endStr) {
                     var ep = endStr.split('-');
-                    ev.endYear = parseInt(ep[0]); ev.endMonth = parseInt(ep[1]); ev.endDay = parseInt(ep[2]);
+                    ev.endYear = parseInt(ep[0]);
+                    ev.endMonth = parseInt(ep[1]);
+                    ev.endDay = parseInt(ep[2]);
+                } else {
+                    ev.endYear = ev.year;
+                    ev.endMonth = ev.month;
+                    ev.endDay = ev.day;
                 }
             }
 
