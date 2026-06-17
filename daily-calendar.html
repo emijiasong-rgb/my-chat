@@ -66,17 +66,17 @@
             display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
         }
         .cal-cell {
-            aspect-ratio:1; padding:4px; cursor:pointer;
+            min-height:70px; padding:5px 3px; cursor:pointer;
             position:relative; background:var(--card-bg);
             display:flex; flex-direction:column;
-            border-radius:6px; min-height:0; overflow:hidden;
+            border-radius:6px; overflow:hidden;
         }
         .cal-cell.other-month .day-num { color:#ddd; }
         .cal-cell.period { background:var(--purple); }
 
         .day-num {
             font-size:13px; font-weight:600; color:var(--text);
-            text-align:center;
+            text-align:center; margin-bottom:3px;
         }
         .day-num.today-circle {
             display:inline-block; width:22px; height:22px; line-height:22px;
@@ -85,11 +85,11 @@
         }
 
         .cell-events {
-            display:flex; flex-direction:column; gap:1px;
-            overflow:hidden; margin-top:1px;
+            display:flex; flex-direction:column; gap:2px;
+            overflow:hidden; flex:1;
         }
         .cell-event {
-            font-size:8px; padding:1px 4px; border-radius:8px;
+            font-size:9px; padding:2px 5px; border-radius:8px;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
             font-weight:500; cursor:pointer; text-align:center;
         }
