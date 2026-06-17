@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>日历</title>
+    <style>
+        :root {
+            --bg: #FDF8F2;
+            --card-bg: #fff;
+            --text: #3A3A3A;
+            --green: #7CB87C;
+            --purple: #E0D4F5;
+            --pink: #F7A1C4;
+            --grey: #B0B0B0;
+            --red: #F5D4D4;
+            --light-green: #D4F0D4;
+            --separator: #f0ede8;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body {
+            background:#1a1a1a; height:100dvh; width:100vw;
+            display:flex; justify-content:center; align-items:center;
+            font-family:-apple-system,sans-serif; overflow:hidden;
+        }
+        #phone-shell {
+            width:100vw; max-width:430px; height:100dvh; max-height:932px;
+            background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
+        }
+        .status-bar {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:14px 24px 6px; font-size:13px; font-weight:600; color:var(--text);
+            background:var(--bg);
+        }
+        .nav-bar {
+            display:flex; align-items:center; padding:10px 16px;
+            background:var(--bg); border-bottom:0.5px solid var(--separator);
+            position:relative;
+        }
+        .nav-back { font-size:17px; color:#007aff; cursor:pointer; text-decoration:none; }
+        .nav-title { font-size:17px; font-weight:600; position:absolute; left:50%; transform:translateX(-50%); color:var(--text); }
+        .nav-add {
+            position:absolute; right:16px; font-size:22px; color:var(--text);
+            cursor:pointer; width:32px; height:32px; display:flex;
+            align-items:center; justify-content:center; border-radius:50%;
+        }
+        .nav-add:active { background:#f0f0f0; }
+
+        #viewport { flex:1; overflow-y:auto; padding:10px 14px; }
+        #viewport::-webkit-scrollbar { display:none; }
+
+        .month-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:8px 0 12px;
+        }
+        .month-header .arrow { font-size:18px; cursor:pointer; padding:8px; color:var(--text); }
+        .month-header .month-label { font-size:18px; font-weight:700; color:var(--text); }
+
+        .weekday-row {
+            display:grid; grid-template-columns:repeat(7,1fr); text-align:center;
+            font-size:11px; color:var(--grey); padding-bottom:6px;
+        }
+        .calendar-grid {
+            display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+            text-align:center;
+        }
+        .cal-day {
+            padding:10px 4px; border-radius:12px; font-size:14px;
+            cursor:pointer; position:relative; min-height:40px;
+            color:var(--text);
+        }
+        .cal-day.today { border:2px solid var(--pink); font-weight:700; }
+        .cal-day.other-month { color:#ddd; }
+        .cal-day.period { background:var(--purple); }
+        .cal-day.important { background:var(--red); }
+        .cal-day.reminder { background:var(--light-green); }
+        .cal-day .dot-row { display:flex; justify-content:center; gap:2px; margin-top:2px; }
+        .cal-day .dot {
+            width:6px; height:6px; border-radius:50%;
+        }
+        .cal-day .dot.period-dot { background:#9B7EC4; }
+        .cal-day .dot.important-dot { background:#D48383; }
+        .cal-day .dot.reminder-dot { background:#7CB87C; }
+
+        .legend {
+            display:flex; gap:12px; padding:8px 0; font-size:11px; color:var(--grey);
+            flex-wrap:wrap;
+        }
+        .legend-item { display:flex; align-items:center; gap:4px; }
+        .legend-dot { width:10px; height:10px; border-radius:50%; }
+        .legend-dot.period-dot { background:var(--purple); }
+        .legend-dot.important-dot { background:var(--red); }
+        .legend-dot.reminder-dot { background:var(--light-green); }
+
+        /* 弹窗 */
+        .modal-overlay {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-card {
+            background:var(--card-bg); border-radius:20px; padding:20px;
+            width:85%; max-width:340px; text-align:center;
+            box-shadow:0 12px 40px rgba(0,0,0,0.15);
+        }
+        .modal-card h4 { font-size:16px; margin-bottom:12px; color:var(--text); }
+        .modal-option {
+            padding:12px; font-size:15px; cursor:pointer; border-radius:12px;
+            margin:4px 0; color:var(--text); transition:background 0.2s;
+        }
+        .modal-option:active { background:#f5f5f5; }
+        .modal-input {
+            width:100%; padding:10px; border:1px solid #e0e0e0;
+            border-radius:10px; font-size:14px; margin-bottom:8px; outline:none;
+        }
+        .modal-btn {
+            padding:10px 20px; border:none; border-radius:10px; font-size:14px;
+            font-weight:600; cursor:pointer; margin:4px;
+        }
+        .modal-btn.save { background:var(--green); color:#fff; }
+        .modal-btn.cancel { background:#f0f0f0; color:#888; }
+    </style>
+</head>
+<body>
+    <div id="phone-shell">
+        <div class="status-bar">
+            <span id="clock">12:00</span>
+            <div class="status-icons">
+                <span>📶</span>
+                <span id="battery-percent">--%</span>
+            </div>
+        </div>
+        <div class="nav-bar">
+            <a href="javascript:history.back()" class="nav-back">← 返回</a>
+            <span class="nav-title" id="cal-title">日历</span>
+            <div class="nav-add" onclick="showAddModal()">+</div>
+        </div>
+
+        <div id="viewport">
+            <div class="month-header">
+                <span class="arrow" onclick="changeMonth(-1)">‹</span>
+                <span class="month-label" id="month-label"></span>
+                <span class="arrow" onclick="changeMonth(1)">›</span>
+            </div>
+            <div class="weekday-row">
+                <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+            <div class="legend">
+                <span class="legend-item"><span class="legend-dot period-dot"></span> 经期</span>
+                <span class="legend-item"><span class="legend-dot important-dot"></span> 重要日程</span>
+                <span class="legend-item"><span class="legend-dot reminder-dot"></span> 提醒事项</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加弹窗 -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal-card">
+            <h4>添加标记</h4>
+            <div class="modal-option" onclick="showEventForm('period')">标记经期</div>
+            <div class="modal-option" onclick="showEventForm('reminder')">提醒事项</div>
+            <div class="modal-option" onclick="showEventForm('important')">重要日程</div>
+            <div class="modal-option" onclick="closeAddModal()">取消</div>
+        </div>
+    </div>
+
+    <!-- 事件表单弹窗 -->
+    <div class="modal-overlay" id="event-modal">
+        <div class="modal-card">
+            <h4 id="event-modal-title">添加</h4>
+            <input type="text" class="modal-input" id="event-title" placeholder="标题">
+            <input type="text" class="modal-input" id="event-note" placeholder="备注（可选）">
+            <input type="date" class="modal-input" id="event-date">
+            <input type="date" class="modal-input" id="event-end-date" placeholder="截止日期（经期用）" style="display:none;">
+            <div>
+                <button class="modal-btn cancel" onclick="closeEventModal()">取消</button>
+                <button class="modal-btn save" onclick="saveEvent()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentYear, currentMonth;
+        var currentEventType = '';
+        var calendarOwner = 'self'; // 'self' or roleId
+        var eventsKey = 'daily_events_self';
+
+        function updateClock() {
+            var now = new Date();
+            document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var params = new URLSearchParams(window.location.search);
+            var type = params.get('type');
+            var id = params.get('id');
+            if (id) {
+                calendarOwner = 'role_' + id;
+                eventsKey = 'daily_events_role_' + id;
+                document.getElementById('cal-title').innerText = '角色日程';
+            }
+            var now = new Date();
+            currentYear = now.getFullYear();
+            currentMonth = now.getMonth();
+            renderCalendar();
+        });
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            document.getElementById('month-label').innerText = currentYear + '年 ' + (currentMonth + 1) + '月';
+            var today = new Date();
+            var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
+
+            var html = '';
+            for (var i = 0; i < firstDay; i++) { html += '<div class="cal-day other-month"></div>'; }
+            for (var d = 1; d <= daysInMonth; d++) {
+                var cls = 'cal-day';
+                if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && d === today.getDate()) cls += ' today';
+                var dayEvents = getEventsForDay(events, currentYear, currentMonth + 1, d);
+                var dotHtml = '';
+                if (dayEvents.length > 0) {
+                    dotHtml = '<div class="dot-row">';
+                    dayEvents.forEach(function(e) {
+                        if (e.type === 'period') dotHtml += '<span class="dot period-dot"></span>';
+                        if (e.type === 'important') dotHtml += '<span class="dot important-dot"></span>';
+                        if (e.type === 'reminder') dotHtml += '<span class="dot reminder-dot"></span>';
+                    });
+                    dotHtml += '</div>';
+                    if (dayEvents[0].type === 'period') cls += ' period';
+                    if (dayEvents[0].type === 'important') cls += ' important';
+                    if (dayEvents[0].type === 'reminder') cls += ' reminder';
+                }
+                html += '<div class="' + cls + '">' + d + dotHtml + '</div>';
+            }
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+
+        function getEventsForDay(events, year, month, day) {
+            return events.filter(function(e) {
+                if (e.type === 'period' && e.endDate) {
+                    var start = new Date(e.year, e.month - 1, e.day);
+                    var end = new Date(e.endYear, e.endMonth - 1, e.endDay);
+                    var current = new Date(year, month - 1, day);
+                    return current >= start && current <= end;
+                }
+                return e.year === year && e.month === month && e.day === day;
+            });
+        }
+
+        function showAddModal() {
+            document.getElementById('add-modal').classList.add('active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('active');
+        }
+
+        function showEventForm(type) {
+            currentEventType = type;
+            document.getElementById('event-modal-title').innerText = type === 'period' ? '标记经期' : type === 'important' ? '重要日程' : '提醒事项';
+            document.getElementById('event-end-date').style.display = type === 'period' ? 'block' : 'none';
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-note').value = '';
+            document.getElementById('event-date').value = '';
+            document.getElementById('event-end-date').value = '';
+            closeAddModal();
+            document.getElementById('event-modal').classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.remove('active');
+        }
+
+        function saveEvent() {
+            var title = document.getElementById('event-title').value.trim();
+            var note = document.getElementById('event-note').value.trim();
+            var dateStr = document.getElementById('event-date').value;
+            if (!dateStr) { alert('请选择日期'); return; }
+            var parts = dateStr.split('-');
+            var year = parseInt(parts[0]);
+            var month = parseInt(parts[1]);
+            var day = parseInt(parts[2]);
+
+            var event = { type: currentEventType, title: title || '未命名', note: note, year: year, month: month, day: day };
+
+            if (currentEventType === 'period') {
+                var endDateStr = document.getElementById('event-end-date').value;
+                if (endDateStr) {
+                    var endParts = endDateStr.split('-');
+                    event.endYear = parseInt(endParts[0]);
+                    event.endMonth = parseInt(endParts[1]);
+                    event.endDay = parseInt(endParts[2]);
+                }
+            }
+
+            var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
+            events.push(event);
+            localStorage.setItem(eventsKey, JSON.stringify(events));
+            closeEventModal();
+            renderCalendar();
+        }
+
+        document.getElementById('add-modal').addEventListener('click', function(e) { if (e.target === this) closeAddModal(); });
+        document.getElementById('event-modal').addEventListener('click', function(e) { if (e.target === this) closeEventModal(); });
+    </script>
+</body>
+</html>
