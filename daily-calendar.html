@@ -91,11 +91,11 @@
             overflow:hidden;
         }
         .cell-event {
-            font-size:9px; padding:3px 6px; border-radius:10px;
+            font-size:10px; padding:3px 6px; border-radius:10px;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
             font-weight:500; cursor:pointer;
         }
-        .cell-event.period-tag { background:rgba(196,168,224,0.6); color:#4A3070; }
+        .cell-event.period-tag { background:rgba(196,168,224,0.5); color:#4A3070; }
         .cell-event.important-tag { background:var(--red); color:#6B2020; }
         .cell-event.reminder-tag { background:var(--light-green); color:#205020; }
 
@@ -233,7 +233,6 @@
         <div class="modal-card">
             <h4 id="detail-modal-title">编辑</h4>
             <input type="text" class="modal-input" id="detail-title" placeholder="标题">
-            <input type="text" class="modal-input" id="detail-note" placeholder="备注（可选）">
             <div class="date-input-row" id="detail-date-row">
                 <input type="date" id="detail-start-date-input">
                 <span id="detail-date-sep" style="display:none;">—</span>
@@ -324,20 +323,17 @@
                 var numHtml = isToday ? '<span class="day-num today-circle">' + d + '</span>' : '<span class="day-num">' + d + '</span>';
 
                 var eventsHtml = '';
-                if (dayEvents.length > 0) {
-                    eventsHtml = '<div class="cell-events">';
-                    var shown = [];
-                    for (var k = 0; k < dayEvents.length; k++) {
-                        var e = dayEvents[k];
-                        var label = e.title || e.note || (e.type === 'period' ? '经期' : '');
-                        if (label && shown.indexOf(label) === -1) {
-                            shown.push(label);
-                            var origIndex = events.indexOf(e);
-                            eventsHtml += '<div class="cell-event ' + e.type + '-tag" onclick="event.stopPropagation();editEvent(' + origIndex + ')">' + escapeHtml(label) + '</div>';
-                        }
+                var shown = [];
+                for (var k = 0; k < dayEvents.length; k++) {
+                    var e = dayEvents[k];
+                    var label = e.title || (e.type === 'period' ? '经期' : '');
+                    if (label && shown.indexOf(label) === -1) {
+                        shown.push(label);
+                        var origIndex = events.indexOf(e);
+                        eventsHtml += '<div class="cell-event ' + e.type + '-tag" onclick="event.stopPropagation();editEvent(' + origIndex + ')">' + escapeHtml(label) + '</div>';
                     }
-                    eventsHtml += '</div>';
                 }
+                if (eventsHtml) eventsHtml = '<div class="cell-events">' + eventsHtml + '</div>';
 
                 html += '<div class="' + cls + '">' + numHtml + eventsHtml + '</div>';
             }
@@ -386,7 +382,6 @@
                 document.getElementById('detail-end-date-input').style.display = 'none';
                 document.getElementById('detail-start-date-input').value = formatDateStr(ev.year, ev.month, ev.day);
             }
-            document.getElementById('detail-note').value = ev.note || '';
             document.getElementById('detail-modal').classList.add('active');
         }
 
@@ -413,8 +408,6 @@
             document.getElementById('detail-modal-title').innerText = '标记经期';
             document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'none';
-            document.getElementById('detail-title').value = '';
-            document.getElementById('detail-note').value = '';
             document.getElementById('detail-date-sep').style.display = 'inline';
             document.getElementById('detail-end-date-input').style.display = 'inline-block';
             document.getElementById('detail-start-date-input').value = document.getElementById('period-start-date').value;
@@ -430,7 +423,6 @@
             document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'block';
             document.getElementById('detail-title').value = '';
-            document.getElementById('detail-note').value = '';
             document.getElementById('detail-date-sep').style.display = 'none';
             document.getElementById('detail-end-date-input').style.display = 'none';
             document.getElementById('detail-start-date-input').value = document.getElementById('reminder-date').value;
@@ -445,7 +437,6 @@
             document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'block';
             document.getElementById('detail-title').value = '';
-            document.getElementById('detail-note').value = '';
             document.getElementById('detail-date-sep').style.display = 'none';
             document.getElementById('detail-end-date-input').style.display = 'none';
             document.getElementById('detail-start-date-input').value = document.getElementById('important-date').value;
@@ -457,15 +448,12 @@
 
         function saveDetail() {
             var startDateStr = document.getElementById('detail-start-date-input').value;
-            if (!startDateStr) { alert('请选择开始日期'); return; }
+            if (!startDateStr) { alert('请选择日期'); return; }
             var parts = startDateStr.split('-');
-            var title = pendingEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名');
-            var note = document.getElementById('detail-note').value.trim();
 
             var ev = {
                 type: pendingEventType,
-                title: title,
-                note: note,
+                title: pendingEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名'),
                 year: parseInt(parts[0]),
                 month: parseInt(parts[1]),
                 day: parseInt(parts[2])
