@@ -99,8 +99,27 @@
             box-shadow:0 12px 40px rgba(0,0,0,0.15);
         }
         .modal-card h4 { font-size:16px; margin-bottom:12px; color:var(--text); }
-        .modal-option { padding:12px; font-size:15px; cursor:pointer; border-radius:12px; margin:4px 0; color:var(--text); }
+
+        /* 列表式选择行 */
+        .modal-option {
+            padding:14px; font-size:15px; cursor:pointer; border-radius:12px;
+            margin:4px 0; color:var(--text);
+            display:flex; align-items:center; justify-content:space-between;
+        }
         .modal-option:active { background:#f5f5f5; }
+        .modal-option .option-label { font-weight:500; }
+        .modal-option .option-value {
+            font-size:13px; color:var(--grey); display:flex; align-items:center; gap:6px;
+        }
+        .date-pill {
+            display:inline-block; padding:6px 14px; background:#f5f5f5;
+            border-radius:20px; font-size:13px; color:var(--text); cursor:pointer;
+            border:1px solid #e0e0e0;
+        }
+        .date-pill:active { background:#e8e8e8; }
+        .date-pill-row { display:flex; gap:6px; align-items:center; }
+        .date-pill-sep { font-size:12px; color:var(--grey); }
+
         .modal-input {
             width:100%; padding:10px; border:1px solid #e0e0e0;
             border-radius:10px; font-size:14px; margin-bottom:8px; outline:none;
@@ -153,32 +172,57 @@
         </div>
     </div>
 
+    <!-- 添加标记弹窗 -->
     <div class="modal-overlay" id="add-modal">
         <div class="modal-card">
             <h4>添加标记</h4>
-            <div class="modal-option" onclick="showEventForm('period')">标记经期</div>
-            <div class="modal-option" onclick="showEventForm('reminder')">提醒事项</div>
-            <div class="modal-option" onclick="showEventForm('important')">重要日程</div>
-            <div class="modal-option" onclick="closeAddModal()">取消</div>
+            <div class="modal-option" onclick="showPeriodForm()">
+                <span class="option-label">标记经期</span>
+                <span class="option-value">
+                    <span class="date-pill-row">
+                        <span class="date-pill" id="period-start-pill" onclick="event.stopPropagation();showPeriodStartPicker()">开始</span>
+                        <span class="date-pill-sep">—</span>
+                        <span class="date-pill" id="period-end-pill" onclick="event.stopPropagation();showPeriodEndPicker()">结束</span>
+                    </span>
+                </span>
+            </div>
+            <div class="modal-option" onclick="showReminderForm()">
+                <span class="option-label">提醒事项</span>
+                <span class="option-value"><span class="date-pill" id="reminder-date-pill">日期</span></span>
+            </div>
+            <div class="modal-option" onclick="showImportantForm()">
+                <span class="option-label">重要日程</span>
+                <span class="option-value"><span class="date-pill" id="important-date-pill">日期</span></span>
+            </div>
+            <div class="modal-option" onclick="closeAddModal()" style="justify-content:center;color:#888;">取消</div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="event-modal">
+    <!-- 详情表单弹窗 -->
+    <div class="modal-overlay" id="detail-modal">
         <div class="modal-card">
-            <h4 id="event-modal-title">添加</h4>
-            <input type="text" class="modal-input" id="event-title" placeholder="标题">
-            <input type="text" class="modal-input" id="event-note" placeholder="备注（可选）">
-            <input type="date" class="modal-input" id="event-date">
-            <input type="date" class="modal-input" id="event-end-date" placeholder="截止日期" style="display:none;">
+            <h4 id="detail-modal-title">添加</h4>
+            <input type="text" class="modal-input" id="detail-title" placeholder="标题">
+            <input type="text" class="modal-input" id="detail-note" placeholder="备注（可选）">
+            <div id="detail-date-row" style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:8px;">
+                <span class="date-pill" id="detail-start-date" onclick="openDatePicker('start')">开始日期</span>
+                <span id="detail-date-sep" style="display:none;">—</span>
+                <span class="date-pill" id="detail-end-date" onclick="openDatePicker('end')" style="display:none;">结束日期</span>
+            </div>
             <div>
-                <button class="modal-btn cancel" onclick="closeEventModal()">取消</button>
-                <button class="modal-btn save" onclick="saveEvent()">保存</button>
+                <button class="modal-btn cancel" onclick="closeDetailModal()">取消</button>
+                <button class="modal-btn save" onclick="saveDetail()">保存</button>
             </div>
         </div>
     </div>
 
+    <!-- 隐藏的日期输入 -->
+    <input type="date" id="hidden-start-date" style="display:none;" onchange="updateDatePill('start')">
+    <input type="date" id="hidden-end-date" style="display:none;" onchange="updateDatePill('end')">
+
     <script>
         var currentYear, currentMonth, currentEventType = '', eventsKey = 'daily_events_self';
+        var startDateStr = '', endDateStr = '';
 
         function updateClock() {
             var now = new Date();
@@ -258,34 +302,106 @@
         function showAddModal() { document.getElementById('add-modal').classList.add('active'); }
         function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
-        function showEventForm(type) {
-            currentEventType = type;
-            document.getElementById('event-modal-title').innerText = type === 'period' ? '标记经期' : type === 'important' ? '重要日程' : '提醒事项';
-            document.getElementById('event-end-date').style.display = type === 'period' ? 'block' : 'none';
-            document.getElementById('event-title').style.display = type === 'period' ? 'none' : 'block';
-            document.getElementById('event-title').value = '';
-            document.getElementById('event-note').value = '';
-            document.getElementById('event-date').value = '';
-            document.getElementById('event-end-date').value = '';
+        // 经期
+        function showPeriodForm() {
+            currentEventType = 'period';
+            document.getElementById('detail-modal-title').innerText = '标记经期';
+            document.getElementById('detail-title').style.display = 'none';
+            document.getElementById('detail-title').value = '';
+            document.getElementById('detail-note').value = '';
+            document.getElementById('detail-date-sep').style.display = 'inline';
+            document.getElementById('detail-end-date').style.display = 'inline-block';
+            document.getElementById('detail-start-date').innerText = '开始日期';
+            document.getElementById('detail-end-date').innerText = '结束日期';
+            startDateStr = ''; endDateStr = '';
             closeAddModal();
-            document.getElementById('event-modal').classList.add('active');
+            document.getElementById('detail-modal').classList.add('active');
         }
 
-        function closeEventModal() { document.getElementById('event-modal').classList.remove('active'); }
+        // 提醒事项
+        function showReminderForm() {
+            currentEventType = 'reminder';
+            document.getElementById('detail-modal-title').innerText = '提醒事项';
+            document.getElementById('detail-title').style.display = 'block';
+            document.getElementById('detail-title').value = '';
+            document.getElementById('detail-note').value = '';
+            document.getElementById('detail-date-sep').style.display = 'none';
+            document.getElementById('detail-end-date').style.display = 'none';
+            document.getElementById('detail-start-date').innerText = '日期';
+            startDateStr = ''; endDateStr = '';
+            closeAddModal();
+            document.getElementById('detail-modal').classList.add('active');
+        }
 
-        function saveEvent() {
-            var dateStr = document.getElementById('event-date').value;
+        // 重要日程
+        function showImportantForm() {
+            currentEventType = 'important';
+            document.getElementById('detail-modal-title').innerText = '重要日程';
+            document.getElementById('detail-title').style.display = 'block';
+            document.getElementById('detail-title').value = '';
+            document.getElementById('detail-note').value = '';
+            document.getElementById('detail-date-sep').style.display = 'none';
+            document.getElementById('detail-end-date').style.display = 'none';
+            document.getElementById('detail-start-date').innerText = '日期';
+            startDateStr = ''; endDateStr = '';
+            closeAddModal();
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function openDatePicker(which) {
+            var input = which === 'start' ? document.getElementById('hidden-start-date') : document.getElementById('hidden-end-date');
+            input.click();
+        }
+
+        function updateDatePill(which) {
+            var input = which === 'start' ? document.getElementById('hidden-start-date') : document.getElementById('hidden-end-date');
+            var pill = which === 'start' ? document.getElementById('detail-start-date') : document.getElementById('detail-end-date');
+            if (input.value) {
+                var parts = input.value.split('-');
+                pill.innerText = parts[1] + '月' + parts[2] + '日';
+                if (which === 'start') startDateStr = input.value;
+                else endDateStr = input.value;
+            }
+        }
+
+        function showPeriodStartPicker() { document.getElementById('hidden-start-date').click(); updateDatePillPeriodStart(); }
+        function showPeriodEndPicker() { document.getElementById('hidden-end-date').click(); updateDatePillPeriodEnd(); }
+
+        function updateDatePillPeriodStart() {
+            var input = document.getElementById('hidden-start-date');
+            input.onchange = function() {
+                if (input.value) {
+                    var parts = input.value.split('-');
+                    document.getElementById('period-start-pill').innerText = parts[1] + '月' + parts[2] + '日';
+                }
+            };
+        }
+        function updateDatePillPeriodEnd() {
+            var input = document.getElementById('hidden-end-date');
+            input.onchange = function() {
+                if (input.value) {
+                    var parts = input.value.split('-');
+                    document.getElementById('period-end-pill').innerText = parts[1] + '月' + parts[2] + '日';
+                }
+            };
+        }
+        updateDatePillPeriodStart(); updateDatePillPeriodEnd();
+
+        function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
+
+        function saveDetail() {
+            var dateStr = startDateStr || document.getElementById('hidden-start-date').value;
             if (!dateStr) { alert('请选择日期'); return; }
             var parts = dateStr.split('-');
-            var title = currentEventType === 'period' ? '经期' : (document.getElementById('event-title').value.trim() || '未命名');
+            var title = currentEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名');
             var ev = {
                 type: currentEventType,
                 title: title,
-                note: document.getElementById('event-note').value.trim(),
+                note: document.getElementById('detail-note').value.trim(),
                 year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
             };
             if (currentEventType === 'period') {
-                var endStr = document.getElementById('event-end-date').value;
+                var endStr = endDateStr || document.getElementById('hidden-end-date').value;
                 if (endStr) {
                     var ep = endStr.split('-');
                     ev.endYear = parseInt(ep[0]); ev.endMonth = parseInt(ep[1]); ev.endDay = parseInt(ep[2]);
@@ -294,12 +410,12 @@
             var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
             events.push(ev);
             localStorage.setItem(eventsKey, JSON.stringify(events));
-            closeEventModal();
+            closeDetailModal();
             renderCalendar();
         }
 
         document.getElementById('add-modal').addEventListener('click', function(e) { if (e.target === this) closeAddModal(); });
-        document.getElementById('event-modal').addEventListener('click', function(e) { if (e.target === this) closeEventModal(); });
+        document.getElementById('detail-modal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
     </script>
 </body>
 </html>
