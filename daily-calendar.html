@@ -100,7 +100,6 @@
         }
         .modal-card h4 { font-size:16px; margin-bottom:12px; color:var(--text); }
 
-        /* 列表式选择行 */
         .modal-option {
             padding:14px; font-size:15px; cursor:pointer; border-radius:12px;
             margin:4px 0; color:var(--text);
@@ -127,6 +126,16 @@
         .modal-btn { padding:10px 20px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; margin:4px; }
         .modal-btn.save { background:var(--green); color:#fff; }
         .modal-btn.cancel { background:#f0f0f0; color:#888; }
+
+        /* 日期输入行 */
+        .date-input-row {
+            display:flex; gap:8px; align-items:center; justify-content:center; margin-bottom:8px;
+        }
+        .date-input-row input[type="date"] {
+            padding:8px 12px; border:1px solid #e0e0e0; border-radius:20px;
+            font-size:14px; text-align:center; flex:1; max-width:140px;
+            background:#f8f8f8; color:var(--text); outline:none;
+        }
     </style>
 </head>
 <body>
@@ -180,23 +189,29 @@
                 <span class="option-label">标记经期</span>
                 <span class="option-value">
                     <span class="date-pill-row">
-                        <span class="date-pill" id="period-start-pill" onclick="event.stopPropagation();showPeriodStartPicker()">开始</span>
+                        <span class="date-pill" id="period-start-pill" onclick="event.stopPropagation();document.getElementById('period-start-date').showPicker()">开始</span>
                         <span class="date-pill-sep">—</span>
-                        <span class="date-pill" id="period-end-pill" onclick="event.stopPropagation();showPeriodEndPicker()">结束</span>
+                        <span class="date-pill" id="period-end-pill" onclick="event.stopPropagation();document.getElementById('period-end-date').showPicker()">结束</span>
                     </span>
                 </span>
             </div>
             <div class="modal-option" onclick="showReminderForm()">
                 <span class="option-label">提醒事项</span>
-                <span class="option-value"><span class="date-pill" id="reminder-date-pill">日期</span></span>
+                <span class="option-value"><span class="date-pill" id="reminder-date-pill" onclick="event.stopPropagation();document.getElementById('reminder-date').showPicker()">日期</span></span>
             </div>
             <div class="modal-option" onclick="showImportantForm()">
                 <span class="option-label">重要日程</span>
-                <span class="option-value"><span class="date-pill" id="important-date-pill">日期</span></span>
+                <span class="option-value"><span class="date-pill" id="important-date-pill" onclick="event.stopPropagation();document.getElementById('important-date').showPicker()">日期</span></span>
             </div>
             <div class="modal-option" onclick="closeAddModal()" style="justify-content:center;color:#888;">取消</div>
         </div>
     </div>
+
+    <!-- 隐藏的日期输入 -->
+    <input type="date" id="period-start-date" style="display:none;" onchange="updatePill('period-start-pill', this)">
+    <input type="date" id="period-end-date" style="display:none;" onchange="updatePill('period-end-pill', this)">
+    <input type="date" id="reminder-date" style="display:none;" onchange="updatePill('reminder-date-pill', this)">
+    <input type="date" id="important-date" style="display:none;" onchange="updatePill('important-date-pill', this)">
 
     <!-- 详情表单弹窗 -->
     <div class="modal-overlay" id="detail-modal">
@@ -204,10 +219,10 @@
             <h4 id="detail-modal-title">添加</h4>
             <input type="text" class="modal-input" id="detail-title" placeholder="标题">
             <input type="text" class="modal-input" id="detail-note" placeholder="备注（可选）">
-            <div id="detail-date-row" style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:8px;">
-                <span class="date-pill" id="detail-start-date" onclick="openDatePicker('start')">开始日期</span>
+            <div class="date-input-row" id="detail-date-row">
+                <input type="date" id="detail-start-date-input">
                 <span id="detail-date-sep" style="display:none;">—</span>
-                <span class="date-pill" id="detail-end-date" onclick="openDatePicker('end')" style="display:none;">结束日期</span>
+                <input type="date" id="detail-end-date-input" style="display:none;">
             </div>
             <div>
                 <button class="modal-btn cancel" onclick="closeDetailModal()">取消</button>
@@ -216,13 +231,9 @@
         </div>
     </div>
 
-    <!-- 隐藏的日期输入 -->
-    <input type="date" id="hidden-start-date" style="display:none;" onchange="updateDatePill('start')">
-    <input type="date" id="hidden-end-date" style="display:none;" onchange="updateDatePill('end')">
-
     <script>
-        var currentYear, currentMonth, currentEventType = '', eventsKey = 'daily_events_self';
-        var startDateStr = '', endDateStr = '';
+        var currentYear, currentMonth, eventsKey = 'daily_events_self';
+        var pendingEventType = '';
 
         function updateClock() {
             var now = new Date();
@@ -241,6 +252,13 @@
             }
         }
         updateBattery();
+
+        function updatePill(pillId, input) {
+            if (input.value) {
+                var parts = input.value.split('-');
+                document.getElementById(pillId).innerText = parts[1] + '月' + parts[2] + '日';
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             var params = new URLSearchParams(window.location.search);
@@ -302,106 +320,61 @@
         function showAddModal() { document.getElementById('add-modal').classList.add('active'); }
         function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
-        // 经期
         function showPeriodForm() {
-            currentEventType = 'period';
+            pendingEventType = 'period';
             document.getElementById('detail-modal-title').innerText = '标记经期';
             document.getElementById('detail-title').style.display = 'none';
             document.getElementById('detail-title').value = '';
             document.getElementById('detail-note').value = '';
             document.getElementById('detail-date-sep').style.display = 'inline';
-            document.getElementById('detail-end-date').style.display = 'inline-block';
-            document.getElementById('detail-start-date').innerText = '开始日期';
-            document.getElementById('detail-end-date').innerText = '结束日期';
-            startDateStr = ''; endDateStr = '';
+            document.getElementById('detail-end-date-input').style.display = 'inline-block';
+            document.getElementById('detail-start-date-input').value = document.getElementById('period-start-date').value;
+            document.getElementById('detail-end-date-input').value = document.getElementById('period-end-date').value;
             closeAddModal();
             document.getElementById('detail-modal').classList.add('active');
         }
 
-        // 提醒事项
         function showReminderForm() {
-            currentEventType = 'reminder';
+            pendingEventType = 'reminder';
             document.getElementById('detail-modal-title').innerText = '提醒事项';
             document.getElementById('detail-title').style.display = 'block';
             document.getElementById('detail-title').value = '';
             document.getElementById('detail-note').value = '';
             document.getElementById('detail-date-sep').style.display = 'none';
-            document.getElementById('detail-end-date').style.display = 'none';
-            document.getElementById('detail-start-date').innerText = '日期';
-            startDateStr = ''; endDateStr = '';
+            document.getElementById('detail-end-date-input').style.display = 'none';
+            document.getElementById('detail-start-date-input').value = document.getElementById('reminder-date').value;
             closeAddModal();
             document.getElementById('detail-modal').classList.add('active');
         }
 
-        // 重要日程
         function showImportantForm() {
-            currentEventType = 'important';
+            pendingEventType = 'important';
             document.getElementById('detail-modal-title').innerText = '重要日程';
             document.getElementById('detail-title').style.display = 'block';
             document.getElementById('detail-title').value = '';
             document.getElementById('detail-note').value = '';
             document.getElementById('detail-date-sep').style.display = 'none';
-            document.getElementById('detail-end-date').style.display = 'none';
-            document.getElementById('detail-start-date').innerText = '日期';
-            startDateStr = ''; endDateStr = '';
+            document.getElementById('detail-end-date-input').style.display = 'none';
+            document.getElementById('detail-start-date-input').value = document.getElementById('important-date').value;
             closeAddModal();
             document.getElementById('detail-modal').classList.add('active');
         }
 
-        function openDatePicker(which) {
-            var input = which === 'start' ? document.getElementById('hidden-start-date') : document.getElementById('hidden-end-date');
-            input.click();
-        }
-
-        function updateDatePill(which) {
-            var input = which === 'start' ? document.getElementById('hidden-start-date') : document.getElementById('hidden-end-date');
-            var pill = which === 'start' ? document.getElementById('detail-start-date') : document.getElementById('detail-end-date');
-            if (input.value) {
-                var parts = input.value.split('-');
-                pill.innerText = parts[1] + '月' + parts[2] + '日';
-                if (which === 'start') startDateStr = input.value;
-                else endDateStr = input.value;
-            }
-        }
-
-        function showPeriodStartPicker() { document.getElementById('hidden-start-date').click(); updateDatePillPeriodStart(); }
-        function showPeriodEndPicker() { document.getElementById('hidden-end-date').click(); updateDatePillPeriodEnd(); }
-
-        function updateDatePillPeriodStart() {
-            var input = document.getElementById('hidden-start-date');
-            input.onchange = function() {
-                if (input.value) {
-                    var parts = input.value.split('-');
-                    document.getElementById('period-start-pill').innerText = parts[1] + '月' + parts[2] + '日';
-                }
-            };
-        }
-        function updateDatePillPeriodEnd() {
-            var input = document.getElementById('hidden-end-date');
-            input.onchange = function() {
-                if (input.value) {
-                    var parts = input.value.split('-');
-                    document.getElementById('period-end-pill').innerText = parts[1] + '月' + parts[2] + '日';
-                }
-            };
-        }
-        updateDatePillPeriodStart(); updateDatePillPeriodEnd();
-
         function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
 
         function saveDetail() {
-            var dateStr = startDateStr || document.getElementById('hidden-start-date').value;
+            var dateStr = document.getElementById('detail-start-date-input').value;
             if (!dateStr) { alert('请选择日期'); return; }
             var parts = dateStr.split('-');
-            var title = currentEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名');
+            var title = pendingEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名');
             var ev = {
-                type: currentEventType,
+                type: pendingEventType,
                 title: title,
                 note: document.getElementById('detail-note').value.trim(),
                 year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
             };
-            if (currentEventType === 'period') {
-                var endStr = endDateStr || document.getElementById('hidden-end-date').value;
+            if (pendingEventType === 'period') {
+                var endStr = document.getElementById('detail-end-date-input').value;
                 if (endStr) {
                     var ep = endStr.split('-');
                     ev.endYear = parseInt(ep[0]); ev.endMonth = parseInt(ep[1]); ev.endDay = parseInt(ep[2]);
