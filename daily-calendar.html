@@ -66,20 +66,23 @@
             text-align:center;
         }
         .cal-day {
-            padding:10px 4px; border-radius:12px; font-size:14px;
-            cursor:pointer; position:relative; min-height:40px;
-            color:var(--text);
+            padding:6px 2px; border-radius:10px; font-size:12px;
+            cursor:pointer; position:relative; min-height:50px;
+            color:var(--text); overflow:hidden;
         }
         .cal-day.today { border:2px solid var(--pink); font-weight:700; }
         .cal-day.other-month { color:#ddd; }
         .cal-day.period { background:var(--purple); }
         .cal-day.important { background:var(--red); }
         .cal-day.reminder { background:var(--light-green); }
-        .cal-day .dot-row { display:flex; justify-content:center; gap:2px; margin-top:2px; }
-        .cal-day .dot { width:6px; height:6px; border-radius:50%; }
-        .cal-day .dot.period-dot { background:#9B7EC4; }
-        .cal-day .dot.important-dot { background:#D48383; }
-        .cal-day .dot.reminder-dot { background:#7CB87C; }
+        .cal-day .day-num { font-weight:600; font-size:13px; }
+        .cal-day .event-text {
+            font-size:9px; color:#555; margin-top:1px;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+            line-height:1.2;
+        }
+        .cal-day .dot-row { display:flex; justify-content:center; gap:2px; margin-top:1px; }
+        .cal-day .dot { width:5px; height:5px; border-radius:50%; }
 
         .legend { display:flex; gap:12px; padding:8px 0; font-size:11px; color:var(--grey); flex-wrap:wrap; }
         .legend-item { display:flex; align-items:center; gap:4px; }
@@ -127,7 +130,6 @@
         .modal-btn.save { background:var(--green); color:#fff; }
         .modal-btn.cancel { background:#f0f0f0; color:#888; }
 
-        /* 日期输入行 */
         .date-input-row {
             display:flex; gap:8px; align-items:center; justify-content:center; margin-bottom:8px;
         }
@@ -181,7 +183,6 @@
         </div>
     </div>
 
-    <!-- 添加标记弹窗 -->
     <div class="modal-overlay" id="add-modal">
         <div class="modal-card">
             <h4>添加标记</h4>
@@ -207,13 +208,11 @@
         </div>
     </div>
 
-    <!-- 隐藏的日期输入 -->
     <input type="date" id="period-start-date" style="display:none;" onchange="updatePill('period-start-pill', this)">
     <input type="date" id="period-end-date" style="display:none;" onchange="updatePill('period-end-pill', this)">
     <input type="date" id="reminder-date" style="display:none;" onchange="updatePill('reminder-date-pill', this)">
     <input type="date" id="important-date" style="display:none;" onchange="updatePill('important-date-pill', this)">
 
-    <!-- 详情表单弹窗 -->
     <div class="modal-overlay" id="detail-modal">
         <div class="modal-card">
             <h4 id="detail-modal-title">添加</h4>
@@ -287,32 +286,48 @@
                 var cls = 'cal-day';
                 if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && d === today.getDate()) cls += ' today';
                 var dayEvents = getEventsForDay(events, currentYear, currentMonth + 1, d);
-                var dotHtml = '';
+                
+                // 取第一个事件的类型作为背景色
                 if (dayEvents.length > 0) {
-                    dotHtml = '<div class="dot-row">';
-                    dayEvents.forEach(function(e) {
-                        if (e.type === 'period') dotHtml += '<span class="dot period-dot"></span>';
-                        if (e.type === 'important') dotHtml += '<span class="dot important-dot"></span>';
-                        if (e.type === 'reminder') dotHtml += '<span class="dot reminder-dot"></span>';
-                    });
-                    dotHtml += '</div>';
                     if (dayEvents[0].type === 'period') cls += ' period';
                     if (dayEvents[0].type === 'important') cls += ' important';
                     if (dayEvents[0].type === 'reminder') cls += ' reminder';
                 }
-                html += '<div class="' + cls + '">' + d + dotHtml + '</div>';
+
+                // 显示标题/备注文字
+                var textHtml = '';
+                if (dayEvents.length > 0) {
+                    var labels = [];
+                    dayEvents.forEach(function(e) {
+                        var label = e.title || '';
+                        if (e.note) label += (label ? ' ' : '') + e.note;
+                        if (label) labels.push(label);
+                    });
+                    // 去重
+                    var unique = [];
+                    labels.forEach(function(l) { if (unique.indexOf(l) === -1) unique.push(l); });
+                    if (unique.length > 0) {
+                        textHtml = unique.slice(0, 2).map(function(l) {
+                            return '<div class="event-text">' + escapeHtml(l) + '</div>';
+                        }).join('');
+                    }
+                }
+
+                html += '<div class="' + cls + '"><div class="day-num">' + d + '</div>' + textHtml + '</div>';
             }
             document.getElementById('calendar-grid').innerHTML = html;
         }
 
         function getEventsForDay(events, y, m, d) {
             return events.filter(function(e) {
+                // 经期：检查日期范围
                 if (e.type === 'period' && e.endDate) {
                     var start = new Date(e.year, e.month - 1, e.day);
                     var end = new Date(e.endYear, e.endMonth - 1, e.endDay);
                     var cur = new Date(y, m - 1, d);
                     return cur >= start && cur <= end;
                 }
+                // 其他：精确匹配日期
                 return e.year === y && e.month === m && e.day === d;
             });
         }
@@ -366,11 +381,15 @@
             var dateStr = document.getElementById('detail-start-date-input').value;
             if (!dateStr) { alert('请选择日期'); return; }
             var parts = dateStr.split('-');
-            var title = pendingEventType === 'period' ? '经期' : (document.getElementById('detail-title').value.trim() || '未命名');
+            var title = pendingEventType === 'period' ? '' : (document.getElementById('detail-title').value.trim() || '未命名');
+            var note = document.getElementById('detail-note').value.trim();
+            var displayTitle = pendingEventType === 'period' ? (note || '经期') : (title || note || '未命名');
+            
             var ev = {
                 type: pendingEventType,
                 title: title,
-                note: document.getElementById('detail-note').value.trim(),
+                note: note,
+                displayTitle: displayTitle,
                 year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
             };
             if (pendingEventType === 'period') {
@@ -385,6 +404,12 @@
             localStorage.setItem(eventsKey, JSON.stringify(events));
             closeDetailModal();
             renderCalendar();
+        }
+
+        function escapeHtml(text) {
+            var d = document.createElement('div');
+            d.innerText = text || '';
+            return d.innerHTML;
         }
 
         document.getElementById('add-modal').addEventListener('click', function(e) { if (e.target === this) closeAddModal(); });
