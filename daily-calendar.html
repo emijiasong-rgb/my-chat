@@ -32,6 +32,7 @@
             padding:14px 24px 6px; font-size:13px; font-weight:600; color:var(--text);
             background:var(--bg);
         }
+        .status-icons { display:flex; align-items:center; gap:5px; }
         .nav-bar {
             display:flex; align-items:center; padding:10px 16px;
             background:var(--bg); border-bottom:0.5px solid var(--separator);
@@ -75,24 +76,18 @@
         .cal-day.important { background:var(--red); }
         .cal-day.reminder { background:var(--light-green); }
         .cal-day .dot-row { display:flex; justify-content:center; gap:2px; margin-top:2px; }
-        .cal-day .dot {
-            width:6px; height:6px; border-radius:50%;
-        }
+        .cal-day .dot { width:6px; height:6px; border-radius:50%; }
         .cal-day .dot.period-dot { background:#9B7EC4; }
         .cal-day .dot.important-dot { background:#D48383; }
         .cal-day .dot.reminder-dot { background:#7CB87C; }
 
-        .legend {
-            display:flex; gap:12px; padding:8px 0; font-size:11px; color:var(--grey);
-            flex-wrap:wrap;
-        }
+        .legend { display:flex; gap:12px; padding:8px 0; font-size:11px; color:var(--grey); flex-wrap:wrap; }
         .legend-item { display:flex; align-items:center; gap:4px; }
         .legend-dot { width:10px; height:10px; border-radius:50%; }
         .legend-dot.period-dot { background:var(--purple); }
         .legend-dot.important-dot { background:var(--red); }
         .legend-dot.reminder-dot { background:var(--light-green); }
 
-        /* 弹窗 */
         .modal-overlay {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
@@ -104,19 +99,13 @@
             box-shadow:0 12px 40px rgba(0,0,0,0.15);
         }
         .modal-card h4 { font-size:16px; margin-bottom:12px; color:var(--text); }
-        .modal-option {
-            padding:12px; font-size:15px; cursor:pointer; border-radius:12px;
-            margin:4px 0; color:var(--text); transition:background 0.2s;
-        }
+        .modal-option { padding:12px; font-size:15px; cursor:pointer; border-radius:12px; margin:4px 0; color:var(--text); }
         .modal-option:active { background:#f5f5f5; }
         .modal-input {
             width:100%; padding:10px; border:1px solid #e0e0e0;
             border-radius:10px; font-size:14px; margin-bottom:8px; outline:none;
         }
-        .modal-btn {
-            padding:10px 20px; border:none; border-radius:10px; font-size:14px;
-            font-weight:600; cursor:pointer; margin:4px;
-        }
+        .modal-btn { padding:10px 20px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; margin:4px; }
         .modal-btn.save { background:var(--green); color:#fff; }
         .modal-btn.cancel { background:#f0f0f0; color:#888; }
     </style>
@@ -126,8 +115,20 @@
         <div class="status-bar">
             <span id="clock">12:00</span>
             <div class="status-icons">
-                <span>📶</span>
-                <span id="battery-percent">--%</span>
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
+                    <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
+                    <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
+                    <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
+                    <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+                </svg>
+                <span id="battery-container">
+                    <svg width="25" height="12" viewBox="0 0 25 12">
+                        <rect x="0" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
+                    </svg>
+                    <span id="battery-percent">--%</span>
+                </span>
             </div>
         </div>
         <div class="nav-bar">
@@ -142,9 +143,7 @@
                 <span class="month-label" id="month-label"></span>
                 <span class="arrow" onclick="changeMonth(1)">›</span>
             </div>
-            <div class="weekday-row">
-                <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
-            </div>
+            <div class="weekday-row"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
             <div class="calendar-grid" id="calendar-grid"></div>
             <div class="legend">
                 <span class="legend-item"><span class="legend-dot period-dot"></span> 经期</span>
@@ -154,7 +153,6 @@
         </div>
     </div>
 
-    <!-- 添加弹窗 -->
     <div class="modal-overlay" id="add-modal">
         <div class="modal-card">
             <h4>添加标记</h4>
@@ -165,7 +163,6 @@
         </div>
     </div>
 
-    <!-- 事件表单弹窗 -->
     <div class="modal-overlay" id="event-modal">
         <div class="modal-card">
             <h4 id="event-modal-title">添加</h4>
@@ -181,10 +178,7 @@
     </div>
 
     <script>
-        var currentYear, currentMonth;
-        var currentEventType = '';
-        var calendarOwner = 'self'; // 'self' or roleId
-        var eventsKey = 'daily_events_self';
+        var currentYear, currentMonth, currentEventType = '', eventsKey = 'daily_events_self';
 
         function updateClock() {
             var now = new Date();
@@ -192,23 +186,28 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
+        function updateBattery() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(b) {
+                    var lvl = Math.round(b.level * 100);
+                    document.getElementById('battery-percent').textContent = lvl + '%';
+                    var lel = document.getElementById('battery-level');
+                    if (lel) { lel.setAttribute('width', Math.round((lvl/100)*18)); lel.setAttribute('fill', lvl <= 20 ? '#ff3b30' : 'currentColor'); }
+                });
+            }
+        }
+        updateBattery();
+
         document.addEventListener('DOMContentLoaded', function() {
             var params = new URLSearchParams(window.location.search);
-            var type = params.get('type');
             var id = params.get('id');
-            if (id) {
-                calendarOwner = 'role_' + id;
-                eventsKey = 'daily_events_role_' + id;
-                document.getElementById('cal-title').innerText = '角色日程';
-            }
-            var now = new Date();
-            currentYear = now.getFullYear();
-            currentMonth = now.getMonth();
+            if (id) { eventsKey = 'daily_events_role_' + id; document.getElementById('cal-title').innerText = '角色日程'; }
+            var now = new Date(); currentYear = now.getFullYear(); currentMonth = now.getMonth();
             renderCalendar();
         });
 
-        function changeMonth(delta) {
-            currentMonth += delta;
+        function changeMonth(d) {
+            currentMonth += d;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             renderCalendar();
@@ -220,7 +219,6 @@
             var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             var firstDay = new Date(currentYear, currentMonth, 1).getDay();
             var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
-
             var html = '';
             for (var i = 0; i < firstDay; i++) { html += '<div class="cal-day other-month"></div>'; }
             for (var d = 1; d <= daysInMonth; d++) {
@@ -245,25 +243,20 @@
             document.getElementById('calendar-grid').innerHTML = html;
         }
 
-        function getEventsForDay(events, year, month, day) {
+        function getEventsForDay(events, y, m, d) {
             return events.filter(function(e) {
                 if (e.type === 'period' && e.endDate) {
                     var start = new Date(e.year, e.month - 1, e.day);
                     var end = new Date(e.endYear, e.endMonth - 1, e.endDay);
-                    var current = new Date(year, month - 1, day);
-                    return current >= start && current <= end;
+                    var cur = new Date(y, m - 1, d);
+                    return cur >= start && cur <= end;
                 }
-                return e.year === year && e.month === month && e.day === day;
+                return e.year === y && e.month === m && e.day === d;
             });
         }
 
-        function showAddModal() {
-            document.getElementById('add-modal').classList.add('active');
-        }
-
-        function closeAddModal() {
-            document.getElementById('add-modal').classList.remove('active');
-        }
+        function showAddModal() { document.getElementById('add-modal').classList.add('active'); }
+        function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
         function showEventForm(type) {
             currentEventType = type;
@@ -277,34 +270,27 @@
             document.getElementById('event-modal').classList.add('active');
         }
 
-        function closeEventModal() {
-            document.getElementById('event-modal').classList.remove('active');
-        }
+        function closeEventModal() { document.getElementById('event-modal').classList.remove('active'); }
 
         function saveEvent() {
-            var title = document.getElementById('event-title').value.trim();
-            var note = document.getElementById('event-note').value.trim();
             var dateStr = document.getElementById('event-date').value;
             if (!dateStr) { alert('请选择日期'); return; }
             var parts = dateStr.split('-');
-            var year = parseInt(parts[0]);
-            var month = parseInt(parts[1]);
-            var day = parseInt(parts[2]);
-
-            var event = { type: currentEventType, title: title || '未命名', note: note, year: year, month: month, day: day };
-
+            var ev = {
+                type: currentEventType,
+                title: document.getElementById('event-title').value.trim() || '未命名',
+                note: document.getElementById('event-note').value.trim(),
+                year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
+            };
             if (currentEventType === 'period') {
-                var endDateStr = document.getElementById('event-end-date').value;
-                if (endDateStr) {
-                    var endParts = endDateStr.split('-');
-                    event.endYear = parseInt(endParts[0]);
-                    event.endMonth = parseInt(endParts[1]);
-                    event.endDay = parseInt(endParts[2]);
+                var endStr = document.getElementById('event-end-date').value;
+                if (endStr) {
+                    var ep = endStr.split('-');
+                    ev.endYear = parseInt(ep[0]); ev.endMonth = parseInt(ep[1]); ev.endDay = parseInt(ep[2]);
                 }
             }
-
             var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
-            events.push(event);
+            events.push(ev);
             localStorage.setItem(eventsKey, JSON.stringify(events));
             closeEventModal();
             renderCalendar();
