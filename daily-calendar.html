@@ -47,46 +47,63 @@
         }
         .nav-add:active { background:#f0f0f0; }
 
-        #viewport { flex:1; overflow-y:auto; padding:10px 14px; }
+        #viewport { flex:1; overflow-y:auto; padding:10px 10px; }
         #viewport::-webkit-scrollbar { display:none; }
 
         .month-header {
             display:flex; align-items:center; justify-content:space-between;
-            padding:8px 0 12px;
+            padding:8px 4px 12px;
         }
         .month-header .arrow { font-size:18px; cursor:pointer; padding:8px; color:var(--text); }
         .month-header .month-label { font-size:18px; font-weight:700; color:var(--text); }
 
         .weekday-row {
             display:grid; grid-template-columns:repeat(7,1fr); text-align:center;
-            font-size:11px; color:var(--grey); padding-bottom:6px;
+            font-size:11px; color:var(--grey); padding-bottom:4px;
         }
-        .calendar-grid {
-            display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
-            text-align:center;
-        }
-        .cal-day {
-            padding:6px 2px; border-radius:10px; font-size:12px;
-            cursor:pointer; position:relative; min-height:50px;
-            color:var(--text); overflow:hidden;
-        }
-        .cal-day.today { border:2px solid var(--pink); font-weight:700; }
-        .cal-day.other-month { color:#ddd; }
-        .cal-day.period { background:var(--purple); }
-        .cal-day.important { background:var(--red); }
-        .cal-day.reminder { background:var(--light-green); }
-        .cal-day .day-num { font-weight:600; font-size:13px; }
-        .cal-day .event-text {
-            font-size:9px; color:#555; margin-top:1px;
-            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-            line-height:1.2;
-        }
-        .cal-day .dot-row { display:flex; justify-content:center; gap:2px; margin-top:1px; }
-        .cal-day .dot { width:5px; height:5px; border-radius:50%; }
 
-        .legend { display:flex; gap:12px; padding:8px 0; font-size:11px; color:var(--grey); flex-wrap:wrap; }
+        .calendar-grid {
+            display:grid; grid-template-columns:repeat(7,1fr);
+            border-left:0.5px solid #eee; border-top:0.5px solid #eee;
+        }
+        .cal-cell {
+            border-right:0.5px solid #eee; border-bottom:0.5px solid #eee;
+            min-height:80px; padding:6px 4px 4px; cursor:pointer;
+            position:relative; background:var(--card-bg);
+            display:flex; flex-direction:column;
+        }
+        .cal-cell.other-month { background:#fafafa; }
+        .cal-cell.other-month .day-num { color:#ddd; }
+        .cal-cell.period { background:var(--purple); }
+        .cal-cell.important { background:var(--red); }
+        .cal-cell.reminder { background:var(--light-green); }
+
+        .day-num {
+            font-size:14px; font-weight:600; color:var(--text);
+            text-align:right; margin-bottom:2px;
+        }
+        .day-num.today-circle {
+            display:inline-block; width:24px; height:24px; line-height:24px;
+            text-align:center; border-radius:50%; background:var(--pink);
+            color:#fff; font-size:13px; float:right;
+        }
+
+        .cell-events {
+            flex:1; display:flex; flex-direction:column; gap:1px;
+            overflow:hidden;
+        }
+        .cell-event {
+            font-size:9px; padding:2px 4px; border-radius:4px;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            font-weight:500;
+        }
+        .cell-event.period-tag { background:#C4A8E0; color:#4A3070; }
+        .cell-event.important-tag { background:#E8A0A0; color:#6B2020; }
+        .cell-event.reminder-tag { background:#A0D4A0; color:#205020; }
+
+        .legend { display:flex; gap:16px; padding:10px 4px; font-size:11px; color:var(--grey); }
         .legend-item { display:flex; align-items:center; gap:4px; }
-        .legend-dot { width:10px; height:10px; border-radius:50%; }
+        .legend-dot { width:10px; height:10px; border-radius:3px; }
         .legend-dot.period-dot { background:var(--purple); }
         .legend-dot.important-dot { background:var(--red); }
         .legend-dot.reminder-dot { background:var(--light-green); }
@@ -280,54 +297,50 @@
             var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             var firstDay = new Date(currentYear, currentMonth, 1).getDay();
             var events = JSON.parse(localStorage.getItem(eventsKey) || '[]');
+
             var html = '';
-            for (var i = 0; i < firstDay; i++) { html += '<div class="cal-day other-month"></div>'; }
+            for (var i = 0; i < firstDay; i++) { html += '<div class="cal-cell other-month"><div class="day-num"></div></div>'; }
+
             for (var d = 1; d <= daysInMonth; d++) {
-                var cls = 'cal-day';
-                if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && d === today.getDate()) cls += ' today';
+                var cls = 'cal-cell';
+                var isToday = (currentYear === today.getFullYear() && currentMonth === today.getMonth() && d === today.getDate());
                 var dayEvents = getEventsForDay(events, currentYear, currentMonth + 1, d);
-                
-                // 取第一个事件的类型作为背景色
+
                 if (dayEvents.length > 0) {
                     if (dayEvents[0].type === 'period') cls += ' period';
                     if (dayEvents[0].type === 'important') cls += ' important';
                     if (dayEvents[0].type === 'reminder') cls += ' reminder';
                 }
 
-                // 显示标题/备注文字
-                var textHtml = '';
+                var numHtml = isToday ? '<span class="day-num today-circle">' + d + '</span>' : '<span class="day-num">' + d + '</span>';
+
+                var eventsHtml = '';
                 if (dayEvents.length > 0) {
-                    var labels = [];
+                    eventsHtml = '<div class="cell-events">';
+                    var shown = [];
                     dayEvents.forEach(function(e) {
-                        var label = e.title || '';
-                        if (e.note) label += (label ? ' ' : '') + e.note;
-                        if (label) labels.push(label);
+                        var label = e.title || e.note || (e.type === 'period' ? '经期' : '');
+                        if (label && shown.indexOf(label) === -1) {
+                            shown.push(label);
+                            eventsHtml += '<div class="cell-event ' + e.type + '-tag">' + escapeHtml(label) + '</div>';
+                        }
                     });
-                    // 去重
-                    var unique = [];
-                    labels.forEach(function(l) { if (unique.indexOf(l) === -1) unique.push(l); });
-                    if (unique.length > 0) {
-                        textHtml = unique.slice(0, 2).map(function(l) {
-                            return '<div class="event-text">' + escapeHtml(l) + '</div>';
-                        }).join('');
-                    }
+                    eventsHtml += '</div>';
                 }
 
-                html += '<div class="' + cls + '"><div class="day-num">' + d + '</div>' + textHtml + '</div>';
+                html += '<div class="' + cls + '">' + numHtml + eventsHtml + '</div>';
             }
             document.getElementById('calendar-grid').innerHTML = html;
         }
 
         function getEventsForDay(events, y, m, d) {
             return events.filter(function(e) {
-                // 经期：检查日期范围
                 if (e.type === 'period' && e.endDate) {
                     var start = new Date(e.year, e.month - 1, e.day);
                     var end = new Date(e.endYear, e.endMonth - 1, e.endDay);
                     var cur = new Date(y, m - 1, d);
                     return cur >= start && cur <= end;
                 }
-                // 其他：精确匹配日期
                 return e.year === y && e.month === m && e.day === d;
             });
         }
@@ -381,10 +394,10 @@
             var dateStr = document.getElementById('detail-start-date-input').value;
             if (!dateStr) { alert('请选择日期'); return; }
             var parts = dateStr.split('-');
-            var title = pendingEventType === 'period' ? '' : (document.getElementById('detail-title').value.trim() || '未命名');
+            var title = pendingEventType === 'period' ? '' : (document.getElementById('detail-title').value.trim() || '');
             var note = document.getElementById('detail-note').value.trim();
             var displayTitle = pendingEventType === 'period' ? (note || '经期') : (title || note || '未命名');
-            
+
             var ev = {
                 type: pendingEventType,
                 title: title,
