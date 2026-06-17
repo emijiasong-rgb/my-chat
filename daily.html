@@ -25,15 +25,14 @@
             width:100vw; max-width:430px; height:100dvh; max-height:932px;
             background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
         }
-
         .status-bar {
             display:flex; justify-content:space-between; align-items:center;
             padding:14px 24px 6px; font-size:13px; font-weight:600; color:var(--text);
             background:var(--bg);
         }
         .status-icons { display:flex; align-items:center; gap:5px; }
+        #battery-container { display:flex; align-items:center; gap:2px; }
 
-        /* 登录弹窗 */
         .login-overlay {
             position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.3); z-index:1000;
@@ -52,7 +51,6 @@
         }
         .login-btn:active { transform:scale(0.97); }
 
-        /* 主页 */
         .main-page { flex:1; overflow-y:auto; display:none; }
         .main-page.show { display:block; }
         .main-page::-webkit-scrollbar { display:none; }
@@ -67,10 +65,7 @@
         }
         .my-avatar-label { font-size:14px; color:var(--text); font-weight:500; }
 
-        .section-title {
-            padding:10px 16px 4px; font-size:12px; color:var(--grey);
-            font-weight:500;
-        }
+        .section-title { padding:10px 16px 4px; font-size:12px; color:var(--grey); font-weight:500; }
         .contact-card {
             display:flex; align-items:center; gap:12px; padding:14px 16px;
             cursor:pointer; background:var(--card-bg); margin:4px 12px;
@@ -83,7 +78,6 @@
         }
         .contact-name { font-size:15px; font-weight:600; color:var(--text); }
 
-        /* 绑定弹窗 */
         .modal-overlay {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
@@ -121,12 +115,23 @@
         <div class="status-bar">
             <span id="clock">12:00</span>
             <div class="status-icons">
-                <span>📶</span>
-                <span id="battery-percent">--%</span>
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
+                    <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="0.3"/>
+                    <rect x="5" y="5" width="3" height="7" rx="0.5" opacity="0.3"/>
+                    <rect x="10" y="2" width="3" height="10" rx="0.5" opacity="0.3"/>
+                    <rect x="15" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+                </svg>
+                <span id="battery-container">
+                    <svg width="25" height="12" viewBox="0 0 25 12">
+                        <rect x="0" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <rect x="22" y="3" width="3" height="6" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect id="battery-level" x="2" y="2" width="18" height="8" rx="1" fill="currentColor"/>
+                    </svg>
+                    <span id="battery-percent">--%</span>
+                </span>
             </div>
         </div>
 
-        <!-- 登录弹窗 -->
         <div class="login-overlay" id="login-overlay">
             <div class="login-card">
                 <h2>登录</h2>
@@ -134,7 +139,6 @@
             </div>
         </div>
 
-        <!-- 主页 -->
         <div class="main-page" id="main-page">
             <div class="my-avatar-section" onclick="window.location.href='daily-profile.html'">
                 <img class="my-avatar" id="my-avatar" src="" alt="">
@@ -145,7 +149,6 @@
         </div>
     </div>
 
-    <!-- 绑定弹窗 -->
     <div class="modal-overlay" id="bind-modal">
         <div class="modal-card">
             <h3>是否绑定该联系人？</h3>
@@ -157,7 +160,6 @@
         </div>
     </div>
 
-    <!-- 成功提示 -->
     <div class="success-toast" id="success-toast">登入成功 ✨</div>
 
     <script>
@@ -173,13 +175,15 @@
         function updateBattery() {
             if ('getBattery' in navigator) {
                 navigator.getBattery().then(function(b) {
-                    document.getElementById('battery-percent').textContent = Math.round(b.level * 100) + '%';
+                    var lvl = Math.round(b.level * 100);
+                    document.getElementById('battery-percent').textContent = lvl + '%';
+                    var lel = document.getElementById('battery-level');
+                    if (lel) { lel.setAttribute('width', Math.round((lvl/100)*18)); lel.setAttribute('fill', lvl <= 20 ? '#ff3b30' : 'currentColor'); }
                 });
             }
         }
         updateBattery();
 
-        // 检查是否已绑定
         document.addEventListener('DOMContentLoaded', function() {
             var bound = localStorage.getItem('daily_bound');
             if (bound) {
@@ -191,16 +195,36 @@
         });
 
         function startBind() {
-            window.location.href = 'chat.html?from=daily';
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            if (roles.length === 0) {
+                alert('请先在 Chat 中创建角色');
+                return;
+            }
+            showRoleSelectModal(roles);
         }
 
-        // chat.html 返回时携带参数
-        // 这里简化：直接在当前页显示绑定弹窗
-        function showBindModal(roleId, roleName, roleAvatar) {
-            bindRoleId = roleId;
-            document.getElementById('bind-name').value = roleName;
-            bindAvatarData = roleAvatar;
+        function showRoleSelectModal(roles) {
+            var html = '<div class="modal-overlay active" id="role-select-modal" onclick="if(event.target===this)closeRoleSelect()"><div class="modal-card"><h3>选择要绑定的联系人</h3>';
+            roles.forEach(function(r) {
+                html += '<div style="display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;border-radius:12px;margin:4px 0;" onclick="selectRoleForBind(' + r.id + ',\'' + escapeHtml(r.remark || r.name) + '\',\'' + (r.avatar || '') + '\')" onmouseover="this.style.background=\'#f9f9f9\'" onmouseout="this.style.background=\'transparent\'">' +
+                    '<img src="' + (r.avatar || '') + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#e0e0e0;" onerror="this.style.background=\'#e0e0e0\'">' +
+                    '<span style="font-size:15px;font-weight:500;color:#3A3A3A;">' + escapeHtml(r.remark || r.name) + '</span></div>';
+            });
+            html += '<button class="modal-btn cancel" onclick="closeRoleSelect()">取消</button></div></div>';
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function selectRoleForBind(id, name, avatar) {
+            closeRoleSelect();
+            bindRoleId = id;
+            document.getElementById('bind-name').value = name;
+            bindAvatarData = avatar;
             document.getElementById('bind-modal').classList.add('active');
+        }
+
+        function closeRoleSelect() {
+            var el = document.getElementById('role-select-modal');
+            if (el) el.remove();
         }
 
         function handleBindAvatar(event) {
@@ -253,19 +277,6 @@
             var d = document.createElement('div');
             d.innerText = text || '';
             return d.innerHTML;
-        }
-
-        // 如果从 chat.html 跳转过来
-        var params = new URLSearchParams(window.location.search);
-        var fromChat = params.get('from') === 'chat';
-        var roleId = params.get('roleId');
-        var roleName = params.get('roleName');
-        var roleAvatar = params.get('roleAvatar');
-        if (fromChat && roleId) {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('main-page').classList.add('show');
-            renderContacts();
-            showBindModal(parseInt(roleId), roleName, roleAvatar);
         }
     </script>
 </body>
