@@ -33,6 +33,17 @@
         .status-icons { display:flex; align-items:center; gap:5px; }
         #battery-container { display:flex; align-items:center; gap:2px; }
 
+        .top-nav {
+            display:flex; align-items:center; justify-content:center;
+            padding:10px 16px; background:var(--bg); position:relative;
+            border-bottom:0.5px solid var(--separator);
+        }
+        .top-nav .back-arrow {
+            position:absolute; left:16px; font-size:18px; color:var(--text);
+            cursor:pointer; text-decoration:none; padding:4px;
+        }
+        .top-nav .nav-title { font-size:17px; font-weight:700; color:var(--text); }
+
         .login-overlay {
             position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.3); z-index:1000;
@@ -138,6 +149,11 @@
             </div>
         </div>
 
+        <div class="top-nav">
+            <a href="index.html?from=chat" class="back-arrow">←</a>
+            <span class="nav-title">Daily</span>
+        </div>
+
         <div class="login-overlay" id="login-overlay">
             <div class="login-card">
                 <h2>登录</h2>
@@ -196,16 +212,12 @@
         }
         updateBattery();
 
-        document.addEventListener('DOMContentLoaded', function() {
-            checkBinding();
-        });
+        document.addEventListener('DOMContentLoaded', function() { checkBinding(); });
 
-        // 检查是否已绑定
         function checkBinding() {
             var boundUser = localStorage.getItem('daily_bound_user') || localStorage.getItem('currentUser');
             var boundAvatar = localStorage.getItem('daily_avatar') || localStorage.getItem('savedAvatar');
             var bound = localStorage.getItem('daily_bound');
-
             if (bound && boundUser) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('main-page').classList.add('show');
@@ -216,25 +228,20 @@
             }
         }
 
-        // 绑定账号（与微信绑定）
         function bindAccount() {
             var currentUser = localStorage.getItem('currentUser');
             var savedAvatar = localStorage.getItem('savedAvatar');
-            
-            // 使用当前登录的Chat账号信息
             if (currentUser && currentUser !== '未登录用户') {
                 bindAvatarData = savedAvatar || '';
                 document.getElementById('bind-name').value = currentUser;
                 document.getElementById('bind-modal').classList.add('active');
             } else {
-                // 没有Chat账号时手动填写
                 bindAvatarData = '';
                 document.getElementById('bind-name').value = '';
                 document.getElementById('bind-modal').classList.add('active');
             }
         }
 
-        // 切换账号
         function switchAccount() {
             if (confirm('确定要切换绑定的账号吗？切换后需要重新绑定。')) {
                 localStorage.removeItem('daily_bound');
@@ -256,14 +263,11 @@
         function confirmBind() {
             var name = document.getElementById('bind-name').value.trim();
             if (!name) { alert('请输入名字'); return; }
-            
             var currentUser = localStorage.getItem('currentUser');
             var boundUser = currentUser && currentUser !== '未登录用户' ? currentUser : name;
-            
             localStorage.setItem('daily_bound', 'true');
             localStorage.setItem('daily_bound_user', boundUser);
             localStorage.setItem('daily_avatar', bindAvatarData || localStorage.getItem('savedAvatar') || '');
-            
             closeBindModal();
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('main-page').classList.add('show');
@@ -271,15 +275,12 @@
             document.getElementById('my-name-label').innerText = boundUser + ' 的日常 ›';
             document.getElementById('bound-account').innerText = '已绑定：' + boundUser;
             renderContacts();
-            
             var toast = document.getElementById('success-toast');
             toast.classList.add('show');
             setTimeout(function() { toast.classList.remove('show'); }, 1500);
         }
 
-        function closeBindModal() {
-            document.getElementById('bind-modal').classList.remove('active');
-        }
+        function closeBindModal() { document.getElementById('bind-modal').classList.remove('active'); }
 
         function renderContacts() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
@@ -298,11 +299,7 @@
             container.innerHTML = html;
         }
 
-        function escapeHtml(text) {
-            var d = document.createElement('div');
-            d.innerText = text || '';
-            return d.innerHTML;
-        }
+        function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
     </script>
 </body>
 </html>
