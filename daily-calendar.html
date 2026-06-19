@@ -33,13 +33,16 @@
             background:var(--bg);
         }
         .status-icons { display:flex; align-items:center; gap:5px; }
-        .nav-bar {
-            display:flex; align-items:center; padding:10px 16px;
-            background:var(--bg); border-bottom:0.5px solid var(--separator);
-            position:relative;
+        .top-nav {
+            display:flex; align-items:center; justify-content:center;
+            padding:10px 16px; background:var(--bg); position:relative;
+            border-bottom:0.5px solid var(--separator);
         }
-        .nav-back { font-size:17px; color:#007aff; cursor:pointer; text-decoration:none; }
-        .nav-title { font-size:17px; font-weight:600; position:absolute; left:50%; transform:translateX(-50%); color:var(--text); }
+        .top-nav .back-arrow {
+            position:absolute; left:16px; font-size:18px; color:var(--text);
+            cursor:pointer; text-decoration:none; padding:4px;
+        }
+        .top-nav .nav-title { font-size:17px; font-weight:700; color:var(--text); }
         .nav-add {
             position:absolute; right:16px; font-size:22px; color:var(--text);
             cursor:pointer; width:32px; height:32px; display:flex;
@@ -173,8 +176,8 @@
                 </span>
             </div>
         </div>
-        <div class="nav-bar">
-            <a href="javascript:history.back()" class="nav-back">← 返回</a>
+        <div class="top-nav">
+            <a href="javascript:history.back()" class="back-arrow">←</a>
             <span class="nav-title" id="cal-title">日历</span>
             <div class="nav-add" onclick="showAddModal()">+</div>
         </div>
@@ -287,13 +290,8 @@
             renderCalendar();
         }
 
-        function getEvents() {
-            return JSON.parse(localStorage.getItem(eventsKey) || '[]');
-        }
-
-        function saveEvents(events) {
-            localStorage.setItem(eventsKey, JSON.stringify(events));
-        }
+        function getEvents() { return JSON.parse(localStorage.getItem(eventsKey) || '[]'); }
+        function saveEvents(events) { localStorage.setItem(eventsKey, JSON.stringify(events)); }
 
         function renderCalendar() {
             document.getElementById('month-label').innerText = currentYear + '年 ' + (currentMonth + 1) + '月';
@@ -311,9 +309,7 @@
                 var dayEvents = getEventsForDay(events, currentYear, currentMonth + 1, d);
 
                 var isPeriodDay = false;
-                for (var j = 0; j < dayEvents.length; j++) {
-                    if (dayEvents[j].type === 'period') { isPeriodDay = true; break; }
-                }
+                for (var j = 0; j < dayEvents.length; j++) { if (dayEvents[j].type === 'period') { isPeriodDay = true; break; } }
                 if (isPeriodDay) cls += ' period';
 
                 var numHtml = isToday ? '<div class="day-num today-circle">' + d + '</div>' : '<div class="day-num">' + d + '</div>';
@@ -339,15 +335,10 @@
         function getEventsForDay(events, y, m, d) {
             return events.filter(function(e) {
                 if (e.type === 'period') {
-                    var start = new Date(e.year, e.month - 1, e.day);
-                    start.setHours(0,0,0,0);
-                    var endDay = e.endDay || e.day;
-                    var endMonth = e.endMonth || e.month;
-                    var endYear = e.endYear || e.year;
-                    var end = new Date(endYear, endMonth - 1, endDay);
-                    end.setHours(23,59,59,999);
-                    var cur = new Date(y, m - 1, d);
-                    cur.setHours(12,0,0,0);
+                    var start = new Date(e.year, e.month - 1, e.day); start.setHours(0,0,0,0);
+                    var endDay = e.endDay || e.day; var endMonth = e.endMonth || e.month; var endYear = e.endYear || e.year;
+                    var end = new Date(endYear, endMonth - 1, endDay); end.setHours(23,59,59,999);
+                    var cur = new Date(y, m - 1, d); cur.setHours(12,0,0,0);
                     return cur >= start && cur <= end;
                 }
                 return e.year === y && e.month === m && e.day === d;
@@ -355,27 +346,19 @@
         }
 
         function editEvent(index) {
-            var events = getEvents();
-            var ev = events[index];
-            editingEventIndex = index;
+            var events = getEvents(); var ev = events[index]; editingEventIndex = index;
             if (!ev) return;
-
             pendingEventType = ev.type;
             document.getElementById('detail-modal-title').innerText = '编辑';
             document.getElementById('detail-delete-btn').style.display = 'inline-block';
-
             if (ev.type === 'period') {
-                document.getElementById('detail-title').style.display = 'none';
-                document.getElementById('detail-title').value = '';
-                document.getElementById('detail-date-sep').style.display = 'inline';
-                document.getElementById('detail-end-date-input').style.display = 'inline-block';
+                document.getElementById('detail-title').style.display = 'none'; document.getElementById('detail-title').value = '';
+                document.getElementById('detail-date-sep').style.display = 'inline'; document.getElementById('detail-end-date-input').style.display = 'inline-block';
                 document.getElementById('detail-start-date-input').value = formatDateStr(ev.year, ev.month, ev.day);
                 document.getElementById('detail-end-date-input').value = formatDateStr(ev.endYear || ev.year, ev.endMonth || ev.month, ev.endDay || ev.day);
             } else {
-                document.getElementById('detail-title').style.display = 'block';
-                document.getElementById('detail-title').value = ev.title || '';
-                document.getElementById('detail-date-sep').style.display = 'none';
-                document.getElementById('detail-end-date-input').style.display = 'none';
+                document.getElementById('detail-title').style.display = 'block'; document.getElementById('detail-title').value = ev.title || '';
+                document.getElementById('detail-date-sep').style.display = 'none'; document.getElementById('detail-end-date-input').style.display = 'none';
                 document.getElementById('detail-start-date-input').value = formatDateStr(ev.year, ev.month, ev.day);
             }
             document.getElementById('detail-modal').classList.add('active');
@@ -384,60 +367,44 @@
         function deleteEvent() {
             if (editingEventIndex < 0) return;
             if (!confirm('确定删除？')) return;
-            var events = getEvents();
-            events.splice(editingEventIndex, 1);
-            saveEvents(events);
-            closeDetailModal();
-            renderCalendar();
+            var events = getEvents(); events.splice(editingEventIndex, 1); saveEvents(events);
+            closeDetailModal(); renderCalendar();
         }
 
-        function formatDateStr(y, m, d) {
-            return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-        }
+        function formatDateStr(y, m, d) { return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0'); }
 
         function showAddModal() { document.getElementById('add-modal').classList.add('active'); }
         function closeAddModal() { document.getElementById('add-modal').classList.remove('active'); }
 
         function showPeriodForm() {
-            editingEventIndex = -1;
-            pendingEventType = 'period';
+            editingEventIndex = -1; pendingEventType = 'period';
             document.getElementById('detail-modal-title').innerText = '标记经期';
             document.getElementById('detail-delete-btn').style.display = 'none';
             document.getElementById('detail-title').style.display = 'none';
-            document.getElementById('detail-date-sep').style.display = 'inline';
-            document.getElementById('detail-end-date-input').style.display = 'inline-block';
+            document.getElementById('detail-date-sep').style.display = 'inline'; document.getElementById('detail-end-date-input').style.display = 'inline-block';
             document.getElementById('detail-start-date-input').value = document.getElementById('period-start-date').value;
             document.getElementById('detail-end-date-input').value = document.getElementById('period-end-date').value;
-            closeAddModal();
-            document.getElementById('detail-modal').classList.add('active');
+            closeAddModal(); document.getElementById('detail-modal').classList.add('active');
         }
 
         function showReminderForm() {
-            editingEventIndex = -1;
-            pendingEventType = 'reminder';
+            editingEventIndex = -1; pendingEventType = 'reminder';
             document.getElementById('detail-modal-title').innerText = '提醒事项';
             document.getElementById('detail-delete-btn').style.display = 'none';
-            document.getElementById('detail-title').style.display = 'block';
-            document.getElementById('detail-title').value = '';
-            document.getElementById('detail-date-sep').style.display = 'none';
-            document.getElementById('detail-end-date-input').style.display = 'none';
+            document.getElementById('detail-title').style.display = 'block'; document.getElementById('detail-title').value = '';
+            document.getElementById('detail-date-sep').style.display = 'none'; document.getElementById('detail-end-date-input').style.display = 'none';
             document.getElementById('detail-start-date-input').value = document.getElementById('reminder-date').value;
-            closeAddModal();
-            document.getElementById('detail-modal').classList.add('active');
+            closeAddModal(); document.getElementById('detail-modal').classList.add('active');
         }
 
         function showImportantForm() {
-            editingEventIndex = -1;
-            pendingEventType = 'important';
+            editingEventIndex = -1; pendingEventType = 'important';
             document.getElementById('detail-modal-title').innerText = '重要日程';
             document.getElementById('detail-delete-btn').style.display = 'none';
-            document.getElementById('detail-title').style.display = 'block';
-            document.getElementById('detail-title').value = '';
-            document.getElementById('detail-date-sep').style.display = 'none';
-            document.getElementById('detail-end-date-input').style.display = 'none';
+            document.getElementById('detail-title').style.display = 'block'; document.getElementById('detail-title').value = '';
+            document.getElementById('detail-date-sep').style.display = 'none'; document.getElementById('detail-end-date-input').style.display = 'none';
             document.getElementById('detail-start-date-input').value = document.getElementById('important-date').value;
-            closeAddModal();
-            document.getElementById('detail-modal').classList.add('active');
+            closeAddModal(); document.getElementById('detail-modal').classList.add('active');
         }
 
         function closeDetailModal() { document.getElementById('detail-modal').classList.remove('active'); }
@@ -446,40 +413,23 @@
             var startDateStr = document.getElementById('detail-start-date-input').value;
             if (!startDateStr) { alert('请选择日期'); return; }
             var parts = startDateStr.split('-');
-
             var ev = {
                 type: pendingEventType,
                 title: pendingEventType === 'period' ? '' : (document.getElementById('detail-title').value.trim() || '未命名'),
-                year: parseInt(parts[0]),
-                month: parseInt(parts[1]),
-                day: parseInt(parts[2])
+                year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2])
             };
-
             if (pendingEventType === 'period') {
                 var endDateStr = document.getElementById('detail-end-date-input').value;
                 if (!endDateStr) { alert('请选择结束日期'); return; }
                 var endParts = endDateStr.split('-');
-                ev.endYear = parseInt(endParts[0]);
-                ev.endMonth = parseInt(endParts[1]);
-                ev.endDay = parseInt(endParts[2]);
+                ev.endYear = parseInt(endParts[0]); ev.endMonth = parseInt(endParts[1]); ev.endDay = parseInt(endParts[2]);
             }
-
             var events = getEvents();
-            if (editingEventIndex >= 0) {
-                events[editingEventIndex] = ev;
-            } else {
-                events.push(ev);
-            }
-            saveEvents(events);
-            closeDetailModal();
-            renderCalendar();
+            if (editingEventIndex >= 0) { events[editingEventIndex] = ev; } else { events.push(ev); }
+            saveEvents(events); closeDetailModal(); renderCalendar();
         }
 
-        function escapeHtml(text) {
-            var d = document.createElement('div');
-            d.innerText = text || '';
-            return d.innerHTML;
-        }
+        function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
 
         document.getElementById('add-modal').addEventListener('click', function(e) { if (e.target === this) closeAddModal(); });
         document.getElementById('detail-modal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
