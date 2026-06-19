@@ -33,13 +33,16 @@
             background:var(--bg);
         }
         .status-icons { display:flex; align-items:center; gap:5px; }
-        .nav-bar {
-            display:flex; align-items:center; padding:10px 16px;
-            background:var(--bg); border-bottom:0.5px solid var(--separator);
-            position:relative;
+        .top-nav {
+            display:flex; align-items:center; justify-content:center;
+            padding:10px 16px; background:var(--bg); position:relative;
+            border-bottom:0.5px solid var(--separator);
         }
-        .nav-back { font-size:17px; color:#007aff; cursor:pointer; text-decoration:none; }
-        .nav-title { font-size:17px; font-weight:600; position:absolute; left:50%; transform:translateX(-50%); color:var(--text); }
+        .top-nav .back-arrow {
+            position:absolute; left:16px; font-size:18px; color:var(--text);
+            cursor:pointer; text-decoration:none; padding:4px;
+        }
+        .top-nav .nav-title { font-size:17px; font-weight:700; color:var(--text); }
 
         .tab-row {
             display:flex; background:var(--card-bg); margin:10px 14px;
@@ -102,8 +105,8 @@
                 </span>
             </div>
         </div>
-        <div class="nav-bar">
-            <a href="daily-profile.html" class="nav-back">← 返回</a>
+        <div class="top-nav">
+            <a href="daily-profile.html" class="back-arrow">←</a>
             <span class="nav-title">权限管理</span>
         </div>
 
