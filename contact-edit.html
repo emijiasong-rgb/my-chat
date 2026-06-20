@@ -71,15 +71,6 @@
         }
         .field textarea { min-height:56px; resize:vertical; }
 
-        .option-row { display:flex; gap:6px; margin-bottom:8px; }
-        .option-btn {
-            flex:1; padding:8px 6px; border:1px solid rgba(0,0,0,0.06);
-            border-radius:8px; text-align:center; font-size:12px; font-weight:400;
-            cursor:pointer; background:rgba(255,255,255,0.4); color:var(--text-secondary);
-            transition:all 0.2s;
-        }
-        .option-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
-
         .tags { display:flex; flex-wrap:wrap; gap:6px; }
         .tag {
             padding:7px 13px; border:1px solid rgba(0,0,0,0.06);
@@ -93,14 +84,14 @@
         .nick-box.show { display:block; animation:fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
 
-        .save-link {
+        .save-btn {
             display:block; width:100%; padding:14px; background:var(--accent);
             color:#fff; text-align:center; border-radius:10px;
-            font-size:15px; font-weight:500; text-decoration:none;
+            font-size:15px; font-weight:500; border:none; cursor:pointer;
             margin-top:12px; transition:all 0.2s;
         }
-        .save-link:active { opacity:0.85; transform:scale(0.98); }
-        .save-link.done { background:#2e2e2e; }
+        .save-btn:active { opacity:0.85; transform:scale(0.98); }
+        .save-btn.done { background:#2e2e2e; }
         .bottom-space { height:24px; }
 
         .row-2 { display:flex; gap:8px; }
@@ -182,7 +173,7 @@
                 </div>
             </div>
 
-            <a href="#" class="save-link" id="save-btn" onclick="save();return false;">保存修改</a>
+            <button class="save-btn" id="save-btn" onclick="save()">保存修改</button>
             <div class="bottom-space"></div>
         </div>
     </div>
@@ -205,7 +196,6 @@
             for (var i = 0; i < roles.length; i++) { if (roles[i].id === roleId) { role = roles[i]; break; } }
             if (!role) { window.location.href = 'chat.html'; return; }
 
-            // 回填所有已有数据
             document.getElementById('avatar-preview').src = role.avatar || '';
             avatarData = role.avatar || '';
             document.getElementById('role-name').value = role.name || '';
@@ -223,7 +213,6 @@
             document.getElementById('user-nickname2').value = role.userNickname2 || '';
             document.getElementById('user-nickname3').value = role.userNickname3 || '';
 
-            // 回填关系
             rel = role.relation || '';
             if (rel) {
                 var tags = document.querySelectorAll('#relation-tags .tag');
@@ -247,6 +236,7 @@
         }
 
         function save() {
+            console.log('编辑保存函数被调用');
             var name = document.getElementById('role-name').value.trim();
             if (!name || !rel) { alert('请填写名字和选择关系'); return; }
             var nick = document.getElementById('user-nickname').value.trim();
@@ -271,15 +261,17 @@
                     roles[i].userNickname = nick;
                     roles[i].userNickname2 = document.getElementById('user-nickname2').value.trim();
                     roles[i].userNickname3 = document.getElementById('user-nickname3').value.trim();
+                    console.log('已更新角色:', roles[i].name);
                     break;
                 }
             }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
+            console.log('保存成功');
 
             var btn = document.getElementById('save-btn');
             btn.innerText = '✓ 已保存';
-            btn.classList.add('done');
-            setTimeout(function() { history.back(); }, 400);
+            btn.disabled = true;
+            setTimeout(function() { history.back(); }, 300);
         }
     </script>
 </body>
