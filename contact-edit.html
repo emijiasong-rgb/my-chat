@@ -197,7 +197,8 @@
             if (!role) { window.location.href = 'chat.html'; return; }
 
             avatarData = role.avatar || '';
-            document.getElementById('avatar-preview').src = avatarData || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2232%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E';
+            var preview = document.getElementById('avatar-preview');
+            preview.src = avatarData || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2232%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E';
             document.getElementById('role-name').value = role.name || '';
             document.getElementById('role-personality').value = role.personality || '';
             document.getElementById('role-catchphrase').value = role.catchphrase || '';
@@ -224,14 +225,15 @@
         }
 
         function previewAvatar(e) {
-            var f = e.target.files[0];
-            if (!f) return;
-            var r = new FileReader();
-            r.onload = function(ev) {
+            var file = e.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onloadend = function(ev) {
                 avatarData = ev.target.result;
-                document.getElementById('avatar-preview').src = avatarData;
+                var img = document.getElementById('avatar-preview');
+                if (img) { img.src = avatarData; }
             };
-            r.readAsDataURL(f);
+            reader.readAsDataURL(file);
         }
 
         function pick(t) {
@@ -242,15 +244,19 @@
         }
 
         function save() {
-            var name = document.getElementById('role-name').value.trim();
+            var nameEl = document.getElementById('role-name');
+            var nickEl = document.getElementById('user-nickname');
+            if (!nameEl || !nickEl) { alert('页面加载异常，请刷新重试'); return; }
+            var name = nameEl.value.trim();
             if (!name || !rel) { alert('请填写名字和选择关系'); return; }
-            var nick = document.getElementById('user-nickname').value.trim();
+            var nick = nickEl.value.trim();
             if (!nick) { alert('请填写对你的称呼'); return; }
 
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            var found = false;
             for (var i = 0; i < roles.length; i++) {
                 if (roles[i].id === roleId) {
-                    roles[i].avatar = avatarData || roles[i].avatar;
+                    if (avatarData) roles[i].avatar = avatarData;
                     roles[i].name = name;
                     roles[i].personality = document.getElementById('role-personality').value.trim();
                     roles[i].catchphrase = document.getElementById('role-catchphrase').value.trim();
@@ -266,9 +272,11 @@
                     roles[i].userNickname = nick;
                     roles[i].userNickname2 = document.getElementById('user-nickname2').value.trim();
                     roles[i].userNickname3 = document.getElementById('user-nickname3').value.trim();
+                    found = true;
                     break;
                 }
             }
+            if (!found) { alert('找不到该角色'); return; }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
 
             var btn = document.getElementById('save-btn');
