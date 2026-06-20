@@ -198,7 +198,8 @@
 
             avatarData = role.avatar || '';
             var preview = document.getElementById('avatar-preview');
-            preview.src = avatarData || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2232%22 fill=%22%23e0e0e0%22/%3E%3C/svg%3E';
+            preview.src = avatarData || '';
+            preview.style.background = avatarData ? 'transparent' : '#e0e0e0';
             document.getElementById('role-name').value = role.name || '';
             document.getElementById('role-personality').value = role.personality || '';
             document.getElementById('role-catchphrase').value = role.catchphrase || '';
@@ -228,10 +229,10 @@
             var file = e.target.files[0];
             if (!file) return;
             var reader = new FileReader();
-            reader.onloadend = function(ev) {
+            reader.onload = function(ev) {
                 avatarData = ev.target.result;
                 var img = document.getElementById('avatar-preview');
-                if (img) { img.src = avatarData; }
+                if (img) { img.src = avatarData; img.style.background = 'transparent'; }
             };
             reader.readAsDataURL(file);
         }
