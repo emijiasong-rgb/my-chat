@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>编辑角色</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --card-bg: rgba(255,255,255,0.55);
+            --card-border: rgba(255,255,255,0.6);
+            --text: #1a1a1a;
+            --text-secondary: #888;
+            --text-tertiary: #b0b0b0;
+            --accent: #1a1a1a;
+            --separator: rgba(0,0,0,0.04);
+            --shadow: 0 2px 16px rgba(0,0,0,0.04);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background:#e8e8e8; height:100dvh; width:100vw;
+            display:flex; justify-content:center; align-items:center;
+            font-family:'Inter','Noto Sans SC',-apple-system,sans-serif; overflow:hidden;
+            padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+        }
+        #phone-shell {
+            width:100vw; max-width:430px; height:100dvh; max-height:932px;
+            background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
+        }
+        #viewport { flex:1; overflow-y:auto; padding:20px 16px; }
+        #viewport::-webkit-scrollbar { display:none; }
+
+        .nav { display:flex; align-items:center; padding:4px 0 20px; }
+        .nav-back { font-size:15px; color:var(--text); text-decoration:none; font-weight:400; }
+        .nav-title { flex:1; text-align:center; font-weight:500; font-size:16px; color:var(--text); margin-right:40px; }
+
+        .card {
+            background:var(--card-bg); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
+            border:1px solid var(--card-border); border-radius:14px;
+            padding:18px 16px; margin-bottom:10px; box-shadow:var(--shadow);
+        }
+        .card-label {
+            font-size:10px; color:var(--text-tertiary); text-transform:uppercase;
+            letter-spacing:1.5px; font-weight:500; margin-bottom:14px;
+        }
+
+        .avatar-row { display:flex; align-items:center; gap:14px; }
+        .avatar-img {
+            width:64px; height:64px; border-radius:50%; object-fit:cover;
+            background:#e0e0e0; cursor:pointer; flex-shrink:0;
+            border:2px solid rgba(255,255,255,0.8); transition:transform 0.2s;
+        }
+        .avatar-img:active { transform:scale(0.95); }
+        .avatar-hint { font-size:14px; color:var(--text); cursor:pointer; font-weight:400; }
+        .avatar-sub { font-size:11px; color:var(--text-tertiary); margin-top:1px; }
+
+        .field { margin-bottom:12px; }
+        .field:last-child { margin-bottom:0; }
+        .field label { display:block; font-size:11px; color:var(--text-secondary); margin-bottom:4px; font-weight:400; }
+        .field input, .field textarea, .field select {
+            width:100%; padding:10px 12px; background:rgba(255,255,255,0.5);
+            border:1px solid rgba(0,0,0,0.06); border-radius:8px;
+            font-size:14px; outline:none; font-family:inherit; color:var(--text);
+            transition:all 0.2s;
+        }
+        .field input:focus, .field textarea:focus, .field select:focus {
+            border-color:rgba(0,0,0,0.2); background:rgba(255,255,255,0.8);
+        }
+        .field textarea { min-height:56px; resize:vertical; }
+
+        .option-row { display:flex; gap:6px; margin-bottom:8px; }
+        .option-btn {
+            flex:1; padding:8px 6px; border:1px solid rgba(0,0,0,0.06);
+            border-radius:8px; text-align:center; font-size:12px; font-weight:400;
+            cursor:pointer; background:rgba(255,255,255,0.4); color:var(--text-secondary);
+            transition:all 0.2s;
+        }
+        .option-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        .tags { display:flex; flex-wrap:wrap; gap:6px; }
+        .tag {
+            padding:7px 13px; border:1px solid rgba(0,0,0,0.06);
+            border-radius:20px; font-size:12px; cursor:pointer;
+            background:rgba(255,255,255,0.5); color:var(--text-secondary);
+            transition:all 0.2s;
+        }
+        .tag.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        .nick-box { display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--separator); }
+        .nick-box.show { display:block; animation:fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+        .save-link {
+            display:block; width:100%; padding:14px; background:var(--accent);
+            color:#fff; text-align:center; border-radius:10px;
+            font-size:15px; font-weight:500; text-decoration:none;
+            margin-top:12px; transition:all 0.2s;
+        }
+        .save-link:active { opacity:0.85; transform:scale(0.98); }
+        .save-link.done { background:#2e2e2e; }
+        .bottom-space { height:24px; }
+
+        .row-2 { display:flex; gap:8px; }
+        .row-2 .field { flex:1; }
+    </style>
+</head>
+<body>
+    <div id="phone-shell">
+        <div id="viewport">
+            <div class="nav">
+                <a href="javascript:history.back()" class="nav-back">← 返回</a>
+                <span class="nav-title">编辑角色</span>
+            </div>
+
+            <div class="card">
+                <div class="avatar-row">
+                    <img class="avatar-img" id="avatar-preview" src="" onclick="document.getElementById('avatar-file').click()">
+                    <div>
+                        <div class="avatar-hint" onclick="document.getElementById('avatar-file').click()">设置头像</div>
+                        <div class="avatar-sub">点击更换</div>
+                    </div>
+                    <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="previewAvatar(event)">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">基本信息</div>
+                <div class="field"><label>名字</label><input type="text" id="role-name" placeholder="角色名字"></div>
+                <div class="field"><label>性格</label><textarea id="role-personality" placeholder="温柔、幽默、傲娇..."></textarea></div>
+                <div class="field"><label>口头禅</label><input type="text" id="role-catchphrase" placeholder="常说的话"></div>
+                <div class="field"><label>角色背景</label><textarea id="role-background" placeholder="角色的背景故事..."></textarea></div>
+                <div class="field"><label>语言</label>
+                    <select id="role-language">
+                        <option value="中文">中文</option>
+                        <option value="English">English</option>
+                        <option value="日本語">日本語</option>
+                        <option value="한국어">한국어</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">联系方式</div>
+                <div class="field"><label>手机号</label><input type="text" id="role-phone" placeholder="手机号"></div>
+                <div class="field"><label>微信号</label><input type="text" id="role-wechat" placeholder="微信号"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">地区</div>
+                <div class="row-2">
+                    <div class="field"><label>角色所在地区</label><input type="text" id="role-location" placeholder="角色地区"></div>
+                    <div class="field"><label>用户所在地区</label><input type="text" id="user-location" placeholder="用户地区"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">关系</div>
+                <div class="field"><label>你的名字</label><input type="text" id="user-name" placeholder="你的名字"></div>
+                <div class="field"><label>用户偏好（角色对用户的印象）</label><input type="text" id="user-preference" placeholder="例如：你是我最好的朋友"></div>
+                <div class="field">
+                    <label>关系</label>
+                    <div class="tags" id="relation-tags">
+                        <span class="tag" data-r="朋友" onclick="pick(this)">朋友</span>
+                        <span class="tag" data-r="同学" onclick="pick(this)">同学</span>
+                        <span class="tag" data-r="老师" onclick="pick(this)">老师</span>
+                        <span class="tag" data-r="哥哥" onclick="pick(this)">哥哥</span>
+                        <span class="tag" data-r="弟弟" onclick="pick(this)">弟弟</span>
+                        <span class="tag" data-r="姐姐" onclick="pick(this)">姐姐</span>
+                        <span class="tag" data-r="暧昧" onclick="pick(this)">暧昧</span>
+                        <span class="tag" data-r="crush" onclick="pick(this)">crush</span>
+                        <span class="tag" data-r="老公" onclick="pick(this)">老公</span>
+                        <span class="tag" data-r="老婆" onclick="pick(this)">老婆</span>
+                    </div>
+                </div>
+                <div class="nick-box" id="nick-box">
+                    <div class="field"><label>对你的称呼</label><input type="text" id="user-nickname" placeholder="必填"></div>
+                    <div class="field"><label>备选称呼</label><input type="text" id="user-nickname2" placeholder="选填"></div>
+                    <div class="field"><label>另一个备选</label><input type="text" id="user-nickname3" placeholder="选填"></div>
+                </div>
+            </div>
+
+            <a href="#" class="save-link" id="save-btn" onclick="save();return false;">保存修改</a>
+            <div class="bottom-space"></div>
+        </div>
+    </div>
+
+    <script>
+        var roleId = null;
+        var rel = '';
+        var avatarData = '';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var params = new URLSearchParams(window.location.search);
+            roleId = parseInt(params.get('id'));
+            if (!roleId) { window.location.href = 'chat.html'; return; }
+            loadRole();
+        });
+
+        function loadRole() {
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            var role = null;
+            for (var i = 0; i < roles.length; i++) { if (roles[i].id === roleId) { role = roles[i]; break; } }
+            if (!role) { window.location.href = 'chat.html'; return; }
+
+            // 回填所有已有数据
+            document.getElementById('avatar-preview').src = role.avatar || '';
+            avatarData = role.avatar || '';
+            document.getElementById('role-name').value = role.name || '';
+            document.getElementById('role-personality').value = role.personality || '';
+            document.getElementById('role-catchphrase').value = role.catchphrase || '';
+            document.getElementById('role-background').value = role.background || '';
+            document.getElementById('role-language').value = role.language || '中文';
+            document.getElementById('role-phone').value = role.phone || '';
+            document.getElementById('role-wechat').value = role.wechatId || '';
+            document.getElementById('role-location').value = role.roleLocation || '';
+            document.getElementById('user-location').value = role.userLocation || '';
+            document.getElementById('user-name').value = role.userName || '';
+            document.getElementById('user-preference').value = role.userPreference || '';
+            document.getElementById('user-nickname').value = role.userNickname || '';
+            document.getElementById('user-nickname2').value = role.userNickname2 || '';
+            document.getElementById('user-nickname3').value = role.userNickname3 || '';
+
+            // 回填关系
+            rel = role.relation || '';
+            if (rel) {
+                var tags = document.querySelectorAll('#relation-tags .tag');
+                for (var j = 0; j < tags.length; j++) {
+                    if (tags[j].getAttribute('data-r') === rel) { tags[j].classList.add('on'); break; }
+                }
+                document.getElementById('nick-box').classList.add('show');
+            }
+        }
+
+        function previewAvatar(e) {
+            var f = e.target.files[0];
+            if (f) { var r = new FileReader(); r.onload = function(ev) { document.getElementById('avatar-preview').src = ev.target.result; avatarData = ev.target.result; }; r.readAsDataURL(f); }
+        }
+
+        function pick(t) {
+            var tags = document.querySelectorAll('#relation-tags .tag');
+            for (var i = 0; i < tags.length; i++) tags[i].classList.remove('on');
+            t.classList.add('on'); rel = t.getAttribute('data-r');
+            document.getElementById('nick-box').classList.add('show');
+        }
+
+        function save() {
+            var name = document.getElementById('role-name').value.trim();
+            if (!name || !rel) { alert('请填写名字和选择关系'); return; }
+            var nick = document.getElementById('user-nickname').value.trim();
+            if (!nick) { alert('请填写对你的称呼'); return; }
+
+            var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
+            for (var i = 0; i < roles.length; i++) {
+                if (roles[i].id === roleId) {
+                    roles[i].avatar = avatarData || roles[i].avatar;
+                    roles[i].name = name;
+                    roles[i].personality = document.getElementById('role-personality').value.trim();
+                    roles[i].catchphrase = document.getElementById('role-catchphrase').value.trim();
+                    roles[i].background = document.getElementById('role-background').value.trim();
+                    roles[i].language = document.getElementById('role-language').value;
+                    roles[i].phone = document.getElementById('role-phone').value.trim();
+                    roles[i].wechatId = document.getElementById('role-wechat').value.trim();
+                    roles[i].roleLocation = document.getElementById('role-location').value.trim();
+                    roles[i].userLocation = document.getElementById('user-location').value.trim();
+                    roles[i].userName = document.getElementById('user-name').value.trim();
+                    roles[i].userPreference = document.getElementById('user-preference').value.trim();
+                    roles[i].relation = rel;
+                    roles[i].userNickname = nick;
+                    roles[i].userNickname2 = document.getElementById('user-nickname2').value.trim();
+                    roles[i].userNickname3 = document.getElementById('user-nickname3').value.trim();
+                    break;
+                }
+            }
+            localStorage.setItem('chat_roles', JSON.stringify(roles));
+
+            var btn = document.getElementById('save-btn');
+            btn.innerText = '✓ 已保存';
+            btn.classList.add('done');
+            setTimeout(function() { history.back(); }, 400);
+        }
+    </script>
+</body>
+</html>
