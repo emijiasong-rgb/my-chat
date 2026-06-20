@@ -46,6 +46,47 @@
             opacity:0.6; padding:4px; letter-spacing:2px; color:#000; z-index:1;
         }
 
+        /* 心声入口 */
+        .feeling-entry {
+            display:flex; align-items:center; justify-content:center;
+            gap:6px; padding:6px 16px 8px; cursor:pointer;
+            background:var(--bg);
+        }
+        .feeling-heart { width:20px; height:20px; }
+        .feeling-heart svg { width:20px; height:20px; }
+        .feeling-percent { font-size:12px; font-weight:600; color:#F7A1C4; }
+
+        /* 心声弹窗 */
+        .feeling-modal {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
+        }
+        .feeling-modal.active { display:flex; animation:fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .feeling-card {
+            background:#fff; border-radius:24px; padding:28px 24px;
+            width:80%; max-width:300px; text-align:center;
+            box-shadow:0 12px 40px rgba(0,0,0,0.12);
+        }
+        .feeling-card .heart-deco { width:48px; height:48px; margin:0 auto 12px; }
+        .feeling-card .heart-deco svg { width:48px; height:48px; }
+        .feeling-card h3 { font-size:15px; color:#888; margin-bottom:8px; font-weight:500; }
+        .feeling-card .fav-number { font-size:32px; font-weight:700; color:#3A3A3A; margin-bottom:8px; }
+        .feeling-bar-wrap {
+            width:80%; height:8px; background:#f0f0f0; border-radius:4px;
+            margin:0 auto 16px; overflow:hidden;
+        }
+        .feeling-bar-fill { height:100%; border-radius:4px; transition:width 0.5s; }
+        .feeling-text {
+            font-size:14px; color:#5B4A7A; line-height:1.6;
+            padding:12px; background:#FDF8F2; border-radius:14px;
+            margin-bottom:16px;
+        }
+        .feeling-close {
+            padding:8px 24px; border:none; border-radius:20px;
+            background:#f0f0f0; color:#888; font-size:14px; cursor:pointer;
+        }
+
         .blocked-banner {
             background:#fff3f3; padding:8px 16px; font-size:12px;
             color:#ff3b30; text-align:center; border-bottom:0.5px solid #ffcccc;
@@ -117,9 +158,7 @@
             color:#fff; font-size:10px; font-weight:700; margin-left:6px;
             cursor:pointer; flex-shrink:0;
         }
-        .msg-content.user .msg-bubble-wrap {
-            display:flex; align-items:center; gap:4px;
-        }
+        .msg-content.user .msg-bubble-wrap { display:flex; align-items:center; gap:4px; }
 
         .input-area { display:flex; gap:8px; padding:8px 10px 12px; align-items:center; border-top:0.5px solid var(--separator); background:var(--bg); }
         .voice-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -169,6 +208,12 @@
             <button class="three-dots" onclick="openMore()">···</button>
         </div>
 
+        <!-- 心声入口 -->
+        <div class="feeling-entry" id="feeling-entry" onclick="showFeelingModal()">
+            <div class="feeling-heart" id="feeling-heart"></div>
+            <span class="feeling-percent" id="feeling-percent">0%</span>
+        </div>
+
         <div class="blocked-banner" id="blocked-banner">已拉黑该角色，对方无法给你发消息</div>
 
         <div class="messages-container" id="messages-container"></div>
@@ -191,6 +236,20 @@
         </div>
     </div>
 
+    <!-- 心声弹窗 -->
+    <div class="feeling-modal" id="feeling-modal" onclick="if(event.target===this)closeFeelingModal()">
+        <div class="feeling-card">
+            <div class="heart-deco">
+                <svg viewBox="0 0 24 24" fill="#F7A1C4" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <h3>好感度</h3>
+            <div class="fav-number" id="fav-number">0%</div>
+            <div class="feeling-bar-wrap"><div class="feeling-bar-fill" id="feeling-bar-fill"></div></div>
+            <div class="feeling-text" id="feeling-text"></div>
+            <button class="feeling-close" onclick="closeFeelingModal()">关闭</button>
+        </div>
+    </div>
+
     <script>
         var currentChatRole = null;
         var currentApi = null;
@@ -203,6 +262,31 @@
             sad: { prob: 0.7, delay: 2500, replyStyle: '冷淡简短，少言寡语' },
             angry: { prob: 0.5, delay: 4000, replyStyle: '暴躁带刺，直接怼人' },
             tired: { prob: 0.4, delay: 5500, replyStyle: '敷衍，说累了困了不想聊' }
+        };
+
+        // ========== 心声数据 ==========
+        var FEELING_TEXTS = {
+            high80: ['和你聊天总是让我很开心✨','最喜欢你了❤️','今天也好想你~','你是我最重要的人','好想一直和你在一起'],
+            high60: ['你还挺有趣的，继续聊呀~','和你在一起很舒服','感觉我们很合得来','今天也很开心见到你','你总是能让我笑'],
+            mid40: ['嗯...还行吧','今天心情还不错','就这样吧','你最近话变少了','还行，不讨厌'],
+            low20: ['最近有点不太想理你...','你是不是在敷衍我？','没什么好说的','你变了','感觉你不太在乎我'],
+            low0: ['不是很开心呢...','你最近好冷淡','算了','无所谓了','反正你也不在乎'],
+            neg30: ['有点讨厌你了','不想和你说话','你真的很烦','离我远点好吗','看到你就烦'],
+            neg50: ['我现在很生气','别来烦我','你让我很失望','已经不想理你了','都是你的错'],
+            neg100: ['我讨厌你','已经不想再看到你了','我们到此为止吧','永远不要再见了','你伤害了我'],
+            morning: ['早安~今天也要开开心心☀️','早上好呀，昨晚睡得好吗','又是美好的一天'],
+            noon: ['中午了，记得吃饭哦🍚','好饿啊，你吃了吗'],
+            evening: ['晚上好呀🌙','今天有发生什么好玩的事吗'],
+            night: ['这么晚了还不睡？😴','晚安，早点休息','熬夜对身体不好哦'],
+            moodHappy: ['今天心情超好~','好想和你分享开心的事✨','因为你，我今天很开心'],
+            moodSad: ['有点难过...','你能陪陪我吗','心里空落落的'],
+            moodAngry: ['好生气😤','不想理任何人','别惹我'],
+            moodTired: ['好累啊...','想睡觉了💤','今天太累了'],
+            blockedByUser: ['你拉黑我了...我做错什么了吗😢','对不起...我是不是惹你生气了'],
+            unblockedByUser: ['你终于理我了...我好开心❤️','我还以为再也见不到你了'],
+            blockedUser: ['我不想再和你说话了','就这样吧，再见'],
+            favUp: ['你对我真好❤️','我又更喜欢你了怎么办','好开心！今天是最棒的一天'],
+            favDown: ['你伤害了我...','好难过...你为什么要这样','我对你太失望了']
         };
 
         function updateClock() {
@@ -238,6 +322,7 @@
             if (role.isReplying === undefined) role.isReplying = false;
             if (!role.language) role.language = '中文';
             if (!role.translate) role.translate = false;
+            role._favChanged = 0;
             return role;
         }
 
@@ -308,6 +393,7 @@
             updateMood();
             saveRoleToStorage();
             updateBlockedUI();
+            updateFeelingEntry();
             renderMessages();
             alert((currentChatRole.remark || currentChatRole.name) + ' 已解除拉黑');
         }
@@ -325,6 +411,7 @@
             currentApi = getActiveApi();
             document.getElementById('chat-nav-name').innerText = currentChatRole.remark || currentChatRole.name;
             updateBlockedUI();
+            updateFeelingEntry();
             applyChatSettings();
             renderMessages();
         }
@@ -409,6 +496,7 @@
             currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
             input.value = ''; saveRoleToStorage(); renderMessages();
             updateFavorabilityAndMood(text);
+            updateFeelingEntry();
             if (currentChatRole.isBlockedByUser) return;
             if (!currentChatRole.isReplying) processMessageQueue();
         }
@@ -440,14 +528,15 @@
 
         function updateFavorabilityAndMood(userMsg) {
             var msg = userMsg.toLowerCase();
+            var oldFav = currentChatRole.favorability || 0;
             var change = 0;
             var positiveWords = ['可爱','聪明','帅','漂亮','厉害','棒','喜欢','爱','好','谢谢','开心','想你','温柔','善良','对不起','抱歉'];
             var negativeWords = ['讨厌','烦','滚','恶心','笨','傻','丑','垃圾','废物','恨','滚开','别烦我'];
             for (var i = 0; i < positiveWords.length; i++) { if (msg.indexOf(positiveWords[i]) !== -1) { change += 5; break; } }
             for (var j = 0; j < negativeWords.length; j++) { if (msg.indexOf(negativeWords[j]) !== -1) { change -= 10; break; } }
             if (change !== 0) {
-                var oldFav = currentChatRole.favorability || 0;
                 currentChatRole.favorability = Math.min(Math.max(oldFav + change, -100), 100);
+                currentChatRole._favChanged = change;
                 updateMood();
                 if (currentChatRole.favorability < -50 && !currentChatRole.hasBlockedUser) {
                     currentChatRole.hasBlockedUser = true;
@@ -579,10 +668,8 @@
             return list[Math.floor(Math.random() * list.length)];
         }
 
-        // ========== 翻译函数 ==========
         function translateText(text, lang) {
             if (!text || lang === '中文') return '';
-            
             var map = {
                 'Great!': '太好了！', 'Awesome~': '太棒了~', 'Love that!': '喜欢！', 'You are the best!': '你是最棒的！',
                 'Okay': '好的', 'Got it': '明白了', 'Sure': '当然', 'I see': '知道了',
@@ -600,9 +687,7 @@
                 '흥': '哼', '맘대로 해': '随便你', '귀찮아': '好烦', '상관없어': '无所谓',
                 '피곤해...': '累了...', '내일 하자': '明天做吧', '졸려': '好困', '그만할래': '不想做了'
             };
-            
             if (map[text]) return map[text];
-            
             var langMap = { 'English': 'en', '日本語': 'ja', '한국어': 'ko' };
             var sourceCode = langMap[lang] || 'en';
             translateViaApi(text, sourceCode);
@@ -647,6 +732,71 @@
         }
 
         function escapeHtml(text) { var d = document.createElement('div'); d.innerText = text || ''; return d.innerHTML; }
+
+        // ========== 心声功能 ==========
+        function updateFeelingEntry() {
+            if (!currentChatRole) return;
+            var fav = currentChatRole.favorability || 0;
+            var percent = Math.round(fav);
+            document.getElementById('feeling-percent').innerText = percent + '%';
+            var heart = document.getElementById('feeling-heart');
+            var fillPercent = Math.max(0, Math.min(100, fav + 50)) / 100;
+            var color = fav > 60 ? '#F7A1C4' : fav > 20 ? '#E0B0C0' : fav > 0 ? '#D0D0D0' : '#B0B0B0';
+            heart.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.5"><defs><clipPath id="hc"><rect y="' + ((1-fillPercent)*24) + '" width="24" height="' + (fillPercent*24) + '"/></clipPath></defs><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="' + color + '" fill-opacity="' + fillPercent + '"/></svg>';
+        }
+
+        function getFeelingText() {
+            if (!currentChatRole) return '';
+            var fav = currentChatRole.favorability || 0;
+            var mood = currentChatRole.mood || 'calm';
+            var hour = new Date().getHours();
+            var pool = [];
+
+            if (currentChatRole.isBlockedByUser) { pool = pool.concat(FEELING_TEXTS.blockedByUser); }
+            if (currentChatRole.hasBlockedUser) { pool = pool.concat(FEELING_TEXTS.blockedUser); }
+            if ((currentChatRole._favChanged || 0) > 15) { pool = pool.concat(FEELING_TEXTS.favUp); }
+            if ((currentChatRole._favChanged || 0) < -15) { pool = pool.concat(FEELING_TEXTS.favDown); }
+            if (pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
+
+            if (mood === 'happy') pool = pool.concat(FEELING_TEXTS.moodHappy);
+            if (mood === 'sad') pool = pool.concat(FEELING_TEXTS.moodSad);
+            if (mood === 'angry') pool = pool.concat(FEELING_TEXTS.moodAngry);
+            if (mood === 'tired') pool = pool.concat(FEELING_TEXTS.moodTired);
+            if (pool.length > 0 && Math.random() < 0.5) return pool[Math.floor(Math.random() * pool.length)];
+
+            if (hour >= 6 && hour < 12) pool = pool.concat(FEELING_TEXTS.morning);
+            if (hour >= 12 && hour < 14) pool = pool.concat(FEELING_TEXTS.noon);
+            if (hour >= 18 && hour < 22) pool = pool.concat(FEELING_TEXTS.evening);
+            if (hour >= 22 || hour < 6) pool = pool.concat(FEELING_TEXTS.night);
+            if (pool.length > 0 && Math.random() < 0.5) return pool[Math.floor(Math.random() * pool.length)];
+
+            if (fav > 80) pool = FEELING_TEXTS.high80;
+            else if (fav > 60) pool = FEELING_TEXTS.high60;
+            else if (fav > 40) pool = FEELING_TEXTS.mid40;
+            else if (fav > 20) pool = FEELING_TEXTS.low20;
+            else if (fav >= 0) pool = FEELING_TEXTS.low0;
+            else if (fav > -30) pool = FEELING_TEXTS.neg30;
+            else if (fav > -50) pool = FEELING_TEXTS.neg50;
+            else pool = FEELING_TEXTS.neg100;
+
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function showFeelingModal() {
+            if (!currentChatRole) return;
+            var fav = currentChatRole.favorability || 0;
+            var percent = Math.round(fav);
+            var color = fav > 60 ? '#F7A1C4' : fav > 20 ? '#E0B0C0' : fav > 0 ? '#C0C0C0' : '#B0B0B0';
+            document.getElementById('fav-number').innerText = percent + '%';
+            document.getElementById('feeling-bar-fill').style.width = Math.max(0, Math.min(100, fav + 50)) + '%';
+            document.getElementById('feeling-bar-fill').style.background = color;
+            document.getElementById('feeling-text').innerText = getFeelingText();
+            document.getElementById('feeling-modal').classList.add('active');
+        }
+
+        function closeFeelingModal() {
+            document.getElementById('feeling-modal').classList.remove('active');
+        }
     </script>
 </body>
 </html>
