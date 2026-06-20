@@ -100,25 +100,6 @@
         .mini-calendar .day.important { background:var(--red); }
         .mini-calendar .day.reminder { background:var(--light-green); }
         .mini-calendar .day-label { color:var(--grey); font-size:10px; }
-
-        .modal-overlay {
-            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center;
-        }
-        .modal-overlay.active { display:flex; }
-        .modal-card {
-            background:var(--purple); border-radius:20px; padding:24px 20px;
-            width:85%; max-width:340px; text-align:center;
-            box-shadow:0 12px 40px rgba(0,0,0,0.15);
-        }
-        .modal-card h3 { font-size:18px; color:#5B4A7A; margin-bottom:8px; }
-        .modal-card p { font-size:13px; color:#7B6B9A; margin-bottom:16px; }
-        .modal-btn {
-            width:100%; padding:12px; border:none; border-radius:12px;
-            font-size:15px; font-weight:600; cursor:pointer; margin-top:6px;
-        }
-        .modal-btn.send { background:#fff; color:#5B4A7A; }
-        .modal-btn.cancel { background:transparent; color:#7B6B9A; }
     </style>
 </head>
 <body>
@@ -156,17 +137,8 @@
                     </svg>
                 </div>
                 <div class="lock-text">行程已锁定</div>
-                <button class="lock-btn" id="lock-btn" onclick="showRequestModal()">向 角色 申请查看</button>
+                <button class="lock-btn" id="lock-btn" onclick="sendRequestToChat()">向 角色 申请查看</button>
             </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="request-modal">
-        <div class="modal-card">
-            <h3>申请查看 <span id="req-name"></span> 的日常行程</h3>
-            <p>对方同意后，你可查看TA的作息、兴趣爱好和日程</p>
-            <button class="modal-btn send" onclick="sendRequest()">发送申请</button>
-            <button class="modal-btn cancel" onclick="closeRequestModal()">取消</button>
         </div>
     </div>
 
@@ -207,7 +179,6 @@
             if (!currentRole) { window.location.href = 'daily.html'; return; }
             document.getElementById('char-name').innerText = currentRole.remark || currentRole.name;
             document.getElementById('lock-btn').innerText = '向 ' + (currentRole.remark || currentRole.name) + ' 申请查看';
-            document.getElementById('req-name').innerText = currentRole.remark || currentRole.name;
             checkPermission();
             renderContent();
         }
@@ -217,6 +188,11 @@
             if ((currentRole.favorability || 0) < -50) { currentRole.dailyPermissionGranted = false; saveRole(); }
             if (currentRole.dailyPermissionGranted) { document.getElementById('blur-overlay').classList.add('hidden'); }
             else { document.getElementById('blur-overlay').classList.remove('hidden'); }
+        }
+
+        function sendRequestToChat() {
+            if (!currentRole) return;
+            window.location.href = 'chat-detail.html?id=' + currentRole.id + '&action=dailyRequest';
         }
 
         function renderContent() {
@@ -301,24 +277,11 @@
             return p[name] || {};
         }
 
-        function showRequestModal() { document.getElementById('request-modal').classList.add('active'); }
-        function closeRequestModal() { document.getElementById('request-modal').classList.remove('active'); }
-
-        function sendRequest() {
-            var requests = JSON.parse(localStorage.getItem('daily_requests') || '[]');
-            requests.push({ from:'user', to:currentRole.name, toId:currentRole.id, time:Date.now(), status:'pending' });
-            localStorage.setItem('daily_requests', JSON.stringify(requests));
-            closeRequestModal();
-            alert('已发送申请，等待 ' + (currentRole.remark || currentRole.name) + ' 同意');
-        }
-
         function saveRole() {
             var roles = JSON.parse(localStorage.getItem('chat_roles') || '[]');
             for (var i = 0; i < roles.length; i++) { if (roles[i].id === roleId) { roles[i] = currentRole; break; } }
             localStorage.setItem('chat_roles', JSON.stringify(roles));
         }
-
-        document.getElementById('request-modal').addEventListener('click', function(e) { if (e.target === this) closeRequestModal(); });
     </script>
 </body>
 </html>
