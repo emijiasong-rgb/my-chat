@@ -179,6 +179,21 @@
             padding:8px 24px; border:none; border-radius:20px;
             background:#f0f0f0; color:#888; font-size:14px; cursor:pointer;
         }
+
+        /* 申请卡片 */
+        .request-card {
+            background:#E0D4F5; border-radius:16px; padding:14px;
+            max-width:220px;
+        }
+        .request-card .request-text { font-size:13px; color:#5B4A7A; margin-bottom:10px; }
+        .request-card .request-btns { display:flex; gap:8px; }
+        .request-card .request-btns button {
+            flex:1; padding:8px; border:none; border-radius:10px;
+            font-size:12px; cursor:pointer; font-weight:600;
+        }
+        .request-card .btn-accept { background:#7CB87C; color:#fff; }
+        .request-card .btn-reject { background:#f0f0f0; color:#888; }
+        .request-result { font-size:12px; color:#888; margin-top:6px; }
     </style>
 </head>
 <body>
@@ -265,6 +280,30 @@
             tired: { prob: 0.4, delay: 5500, replyStyle: '敷衍，说累了困了不想聊' }
         };
 
+        var FEELING_TEXTS = {
+            high80: ['和你聊天总是让我很开心✨','最喜欢你了❤️','今天也好想你~','你是我最重要的人','好想一直和你在一起'],
+            high60: ['你还挺有趣的，继续聊呀~','和你在一起很舒服','感觉我们很合得来','今天也很开心见到你','你总是能让我笑'],
+            mid40: ['嗯...还行吧','今天心情还不错','就这样吧','你最近话变少了','还行，不讨厌'],
+            low20: ['最近有点不太想理你...','你是不是在敷衍我？','没什么好说的','你变了','感觉你不太在乎我'],
+            low0: ['不是很开心呢...','你最近好冷淡','算了','无所谓了','反正你也不在乎'],
+            neg30: ['有点讨厌你了','不想和你说话','你真的很烦','离我远点好吗','看到你就烦'],
+            neg50: ['我现在很生气','别来烦我','你让我很失望','已经不想理你了','都是你的错'],
+            neg100: ['我讨厌你','已经不想再看到你了','我们到此为止吧','永远不要再见了','你伤害了我'],
+            morning: ['早安~今天也要开开心心☀️','早上好呀，昨晚睡得好吗','又是美好的一天'],
+            noon: ['中午了，记得吃饭哦🍚','好饿啊，你吃了吗'],
+            evening: ['晚上好呀🌙','今天有发生什么好玩的事吗'],
+            night: ['这么晚了还不睡？😴','晚安，早点休息','熬夜对身体不好哦'],
+            moodHappy: ['今天心情超好~','好想和你分享开心的事✨','因为你，我今天很开心'],
+            moodSad: ['有点难过...','你能陪陪我吗','心里空落落的'],
+            moodAngry: ['好生气😤','不想理任何人','别惹我'],
+            moodTired: ['好累啊...','想睡觉了💤','今天太累了'],
+            blockedByUser: ['你拉黑我了...我做错什么了吗😢','对不起...我是不是惹你生气了'],
+            unblockedByUser: ['你终于理我了...我好开心❤️','我还以为再也见不到你了'],
+            blockedUser: ['我不想再和你说话了','就这样吧，再见'],
+            favUp: ['你对我真好❤️','我又更喜欢你了怎么办','好开心！今天是最棒的一天'],
+            favDown: ['你伤害了我...','好难过...你为什么要这样','我对你太失望了']
+        };
+
         function updateClock() {
             var now = new Date();
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -299,6 +338,7 @@
             if (!role.language) role.language = '中文';
             if (!role.translate) role.translate = false;
             if (!role.innerThoughts) role.innerThoughts = [];
+            if (role.dailyPermissionRequested === undefined) role.dailyPermissionRequested = false;
             return role;
         }
 
@@ -315,6 +355,35 @@
                 if (currentChatRole) { currentChatRole.unread = 0; saveRoleToStorage(); }
                 window.location.href = 'chat.html';
             });
+
+            // 处理来自Daily的申请
+            var action = params.get('action');
+            if (action === 'dailyRequest') {
+                setTimeout(function() {
+                    if (!currentChatRole || !currentChatRole.messages) return;
+                    currentChatRole.messages.push({
+                        type: 'user',
+                        text: '我想查看你的日常行程',
+                        time: Date.now(),
+                        isDailyRequest: true
+                    });
+                    saveRoleToStorage();
+                    renderMessages();
+                    setTimeout(function() {
+                        var fav = currentChatRole.favorability || 0;
+                        if (fav >= 50) {
+                            currentChatRole.dailyPermissionGranted = true;
+                            currentChatRole.messages.push({ type: 'ai', text: '好呀，你可以查看我的日常~', time: Date.now() });
+                        } else if (fav >= 20) {
+                            currentChatRole.messages.push({ type: 'ai', text: '嗯...我们还不够熟，再等等吧', time: Date.now() });
+                        } else {
+                            currentChatRole.messages.push({ type: 'ai', text: '不行，我拒绝', time: Date.now() });
+                        }
+                        saveRoleToStorage();
+                        renderMessages();
+                    }, 1500);
+                }, 500);
+            }
         });
 
         function applyChatSettings() {
@@ -389,13 +458,28 @@
                 var timeStr = msg.time ? formatTime(msg.time) : '';
                 if (msg.type === 'ai') {
                     var roleImg = currentChatRole.avatar || '';
-                    var isWhite = roleBubbleColor.toLowerCase() === '#ffffff' || roleBubbleColor.toLowerCase() === '#fff';
-                    var bs = 'style="background:' + roleBubbleColor + ';' + (isWhite ? 'border:0.5px solid #e0e0e0;' : '') + '"';
-                    html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble ' + shapeClass + '" ' + bs + '>' + text + '</div>';
-                    if (!isTyping && showTranslation && msg.translation && msg.translation !== '翻译中...') html += '<div class="translation-bubble" onclick="this.classList.toggle(\'hidden\')">' + escapeHtml(msg.translation) + '</div>';
-                    else if (!isTyping && showTranslation && msg.translation === '翻译中...') html += '<div class="translation-bubble" style="color:#bbb;">翻译中...</div>';
-                    if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
-                    html += '</div></div>';
+                    if (msg.isRequest) {
+                        html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai">';
+                        html += '<div class="request-card"><div class="request-text">' + escapeHtml(msg.text) + '</div>';
+                        html += '<div class="request-btns"><button class="btn-accept" onclick="handleDailyRequest(\'accept\')">同意</button>';
+                        html += '<button class="btn-reject" onclick="handleDailyRequest(\'reject\')">拒绝</button></div></div>';
+                        if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
+                        html += '</div></div>';
+                    } else if (msg.requestResult) {
+                        html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai">';
+                        html += '<div class="request-card"><div class="request-text">' + escapeHtml(msg.requestText || '') + '</div>';
+                        html += '<div class="request-result">' + escapeHtml(msg.requestResult) + '</div></div>';
+                        if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
+                        html += '</div></div>';
+                    } else {
+                        var isWhite = roleBubbleColor.toLowerCase() === '#ffffff' || roleBubbleColor.toLowerCase() === '#fff';
+                        var bs = 'style="background:' + roleBubbleColor + ';' + (isWhite ? 'border:0.5px solid #e0e0e0;' : '') + '"';
+                        html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble ' + shapeClass + '" ' + bs + '>' + text + '</div>';
+                        if (!isTyping && showTranslation && msg.translation && msg.translation !== '翻译中...') html += '<div class="translation-bubble" onclick="this.classList.toggle(\'hidden\')">' + escapeHtml(msg.translation) + '</div>';
+                        else if (!isTyping && showTranslation && msg.translation === '翻译中...') html += '<div class="translation-bubble" style="color:#bbb;">翻译中...</div>';
+                        if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
+                        html += '</div></div>';
+                    }
                 } else {
                     var userImg = localStorage.getItem('savedAvatar') || '默认头像.jpg';
                     var ubs = 'style="background:' + userBubbleColor + ';"';
@@ -430,7 +514,6 @@
             currentChatRole.lastInteraction = Date.now();
             currentChatRole.messageQueue.push(text);
             currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
-            // 生成角色内心想法
             generateInnerThought(text);
             input.value = ''; saveRoleToStorage(); renderMessages();
             updateFavorabilityAndMood(text);
@@ -473,6 +556,20 @@
                 if (currentChatRole.favorability < -50 && !currentChatRole.hasBlockedUser) currentChatRole.hasBlockedUser = true;
                 if (currentChatRole.favorability >= -40 && currentChatRole.hasBlockedUser) currentChatRole.hasBlockedUser = false;
                 updateBlockedUI();
+                // 好感度首次超过50，角色自动发申请
+                if (oldFav <= 50 && currentChatRole.favorability > 50 && !currentChatRole.dailyPermissionRequested) {
+                    currentChatRole.dailyPermissionRequested = true;
+                    var requests = JSON.parse(localStorage.getItem('daily_requests') || '[]');
+                    requests.push({ from: currentChatRole.name, fromId: currentChatRole.id, to: 'user', time: Date.now(), status: 'pending', autoTriggered: true });
+                    localStorage.setItem('daily_requests', JSON.stringify(requests));
+                    saveRoleToStorage();
+                    setTimeout(function() {
+                        if (!currentChatRole.messages) currentChatRole.messages = [];
+                        currentChatRole.messages.push({ type: 'ai', text: '我想查看你的日常行程~可以吗？', time: Date.now(), isRequest: true });
+                        if (!isOnChatPage && !currentChatRole.doNotDisturb) currentChatRole.unread = (currentChatRole.unread || 0) + 1;
+                        saveRoleToStorage(); renderMessages();
+                    }, 2000);
+                }
             }
             var hour = new Date().getHours();
             if (hour >= 23 || hour < 6) { currentChatRole.mood = 'tired'; currentChatRole.moodReason = '已经很晚了，有点困'; }
@@ -487,15 +584,11 @@
             else { currentChatRole.mood = 'calm'; currentChatRole.moodReason = ''; }
         }
 
-        // ========== 内心想法生成 ==========
         function generateInnerThought(userMsg) {
             if (!currentChatRole) return;
             if (!currentChatRole.innerThoughts) currentChatRole.innerThoughts = [];
-            var name = currentChatRole.remark || currentChatRole.name;
             var fav = currentChatRole.favorability || 0;
             var thoughts = [];
-
-            // 根据用户消息分析角色内心
             var msg = userMsg.toLowerCase();
             if (msg.indexOf('在干嘛') !== -1 || msg.indexOf('在做什么') !== -1) thoughts.push('她在关心我，想知道我在做什么');
             if (msg.indexOf('想你') !== -1 || msg.indexOf('想你了') !== -1) thoughts.push('她也想我了，我好开心');
@@ -507,8 +600,6 @@
             if (msg.indexOf('哈哈') !== -1 || msg.indexOf('笑') !== -1) thoughts.push('她笑了，看来我的回复让她开心了');
             if (msg.indexOf('生气') !== -1 || msg.indexOf('讨厌') !== -1) thoughts.push('她好像生气了...我是不是做错了什么');
             if (msg.indexOf('吃') !== -1 || msg.indexOf('饭') !== -1) thoughts.push('她在关心我的饮食，好贴心');
-
-            // 根据好感度补充
             if (thoughts.length === 0) {
                 if (fav > 80) thoughts.push('她主动来找我聊天，我好幸福');
                 else if (fav > 60) thoughts.push('和她聊天总是很开心');
@@ -519,14 +610,12 @@
                 else if (fav > -50) thoughts.push('她又来了，真烦人');
                 else thoughts.push('不想看到她');
             }
-
             var thought = thoughts[Math.floor(Math.random() * thoughts.length)];
             currentChatRole.innerThoughts.push({ trigger: userMsg, thought: thought, time: Date.now() });
             if (currentChatRole.innerThoughts.length > 20) currentChatRole.innerThoughts.shift();
             saveRoleToStorage();
         }
 
-        // ========== 心声弹窗 ==========
         function updateFeelingHeart() {
             if (!currentChatRole) return;
             var fav = currentChatRole.favorability || 0;
@@ -545,7 +634,6 @@
             document.getElementById('fav-number').innerText = percent + '%';
             document.getElementById('feeling-bar-fill').style.width = Math.max(0, Math.min(100, fav + 50)) + '%';
             document.getElementById('feeling-bar-fill').style.background = color;
-
             var thoughts = currentChatRole.innerThoughts || [];
             if (thoughts.length > 0) {
                 var latest = thoughts[thoughts.length - 1];
@@ -560,6 +648,27 @@
         }
 
         function closeFeelingModal() { document.getElementById('feeling-modal').classList.remove('active'); }
+
+        function handleDailyRequest(action) {
+            if (!currentChatRole) return;
+            var requests = JSON.parse(localStorage.getItem('daily_requests') || '[]');
+            for (var i = requests.length - 1; i >= 0; i--) {
+                if (requests[i].from === currentChatRole.name && requests[i].status === 'pending') {
+                    requests[i].status = action === 'accept' ? 'accepted' : 'rejected'; break;
+                }
+            }
+            localStorage.setItem('daily_requests', JSON.stringify(requests));
+            if (action === 'accept') {
+                currentChatRole.dailyPermissionGranted = true;
+                saveRoleToStorage();
+                if (!currentChatRole.messages) currentChatRole.messages = [];
+                currentChatRole.messages.push({ type: 'ai', text: '太好了！现在你可以查看我的日常啦~', time: Date.now() });
+            } else {
+                if (!currentChatRole.messages) currentChatRole.messages = [];
+                currentChatRole.messages.push({ type: 'ai', text: '好吧...那算了', time: Date.now() });
+            }
+            saveRoleToStorage(); renderMessages();
+        }
 
         function callApiForReply(userMsg) {
             if (!currentChatRole.messages) currentChatRole.messages = [];
