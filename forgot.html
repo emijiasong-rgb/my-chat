@@ -96,6 +96,14 @@
             font-size: 13px;
             cursor: pointer;
             font-weight: 500;
+            padding: 14px 8px;
+        }
+
+        .send-btn:disabled {
+            background: #f0f0f0;
+            color: #999;
+            border-color: #999;
+            cursor: not-allowed;
         }
 
         .black-square-btn {
@@ -116,11 +124,32 @@
             background: #333;
         }
 
+        .black-square-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
         .bottom-link {
             margin-top: 20px;
             color: #8e8e93;
             font-size: 14px;
             cursor: pointer;
+        }
+
+        #custom-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 9999;
+            text-align: center;
+            max-width: 80%;
+            display: none;
         }
     </style>
 </head>
@@ -134,8 +163,8 @@
             <input type="text" id="forgot-email" class="ios-input-large" placeholder="输入qq邮箱">
             
             <div class="code-row">
-                <input type="text" class="ios-input-large" style="margin-bottom:0;" placeholder="输入验证码">
-                <button class="send-btn" onclick="alert('验证码已发送（模拟）')">发送验证码</button>
+                <input type="text" id="verify-code" class="ios-input-large" style="margin-bottom:0;" placeholder="输入验证码">
+                <button class="send-btn" id="send-code-btn" onclick="sendVerificationCode()">发送验证码</button>
             </div>
 
             <input type="password" id="new-password" class="ios-input-large" placeholder="设置新密码">
@@ -146,25 +175,130 @@
         </div>
     </div>
 
-    <script>
-        function handleReset() {
-            var email = document.getElementById('forgot-email').value.trim();
-            var newPwd = document.getElementById('new-password').value.trim();
+    <div id="custom-message"></div>
 
-            if (!email || !newPwd) {
-                alert("请填写完整信息");
+    <script>
+        // Store verification codes temporarily (in real app, use backend)
+        var verificationCodes = {};
+        var codeCountdown = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Optional: Clear verification codes when page loads
+            verificationCodes = {};
+        });
+
+        function generateVerificationCode() {
+            // Generate 6-digit code
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function sendVerificationCode() {
+            var email = document.getElementById('forgot-email').value.trim();
+            
+            if (!email) {
+                showMessage("请先输入qq邮箱");
                 return;
             }
 
+            // Check if email exists
             var existingUser = localStorage.getItem('user_' + email);
             if (existingUser === null) {
-                alert("该邮箱尚未注册");
+                showMessage("该邮箱尚未注册");
                 return;
             }
 
-            localStorage.setItem('user_' + email, newPwd);
-            alert("密码重置成功！请重新登录");
-            window.location.href = 'login.html';
+            // Generate and store verification code
+            var code = generateVerificationCode();
+            verificationCodes[email] = {
+                code: code,
+                timestamp: Date.now(),
+                expiresIn: 10 * 60 * 1000 // 10 minutes expiration
+            };
+
+            // Simulate sending to QQ email
+            showMessage("验证码已发送至 " + email + "\n验证码：" + code + "\n（演示模式下可见，实际产品中不会显示）");
+
+            // Start countdown
+            startCodeCountdown();
+        }
+
+        function startCodeCountdown() {
+            var btn = document.getElementById('send-code-btn');
+            codeCountdown = 60;
+            btn.disabled = true;
+            btn.innerText = codeCountdown + "s";
+
+            var interval = setInterval(function() {
+                codeCountdown--;
+                btn.innerText = codeCountdown + "s";
+                
+                if (codeCountdown <= 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.innerText = "发送验证码";
+                }
+            }, 1000);
+        }
+
+        function handleReset() {
+            var email = document.getElementById('forgot-email').value.trim();
+            var verifyCode = document.getElementById('verify-code').value.trim();
+            var newPassword = document.getElementById('new-password').value.trim();
+
+            // Validation
+            if (!email || !verifyCode || !newPassword) {
+                showMessage("请填写完整信息");
+                return;
+            }
+
+            // Check if email exists
+            var existingUser = localStorage.getItem('user_' + email);
+            if (existingUser === null) {
+                showMessage("该邮箱尚未注册");
+                return;
+            }
+
+            // Check if verification code was sent
+            if (!verificationCodes[email]) {
+                showMessage("请先发送验证码");
+                return;
+            }
+
+            var codeData = verificationCodes[email];
+
+            // Check if code is expired
+            var now = Date.now();
+            if (now - codeData.timestamp > codeData.expiresIn) {
+                showMessage("验证码已过期，请重新发送");
+                delete verificationCodes[email];
+                return;
+            }
+
+            // Check if code matches
+            if (verifyCode !== codeData.code) {
+                showMessage("验证码错误，请重新输入");
+                return;
+            }
+
+            // Code is valid, update password
+            localStorage.setItem('user_' + email, newPassword);
+            
+            // Clear verification code
+            delete verificationCodes[email];
+            
+            showMessage("密码重置成功！请重新登录");
+            setTimeout(function() {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+
+        function showMessage(msg) {
+            var msgDiv = document.getElementById('custom-message');
+            msgDiv.innerText = msg;
+            msgDiv.style.display = 'block';
+            setTimeout(function() {
+                msgDiv.style.display = 'none';
+            }, 3000);
         }
     </script>
 </body>
