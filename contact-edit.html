@@ -120,9 +120,7 @@
             <div class="card">
                 <div class="card-label">基本信息</div>
                 <div class="field"><label>名字</label><input type="text" id="role-name" placeholder="角色名字"></div>
-                <div class="field"><label>性格</label><textarea id="role-personality" placeholder="温柔、幽默、傲娇..."></textarea></div>
-                <div class="field"><label>口头禅</label><input type="text" id="role-catchphrase" placeholder="常说的话"></div>
-                <div class="field"><label>角色背景</label><textarea id="role-background" placeholder="角色的背景故事..."></textarea></div>
+                <div class="field"><label>人设（性格、口头禅、背景）</label><textarea id="role-persona" style="min-height:100px;"></textarea></div>
                 <div class="field"><label>语言</label>
                     <select id="role-language">
                         <option value="中文">中文</option>
@@ -201,9 +199,7 @@
             preview.src = avatarData || '';
             preview.style.background = avatarData ? 'transparent' : '#e0e0e0';
             document.getElementById('role-name').value = role.name || '';
-            document.getElementById('role-personality').value = role.personality || '';
-            document.getElementById('role-catchphrase').value = role.catchphrase || '';
-            document.getElementById('role-background').value = role.background || '';
+            document.getElementById('role-persona').value = role.persona || '';
             document.getElementById('role-language').value = role.language || '中文';
             document.getElementById('role-phone').value = role.phone || '';
             document.getElementById('role-wechat').value = role.wechatId || '';
@@ -259,9 +255,7 @@
                 if (roles[i].id === roleId) {
                     if (avatarData && avatarData.length > 100) roles[i].avatar = avatarData;
                     roles[i].name = name;
-                    roles[i].personality = document.getElementById('role-personality').value.trim();
-                    roles[i].catchphrase = document.getElementById('role-catchphrase').value.trim();
-                    roles[i].background = document.getElementById('role-background').value.trim();
+                    roles[i].persona = document.getElementById('role-persona').value.trim();
                     roles[i].language = document.getElementById('role-language').value;
                     roles[i].phone = document.getElementById('role-phone').value.trim();
                     roles[i].wechatId = document.getElementById('role-wechat').value.trim();
