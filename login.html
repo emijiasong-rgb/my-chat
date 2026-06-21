@@ -71,6 +71,17 @@
             background: #c7c7cc;
             border-radius: 50%;
             margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            overflow: hidden;
+        }
+
+        .login-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .ios-input-large {
@@ -141,7 +152,7 @@
 
         <div class="page-flex-container">
             <div class="login-box">
-                <div class="login-avatar"></div>
+                <div class="login-avatar">👤</div>
                 <b style="font-size: 18px;">请登录</b>
             </div>
 
@@ -161,6 +172,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                var currentUser = localStorage.getItem('currentUser');
+                if (currentUser) {
+                    showLoggedInUI(currentUser);
+                }
+            }
+
             var loginBtn = document.getElementById('login-submit-btn');
             if (loginBtn) {
                 loginBtn.addEventListener('click', handleLogin);
@@ -181,13 +200,41 @@
             if (savedPassword === null) {
                 showMessage("该账号尚未注册");
             } else if (savedPassword === passwordInput) {
+                // Save login state and user info
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('currentUser', emailInput);
+                
+                // Save or restore avatar
+                var savedAvatarKey = 'avatar_' + emailInput;
+                var existingAvatar = localStorage.getItem(savedAvatarKey);
+                if (!existingAvatar) {
+                    // Generate a default avatar (using emoji)
+                    var avatarEmoji = generateAvatarEmoji(emailInput);
+                    localStorage.setItem(savedAvatarKey, avatarEmoji);
+                    localStorage.setItem('savedAvatar', avatarEmoji);
+                } else {
+                    // Restore user's avatar
+                    localStorage.setItem('savedAvatar', existingAvatar);
+                }
+                
                 showMessage("登录成功！");
-                showLoggedInUI(emailInput);
+                setTimeout(function() {
+                    showLoggedInUI(emailInput);
+                }, 500);
             } else {
                 showMessage("密码错误，请重新输入");
             }
+        }
+
+        function generateAvatarEmoji(email) {
+            // Generate consistent emoji based on email
+            var emojis = ['😊', '😎', '🤓', '😄', '🤗', '😍', '🥳', '😘', '😇', '🤩'];
+            var hash = 0;
+            for (var i = 0; i < email.length; i++) {
+                hash = ((hash << 5) - hash) + email.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return emojis[Math.abs(hash) % emojis.length];
         }
 
         function showMessage(msg) {
@@ -203,8 +250,10 @@
             var container = document.querySelector('.page-flex-container');
             container.innerHTML = '';
 
+            var savedAvatar = localStorage.getItem('savedAvatar') || '👤';
+
             var html = '<div class="login-box">' +
-                '<div class="login-avatar" style="background:#07c160;"></div>' +
+                '<div class="login-avatar" style="background:#07c160;">' + savedAvatar + '</div>' +
                 '<b style="font-size:20px;">' + escapeHtml(username) + '</b>' +
                 '<p style="color:#666;margin-top:10px;">已登录</p></div>' +
                 '<button class="black-square-btn" id="logout-btn" style="background:#ff3b30;margin-bottom:15px;">退出登录</button>' +
@@ -215,6 +264,7 @@
             document.getElementById('logout-btn').addEventListener('click', function() {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('currentUser');
+                localStorage.removeItem('savedAvatar');
                 window.location.reload();
             });
 
