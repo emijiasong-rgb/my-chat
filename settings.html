@@ -91,6 +91,7 @@
             width: 60px; height: 60px; background: #e0e0e0;
             border-radius: 50%; overflow: hidden; margin-right: 15px;
             display: flex; align-items: center; justify-content: center;
+            font-size: 30px;
         }
         .account-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .account-info { flex: 1; }
@@ -115,7 +116,7 @@
             border: 1px solid rgba(255,255,255,0.8); border-radius: 16px;
             color: #ff3b30; font-size: 17px; font-weight: 600;
             text-align: center; cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
         }
         .logout-btn:active { background: rgba(0,0,0,0.05); transform: scale(0.98); }
     </style>
@@ -130,7 +131,7 @@
 
             <div class="account-section" id="account-btn" onclick="handleAccountClick()">
                 <div class="account-avatar" id="avatar-container">
-                    <span id="default-icon" style="font-size:30px;">👤</span>
+                    <span id="default-icon">👤</span>
                 </div>
                 <div class="account-info">
                     <b id="user-display-name">请登录</b>
@@ -182,9 +183,23 @@
             if (isLoggedIn === 'true' && currentUser) {
                 document.getElementById('user-display-name').innerText = currentUser;
                 document.getElementById('user-display-desc').innerText = "Apple 账户、iCloud、App Store";
+                
+                // Display avatar (emoji or image)
+                var container = document.getElementById('avatar-container');
+                var defaultIcon = document.getElementById('default-icon');
+                
                 if (savedAvatar) {
-                    var container = document.getElementById('avatar-container');
-                    container.innerHTML = '<img src="' + savedAvatar + '" alt="avatar">';
+                    // Check if it's an image URL or emoji
+                    if (savedAvatar.startsWith('http') || savedAvatar.startsWith('data:')) {
+                        // It's an image URL
+                        container.innerHTML = '<img src="' + escapeHtml(savedAvatar) + '" alt="avatar">';
+                    } else {
+                        // It's an emoji
+                        defaultIcon.innerText = savedAvatar;
+                    }
+                } else {
+                    // Default emoji
+                    defaultIcon.innerText = '👤';
                 }
             }
         });
@@ -201,6 +216,12 @@
                 localStorage.removeItem('savedAvatar');
                 window.location.reload();
             }
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
     </script>
 </body>
