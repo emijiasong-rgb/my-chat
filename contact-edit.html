@@ -257,7 +257,7 @@
             var found = false;
             for (var i = 0; i < roles.length; i++) {
                 if (roles[i].id === roleId) {
-                    if (avatarData) roles[i].avatar = avatarData;
+                    if (avatarData && avatarData.length > 100) roles[i].avatar = avatarData;
                     roles[i].name = name;
                     roles[i].personality = document.getElementById('role-personality').value.trim();
                     roles[i].catchphrase = document.getElementById('role-catchphrase').value.trim();
