@@ -235,7 +235,7 @@
             <div class="nav-center">
                 <span class="nav-title" id="chat-nav-name"></span>
                 <div class="nav-feeling" id="nav-feeling" onclick="showFeelingModal()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#F7A1C4" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#F7A1C4" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg>
                 </div>
             </div>
             <button class="three-dots" onclick="openMore()">···</button>
@@ -266,7 +266,7 @@
     <div class="feeling-modal" id="feeling-modal" onclick="if(event.target===this)closeFeelingModal()">
         <div class="feeling-card">
             <div class="heart-deco">
-                <svg viewBox="0 0 24 24" fill="#F7A1C4" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                <svg viewBox="0 0 24 24" fill="#F7A1C4" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg>
             </div>
             <h3 id="feeling-title">好感度</h3>
             <div class="fav-number" id="fav-number">0%</div>
@@ -315,6 +315,84 @@
             favDown: ['你伤害了我...','好难过...你为什么要这样','我对你太失望了']
         };
 
+        // ===== 增强的对话记忆系统 =====
+        var MEMORY_KEYWORDS = {
+            names: ['叫', '名字', '是', '我叫', '我是', '你叫', '你是'],
+            likes: ['喜欢', '爱', '喜欢吃', '喜欢看', '喜欢玩'],
+            dislikes: ['讨厌', '不喜欢', '烦', '厌烦'],
+            work: ['工作', '上班', '下班', '忙', '加班', '职位', '公司'],
+            hobby: ['爱好', '兴趣', '喜欢做', '平时喜欢'],
+            status: ['单身', '有男朋友', '有女朋友', '结婚了', '分手', '交往'],
+            location: ['住在', '从', '来自', '家在', '老家'],
+            time: ['今天', '明天', '昨天', '周末', '放假', '假期']
+        };
+
+        function extractMemoryFromMessage(text, type) {
+            if (!currentChatRole) return null;
+            if (!currentChatRole.memories) currentChatRole.memories = {};
+            
+            var memory = { type: type, content: text, timestamp: Date.now(), confirmed: false };
+            
+            for (var key in MEMORY_KEYWORDS) {
+                for (var i = 0; i < MEMORY_KEYWORDS[key].length; i++) {
+                    if (text.indexOf(MEMORY_KEYWORDS[key][i]) !== -1) {
+                        if (!currentChatRole.memories[key]) currentChatRole.memories[key] = [];
+                        if (currentChatRole.memories[key].length < 5) {
+                            currentChatRole.memories[key].push(memory);
+                        }
+                        break;
+                    }
+                }
+            }
+            return memory;
+        }
+
+        function getRelevantMemories(userMsg, limit) {
+            if (!currentChatRole || !currentChatRole.memories) return '';
+            var relevant = [];
+            for (var key in currentChatRole.memories) {
+                var mems = currentChatRole.memories[key];
+                for (var i = 0; i < mems.length; i++) {
+                    if (userMsg.toLowerCase().indexOf(key) !== -1 || 
+                        userMsg.indexOf(mems[i].content) !== -1) {
+                        relevant.push('【记得】' + mems[i].content);
+                    }
+                }
+            }
+            return relevant.slice(0, limit || 3).join('\n');
+        }
+
+        // ===== OOC检测和校正系统 =====
+        function isOOCResponse(reply) {
+            var oocPatterns = [
+                /^(作为|我是|I am|as an|GPT|AI|人工智能)/i,
+                /^(我无法|我不能|我不可以|cannot|unable|I can't)/i,
+                /^(请问|问题|什么意思|explain)/i,
+                /^(确认|已收到|理解|understood)/i
+            ];
+            
+            for (var i = 0; i < oocPatterns.length; i++) {
+                if (oocPatterns[i].test(reply)) return true;
+            }
+            
+            if (reply.length > 500) return true;
+            
+            return false;
+        }
+
+        function ensureCharacterConsistency(reply) {
+            if (!currentChatRole) return reply;
+            
+            var personality = currentChatRole.personality || '';
+            var catchphrase = currentChatRole.catchphrase || '';
+            
+            if (catchphrase && reply.indexOf(catchphrase) === -1 && Math.random() > 0.7) {
+                if (reply.length < 50) reply += '，' + catchphrase;
+            }
+            
+            return reply;
+        }
+
         function updateClock() {
             var now = new Date();
             document.getElementById('clock').innerText = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -350,6 +428,7 @@
             if (!role.translate) role.translate = false;
             if (!role.innerThoughts) role.innerThoughts = [];
             if (role.dailyPermissionRequested === undefined) role.dailyPermissionRequested = false;
+            if (!role.memories) role.memories = {};
             return role;
         }
 
@@ -473,7 +552,7 @@
                     if (msg.isRequest) {
                         html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai">';
                         html += '<div class="transfer-card">';
-                        html += '<div class="transfer-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></div>';
+                        html += '<div class="transfer-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg></div>';
                         html += '<div class="transfer-title">行程查看申请</div>';
                         html += '<div class="transfer-desc">' + escapeHtml(msg.text) + '</div>';
                         html += '<div class="transfer-btns"><button class="btn-accept" onclick="handleDailyRequest(\'accept\')">同意</button>';
@@ -484,7 +563,7 @@
                         var isWhite = roleBubbleColor.toLowerCase() === '#ffffff' || roleBubbleColor.toLowerCase() === '#fff';
                         var bs = 'style="background:' + roleBubbleColor + ';' + (isWhite ? 'border:0.5px solid #e0e0e0;' : '') + '"';
                         html += '<div class="msg-row-ai"><img class="msg-avatar" src="' + roleImg + '" alt=""><div class="msg-content ai"><div class="msg-bubble ' + shapeClass + '" ' + bs + '>' + text + '</div>';
-                        if (!isTyping && showTranslation && msg.translation && msg.translation !== '翻译中...') html += '<div class="translation-bubble" onclick="this.classList.toggle(\'hidden\')">' + escapeHtml(msg.translation) + '</div>';
+                        if (!isTyping && showTranslation && msg.translation && msg.translation !== '翻译中...') html += '<div class="translation-bubble" onclick="this.classList.toggle(\'hidden\')">' + msg.translation + '</div>';
                         else if (!isTyping && showTranslation && msg.translation === '翻译中...') html += '<div class="translation-bubble" style="color:#bbb;">翻译中...</div>';
                         if (timeStr && !isTyping) html += '<div class="msg-time">' + timeStr + '</div>';
                         html += '</div></div>';
@@ -522,6 +601,9 @@
             if (!currentChatRole.messages) currentChatRole.messages = [];
             currentChatRole.lastInteraction = Date.now();
             currentChatRole.messageQueue.push(text);
+            
+            extractMemoryFromMessage(text, 'user');
+            
             currentChatRole.messages.push({ type: 'user', text: text, time: Date.now() });
             generateInnerThought(text);
             input.value = ''; saveRoleToStorage(); renderMessages();
@@ -631,7 +713,7 @@
             var color = fav > 60 ? '#F7A1C4' : fav > 20 ? '#E0B0C0' : fav > 0 ? '#D0D0D0' : '#B0B0B0';
             var fillPercent = Math.max(0, Math.min(100, fav + 50)) / 100;
             var fillColor = fav > 60 ? '#F7A1C4' : fav > 20 ? '#E0B0C0' : fav > 0 ? '#D0D0D0' : '#B0B0B0';
-            heart.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2"><defs><clipPath id="hc2"><rect y="' + ((1-fillPercent)*24) + '" width="24" height="' + (fillPercent*24) + '"/></clipPath></defs><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="' + fillColor + '" fill-opacity="' + fillPercent + '"/></svg>';
+            heart.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2"><defs><clipPath id="hc2"><rect y="' + ((1-fillPercent)*24) + '" width="24" height="' + (fillPercent*24) + '"></rect></clipPath></defs><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" clip-path="url(#hc2)" fill="' + fillColor + '"></path><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg>';
         }
 
         function showFeelingModal() {
@@ -713,7 +795,17 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     var data = JSON.parse(xhr.responseText);
                     var reply = data.choices && data.choices[0] ? data.choices[0].message.content : '';
+                    
+                    if (isOOCResponse(reply)) {
+                        reply = generateLocalReply();
+                    } else {
+                        reply = ensureCharacterConsistency(reply);
+                    }
+                    
                     if (reply.match(/^(message received|received|ok|got it|收到|好的收到|了解).*/i)) reply = generateLocalReply();
+                    
+                    extractMemoryFromMessage(reply, 'ai');
+                    
                     var translation = needsTranslation() ? translateText(reply, currentChatRole.language) : '';
                     currentChatRole.messages.push({ type: 'ai', text: reply, time: Date.now(), translation: translation });
                 } else if (retryCount === 0) { tryRequest(currentApi.url + '/chat/completions', messages, 1); return; }
@@ -742,15 +834,26 @@
             var fav = r.favorability || 0;
             var lang = r.language || '中文';
             var config = MOOD_CONFIG[mood] || MOOD_CONFIG.calm;
+            
             var p = '你是一个角色扮演AI，你的设定如下：\n【名字】' + r.name + '\n【性格】' + (r.personality||'无') + '\n【背景】' + (r.background||'无') + '\n';
             p += '【口头禅】' + (r.catchphrase||'无') + '\n【与用户关系】' + (r.relation||'朋友') + '\n';
             if (r.userPreference) p += '【用户偏好】' + r.userPreference + '\n';
+            
+            var relevantMemories = getRelevantMemories((r.messages && r.messages.length > 0 ? r.messages[r.messages.length - 1].text : ''), 3);
+            if (relevantMemories) p += '【对话记忆】\n' + relevantMemories + '\n';
+            
             p += '【当前心情】' + config.replyStyle + '\n【好感度】' + fav + '%\n';
             if (lang !== '中文') p += '【回复语言】你必须用' + lang + '回复\n';
-            if (fav > 60) p += '好感度高，请热情亲切地回复\n';
-            if (fav < 20 && fav >= -30) p += '好感度低，请冷淡简短回复\n';
-            if (fav < -30) p += '好感度很低，请带着不耐烦或生气的语气回复\n';
-            p += '【规则】以角色身份直接说话，不要确认语句，回复1-3句话\n';
+            if (fav > 60) p += '好感度高，请热情亲切地回复，可以多用表情和昵称\n';
+            if (fav < 20 && fav >= -30) p += '好感度低，请冷淡简短回复，可以显得不太耐烦\n';
+            if (fav < -30) p += '好感度很低，请带着不耐烦或生气的语气回复，甚至可以拒绝回复\n';
+            p += '【重要规则】\n';
+            p += '1. 以角色身份直接说话，不要确认语句，不要说自己是AI或语言模型\n';
+            p += '2. 回复1-3句话，保持简洁自然\n';
+            p += '3. 记住你之前说过的话，保持一致性\n';
+            p += '4. 根据好感度调整语气，不要总是同样的回复方式\n';
+            p += '5. 如果用户提到之前的对话内容，要表示你记得\n';
+            
             return p;
         }
 
@@ -759,7 +862,7 @@
             var mood = r.mood || 'calm';
             var lang = r.language || '中文';
             var replies = {
-                '中文': { happy: ['好呀！','当然可以~','超开心！'], calm: ['嗯嗯','好的','明白了'], sad: ['...','哦','好吧'], angry: ['哼','随便你','别烦我'], tired: ['累了...','明天再说吧','好困'] },
+                '中文': { happy: ['好呀！','当然可以~','超开心！'], calm: ['嗯嗯','好的','明白了'], sad: ['...','哦','好吧'], angry: ['哼','随便你','别烦我'], tired: ['困...','好累','等会儿'] },
                 'English': { happy: ['Great!','Awesome~'], calm: ['Okay','Got it'], sad: ['...','Oh'], angry: ['Hmph','Whatever'], tired: ['Tired...','Maybe tomorrow'] },
                 '日本語': { happy: ['いいね！','最高！'], calm: ['うん','わかった'], sad: ['...','そう'], angry: ['ふん','勝手に'], tired: ['疲れた...','また明日'] },
                 '한국어': { happy: ['좋아!','최고야~'], calm: ['응','알겠어'], sad: ['...','그래'], angry: ['흥','맘대로'], tired: ['피곤해...','내일'] }
